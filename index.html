@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050605">
+<title>Scrollify — Crea il nuovo sito 3D della tua attività in 24h</title>
+<meta name="description" content="Carica la tua attività: foto, link e servizi. Scrollify la analizza e in 24 ore ti mostra il tuo nuovo sito in 3D, da scorrere. Analisi gratuita.">
+<link rel="canonical" href="https://scrollify.online/">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- anteprima quando il link viene condiviso (WhatsApp, Instagram, Facebook, LinkedIn…) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Scrollify">
+<meta property="og:locale" content="it_IT">
+<meta property="og:url" content="https://scrollify.online/">
+<meta property="og:title" content="Scrollify — Il sito 3D della tua attività">
+<meta property="og:description" content="Prima lo disegniamo. Poi prende forma. E diventa vero. Raccontaci la tua attività: ti richiamiamo entro 24 ore.">
+<meta property="og:image" content="https://scrollify.online/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Scrollify","url":"https://scrollify.online/","logo":"https://scrollify.online/apple-touch-icon.png","image":"https://scrollify.online/og.jpg","email":"contact@scrollify.online","description":"Siti web in 3D, da scorrere, per attività: hotel, ristoranti, bar, ville, concessionari. Poi menu digitale, prenotazioni, ordini e app.","areaServed":{"@type":"Country","name":"Italia"}}</script>
+<!-- caratteri e librerie sono serviti dal sito stesso: nessun dato dei visitatori va a Google Fonts o a CDN esterni -->
+<link rel="preload" href="/font/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/font/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/font/font.css">
+<style>
+:root{
+  --bg:#050605; --bg-2:#0a0c0a; --txt:#eef2ec; --mut:#7d877b; --faint:rgba(210,255,200,.1); --line:rgba(210,255,200,.2);
+  --sig:#a8ff60; --sig-dim:rgba(168,255,96,.14);
+  --sans:"Geist",system-ui,sans-serif; --mono:"Geist Mono",ui-monospace,monospace;
+  --gut:clamp(20px,5vw,72px); --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);font-size:18px;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font:inherit;color:inherit}
+fieldset{border:0}
+::selection{background:var(--sig);color:#000}
+:focus-visible{outline:1px solid var(--sig);outline-offset:4px}
+.mono{font-family:var(--mono)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 var(--gut)}
+.sig{color:var(--sig)}
+
+/* cursore: mirino con coordinate (solo con il mouse) */
+.cur,.cur-dot,.cur-xy{position:fixed;left:0;top:0;pointer-events:none;z-index:100;opacity:0;transition:opacity .3s}
+.cur{width:34px;height:34px;margin:-17px 0 0 -17px;border:1px solid var(--sig);border-radius:50%;transition:width .35s var(--ease),height .35s var(--ease),margin .35s var(--ease),opacity .3s,background .3s}
+.cur.hot{width:60px;height:60px;margin:-30px 0 0 -30px;background:var(--sig-dim)}
+.cur-dot{width:4px;height:4px;margin:-2px 0 0 -2px;background:var(--sig);border-radius:50%}
+.cur-xy{font-family:var(--mono);font-size:10px;color:var(--sig);margin:22px 0 0 22px;letter-spacing:.06em;white-space:nowrap}
+@media (hover:hover) and (pointer:fine){body.has-cur,body.has-cur a,body.has-cur button,body.has-cur label{cursor:none}.cur,.cur-dot,.cur-xy{opacity:1}
+  body.has-cur input,body.has-cur textarea{cursor:text}}
+
+.top{position:fixed;inset:0 0 auto;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:20px var(--gut);background:linear-gradient(rgba(5,6,5,.85),transparent)}
+.brand{font-family:var(--mono);font-weight:500;font-size:clamp(20px,2vw,26px);letter-spacing:-.02em;display:flex;align-items:center;gap:10px;color:#fff}
+.brand .br{color:var(--sig)}
+.brand i{width:.5em;height:.95em;background:var(--sig);border-radius:1px;animation:blink 1.1s steps(1) infinite;box-shadow:0 0 16px rgba(168,255,96,.6)}
+/* firma finale: il nome gigante che sale lettera per lettera */
+.sign{position:relative;z-index:2;background:var(--bg);overflow:hidden;padding:clamp(60px,8vw,120px) var(--gut) 0;border-top:1px solid var(--faint)}
+.sign .word{display:flex;font-family:var(--mono);font-weight:500;font-size:clamp(3.4rem,15.5vw,17rem);line-height:.8;letter-spacing:-.06em;color:var(--txt);white-space:nowrap}
+.sign .word span{display:inline-block;transform:translateY(105%);transition:transform 1.1s var(--ease)}
+.sign.shown .word span{transform:none}
+.sign .word .br{color:var(--sig)}
+.sign .word i{display:inline-block;width:.46em;height:.72em;align-self:center;margin-left:.06em;background:var(--sig);animation:blink 1.1s steps(1) infinite;box-shadow:0 0 40px rgba(168,255,96,.5)}
+.sign p{font-family:var(--mono);font-size:13px;color:var(--mut);padding:26px 0 34px}
+@keyframes blink{50%{opacity:0}}
+.top nav{display:flex;gap:32px;font-family:var(--mono);font-size:13px;color:#cfd6cc}
+.top nav a:hover{color:var(--sig)}
+.top nav .ns{display:none}
+#rain{position:fixed;inset:0;z-index:0;opacity:.45;pointer-events:none}
+
+/* ─── hero: a sinistra la promessa, a destra la console dove mandi tutto ─── */
+.hero{position:relative;z-index:2;min-height:100vh;min-height:100svh;display:grid;grid-template-columns:1fr minmax(0,560px);align-items:center;gap:clamp(32px,6vw,96px);
+  padding:110px var(--gut) 60px;max-width:1400px;margin:0 auto}
+.kick{font-family:var(--mono);font-size:13px;color:var(--mut)}
+.kick b{color:var(--sig);font-weight:400}
+h1{font-weight:500;font-size:clamp(2.6rem,4.9vw,4.8rem);line-height:1;letter-spacing:-.045em;max-width:13ch}
+h1 .strike{position:relative;color:var(--mut)}
+h1 .strike::after{content:"";position:absolute;left:-4%;right:-4%;top:54%;height:3px;background:var(--sig);transform-origin:left;transform:scaleX(0);animation:strike 1s .9s var(--ease) forwards}
+@keyframes strike{to{transform:scaleX(1)}}
+.lede{color:#b9c2b6;font-size:clamp(1.05rem,1.5vw,1.25rem);max-width:32ch;margin-top:26px}
+.path{list-style:none;margin-top:40px;counter-reset:p;display:grid;gap:0;max-width:440px}
+.path li{counter-increment:p;display:grid;grid-template-columns:40px 1fr;padding:12px 0;border-top:1px solid var(--faint);color:var(--mut);font-size:.95rem}
+.path li:last-child{border-bottom:1px solid var(--faint)}
+.path li::before{content:"0" counter(p);font-family:var(--mono);font-size:12px;color:var(--sig);padding-top:3px;grid-row:span 2}
+.path b{display:block;color:var(--txt);font-weight:500;font-size:1rem}
+.proof{list-style:none;margin-top:40px;font-family:var(--mono);font-size:13px;color:var(--mut);display:grid;gap:10px}
+.proof li::before{content:"✓ ";color:var(--sig)}
+
+.console{position:relative;border:1px solid var(--line);border-radius:18px;background:rgba(7,9,7,.84);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 40px 120px rgba(0,0,0,.6),0 0 100px rgba(168,255,96,.05)}
+.c-head{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--faint);font-family:var(--mono);font-size:12px;color:var(--mut)}
+.c-head i{width:9px;height:9px;border-radius:50%;background:#1e231d}
+.c-head span{margin-left:10px}
+.c-head b{margin-left:auto;color:var(--sig);font-weight:400}
+.steps{display:flex;gap:4px;padding:16px 22px 0}
+.steps i{flex:1;height:2px;background:#1c211b;border-radius:2px;transition:background .4s}
+.steps i.on{background:var(--sig)}
+.step{display:none;padding:22px 22px 8px}
+.step.on{display:block;animation:in .45s var(--ease)}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+.step h2{font-weight:500;font-size:1.55rem;letter-spacing:-.03em;line-height:1.15}
+.step .q{color:var(--mut);font-size:.95rem;margin-top:6px}
+.f{display:block;margin-top:18px}
+.f>span{font-family:var(--mono);font-size:12px;color:var(--mut)}
+.f>span small{color:#4d564b}
+.f input,.f textarea,.f select{display:block;width:100%;margin-top:4px;background:none;border:0;border-bottom:1px solid var(--line);font-size:1.02rem;padding:10px 0;resize:none;border-radius:0}
+.f select option{background:#0b0d0b}
+.f input:focus,.f textarea:focus,.f select:focus{outline:none;border-color:var(--sig)}
+.f input::placeholder,.f textarea::placeholder{color:#4a5348}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}
+.drop{position:relative;margin-top:18px;border:1px dashed var(--line);border-radius:14px;padding:24px 18px;text-align:center;transition:border-color .3s,background .3s;display:block}
+.drop.over{border-color:var(--sig);background:var(--sig-dim)}
+.drop b{display:block;font-weight:500}
+.drop span{font-size:.9rem;color:var(--mut)}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.nav[hidden],.steps[hidden],.term[hidden]{display:none}   /* dopo l'invio restano solo il riepilogo e il codice */
+.later{display:block;margin:14px auto 0;background:none;border:0;color:#5f685c;font-size:.95rem;min-height:44px;padding:0 6px}
+.later:hover{color:#0d110c}
+.recap{margin-top:18px;border-top:1px solid rgba(0,0,0,.1)}
+.recap div{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.08);font-family:var(--sans);font-size:.95rem;line-height:1.4}
+.recap dt{font-family:var(--mono);font-size:12px;color:#6b7468;padding-top:2px}
+.recap dd{color:#0d110c;word-break:break-word}
+.when{display:flex;gap:8px;margin-top:10px}
+.when label{flex:1;position:relative}
+.when input{position:absolute;opacity:0}
+.when span{display:block;text-align:center;padding:11px 0;border-radius:10px;border:1px solid rgba(0,0,0,.15);font-size:.95rem;transition:all .2s}
+.when input:checked+span{background:#0d110c;color:var(--sig);border-color:#0d110c}
+.when input:focus-visible+span{outline:2px solid #0d110c;outline-offset:2px}
+/* budget: il valore sopra, una linea che si riempie; finché non la tocchi è grigia e dice "non so ancora" */
+.bud-q{font-size:.9rem;line-height:1.45;color:#5f685c;margin-top:6px;max-width:38em}
+.bud-nota{margin-top:12px;color:#2f7a00}
+.bud-nota:empty{display:none}
+.bud-v{display:block;margin-top:10px;font-size:1.35rem;font-weight:500;letter-spacing:-.02em;color:#a3aba0;transition:color .2s}
+.bud.toccato .bud-v{color:#0d110c}
+.f input[type=range]{-webkit-appearance:none;appearance:none;display:block;width:100%;height:32px;margin:4px 0 0;padding:0;border:0;background:none;cursor:pointer;--p:0%}
+.f input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,#0d110c var(--p),rgba(0,0,0,.18) var(--p))}
+.f input[type=range]::-moz-range-track{height:2px;background:rgba(0,0,0,.18)}
+.f input[type=range]::-moz-range-progress{height:2px;background:#0d110c}
+.f input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-11px;border-radius:50%;background:#0d110c;border:3px solid #f4f6f2;box-shadow:0 0 0 1px #0d110c;transition:background .2s,box-shadow .2s}
+.f input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#0d110c;border:3px solid #f4f6f2;box-shadow:0 0 0 1px #0d110c}
+.bud:not(.toccato) input[type=range]::-webkit-slider-thumb{background:#c5cbc2;box-shadow:0 0 0 1px #aab1a6}
+.bud:not(.toccato) input[type=range]::-moz-range-thumb{background:#c5cbc2;box-shadow:0 0 0 1px #aab1a6}
+.f input[type=range]:focus-visible{outline:none}
+.f input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 1px #0d110c,0 0 0 6px rgba(168,255,96,.55)}
+.bud-s{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:#9aa296;margin-top:2px}
+.wish{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.wish span.got{color:var(--sig)}
+.thumbs{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
+.thumbs figure{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#111}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.thumbs button{position:absolute;top:3px;right:3px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;font-size:13px;line-height:1}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px 22px}
+.back{background:none;border:0;color:var(--mut);font-family:var(--mono);font-size:13px;min-height:44px;padding:0 4px}
+.back:hover{color:var(--txt)}
+.back[hidden]{display:block;visibility:hidden}
+.go{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 22px;border:0;border-radius:10px;background:var(--sig);color:#061003;font-weight:600;font-size:15px;
+  transition:transform .2s var(--ease),filter .2s;white-space:nowrap}
+.go:hover{filter:brightness(1.08)}
+.go:active{transform:scale(.97)}
+.go svg{width:16px;height:16px}
+.err{font-family:var(--mono);font-size:12px;color:#ff8a70;margin-top:10px;min-height:1em;padding:0 22px}
+.saved{font-family:var(--mono);font-size:11px;color:#4d564b;padding:0 22px 14px}
+.term{font-family:var(--mono);font-size:13.5px;line-height:1.9;color:#cfd6cc;padding:24px 22px}
+.term .ok{color:var(--sig)}
+.term h2{font-family:var(--sans);font-weight:500;font-size:1.7rem;letter-spacing:-.03em;margin-top:18px;color:var(--txt)}
+.term p{font-family:var(--sans);color:var(--mut);font-size:1rem;margin-top:8px;line-height:1.5}
+
+/* il modulo su fondo chiaro */
+.console{background:#f4f6f2;color:#0d110c;border-color:transparent;box-shadow:0 40px 120px rgba(0,0,0,.55),0 0 0 1px rgba(168,255,96,.25),0 0 90px rgba(168,255,96,.1)}
+.console .c-head{border-color:rgba(0,0,0,.08);color:#6b7468}
+.console .c-head i{background:#d9ddd6}
+.console .c-head b{color:#2f7a00}
+.console .steps i{background:#dfe3dc}
+.console .steps i.on{background:#0d110c}
+.console .step .q,.console .f>span{color:#5f685c}
+.console .f>span small{color:#9aa296}
+.console .f input,.console .f textarea,.console .f select{border-color:rgba(0,0,0,.18);color:#0d110c}
+.console .f select option{background:#fff}
+.console .f input:focus,.console .f textarea:focus,.console .f select:focus{border-color:#0d110c}
+.console .f input::placeholder,.console .f textarea::placeholder{color:#a3aba0}
+.console .drop{border-color:rgba(0,0,0,.2)}
+.console .drop.over{border-color:#0d110c;background:rgba(168,255,96,.25)}
+.console .drop span,.console .wish{color:#6b7468}
+.console .wish span.got{color:#2f7a00}
+.console .back{color:#6b7468}
+.console .back:hover{color:#0d110c}
+.console .go{background:#0d110c;color:var(--sig)}
+.console .err{color:#c2410c}
+.console .saved{color:#9aa296}
+.console .term{color:#2a3128}
+.console .term .ok{color:#2f7a00}
+.console .term h2{color:#0d110c}
+.console .term p{color:#5f685c}
+.console :focus-visible{outline-color:#0d110c}
+
+/* ─── sezioni ─── */
+section{position:relative;z-index:2}
+.sec{padding:clamp(120px,16vw,220px) 0;background:var(--bg)}
+h2.big{font-weight:500;font-size:clamp(2.4rem,5.2vw,4.6rem);line-height:1;letter-spacing:-.04em;max-width:17ch}
+h2.big em{font-style:normal;color:var(--sig)}
+.p{color:#aeb7ab;max-width:46ch;margin-top:24px;font-size:1.1rem}
+
+.stage3d{position:relative;aspect-ratio:4/3.2;border-radius:16px;overflow:hidden;border:1px solid var(--faint);
+  background:radial-gradient(80% 70% at 50% 100%,rgba(168,255,96,.07),transparent 70%),#060806}
+.stage3d>div.cv{position:absolute;inset:0}
+.stage3d canvas{display:block;width:100%!important;height:100%!important}
+/* oltre al sito: i servizi a sinistra, il telefono a destra che cambia schermo mentre scorri */
+.servizi{height:340vh;position:relative}
+.servizi .stick{position:sticky;top:0;height:100vh;height:100svh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:clamp(32px,6vw,96px);padding:0 var(--gut);max-width:1240px;margin:0 auto}
+.sv-voci{list-style:none;margin-top:34px;max-width:440px}
+.sv-voce{padding:14px 0;border-top:1px solid var(--faint);cursor:pointer}
+.sv-voce b{display:block;font-weight:500;font-size:clamp(1.25rem,2.1vw,1.8rem);letter-spacing:-.03em;color:#4a5348;transition:color .4s}
+.sv-voce p{max-height:0;overflow:hidden;opacity:0;color:#aeb7ab;max-width:38ch;transition:max-height .5s var(--ease),opacity .4s,margin .4s}
+.sv-voce.on b{color:var(--sig)}
+.sv-voce.on p{max-height:4.5em;opacity:1;margin-top:6px}
+.sv-altro{padding:16px 0 0;border-top:1px solid var(--faint)}
+.sv-altro a{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;min-height:44px;font-size:clamp(1.05rem,1.6vw,1.3rem);color:#aeb7ab;transition:color .3s}
+.sv-altro a span{font-family:var(--mono);font-size:13px;color:var(--sig)}
+.sv-altro a:hover{color:var(--txt)}
+.tel-wrap{display:grid;place-items:center;perspective:1400px}
+.tel{position:relative;width:min(300px,72vw);aspect-ratio:9/19;border-radius:46px;border:1px solid rgba(255,255,255,.14);background:#0a0c0a;overflow:hidden;
+  box-shadow:0 50px 120px rgba(0,0,0,.65),0 0 90px rgba(168,255,96,.07);transform:rotateY(var(--ry,-10deg)) rotateX(var(--rx,4deg));transition:transform .7s var(--ease)}
+.tel::before{content:"";position:absolute;top:12px;left:50%;width:84px;height:24px;margin-left:-42px;border-radius:14px;background:#000;z-index:3}
+.schermo{position:absolute;inset:0;padding:54px 18px 22px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#dfe6dc;
+  opacity:0;transform:translateY(26px);transition:opacity .5s var(--ease),transform .6s var(--ease);pointer-events:none}
+.schermo.on{opacity:1;transform:none}
+.schermo.prima{transform:translateY(-26px)}
+.a-top b{display:block;font-size:17px;font-weight:600;letter-spacing:-.02em;color:#fff}
+.a-top small{font-family:var(--mono);font-size:11px;color:#7d877b}
+.a-riga{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.a-riga small{display:block;color:#7d877b;font-size:11px;margin-top:2px}
+.a-riga span{font-family:var(--mono);color:#cfd8cc;white-space:nowrap}
+.a-foto{display:flex;gap:12px;align-items:center;padding:8px;border-radius:14px;background:rgba(255,255,255,.04)}
+.a-foto img{width:64px;height:64px;border-radius:10px;object-fit:cover}
+.a-foto div{flex:1}.a-foto small{display:block;color:#7d877b;font-size:11px}
+.a-nota{margin-top:auto;font-family:var(--mono);font-size:10.5px;color:#5f695d}
+.a-btn{margin-top:auto;border-radius:12px;background:var(--sig);color:#061003;font-weight:600;text-align:center;padding:12px}
+.a-giorni{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center;font-size:11px;color:#7d877b}
+.a-giorni i{font-style:normal;padding:7px 0;border-radius:10px;border:1px solid rgba(255,255,255,.07)}
+.a-giorni i.si,.a-slot i.si{border-color:var(--sig);color:var(--sig)}
+.a-slot{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-family:var(--mono);font-size:12px;text-align:center}
+.a-slot i{font-style:normal;padding:10px 0;border-radius:10px;border:1px solid rgba(255,255,255,.09)}
+.a-slot i.no{color:#454c43;text-decoration:line-through;border-color:transparent}
+.a-stato{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:10.5px;color:#5f695d;text-align:center}
+.a-stato i{font-style:normal;padding-top:8px;border-top:2px solid rgba(255,255,255,.1)}
+.a-stato i.fatto{border-color:var(--sig);color:#cfd8cc}
+.a-bolla{max-width:82%;padding:9px 12px;border-radius:16px;line-height:1.35}
+.a-bolla.lui{align-self:flex-end;background:rgba(255,255,255,.08);border-bottom-right-radius:4px}
+.a-bolla.noi{align-self:flex-start;background:rgba(168,255,96,.12);color:#e9f7df;border-bottom-left-radius:4px}
+.a-scrivi{margin-top:auto;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:10px 14px;color:#5f695d}
+.a-numeri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.a-numeri b{display:block;font-size:22px;font-weight:600;letter-spacing:-.03em;color:#fff}
+.a-numeri small{font-size:10.5px;color:#7d877b}
+.a-barre{display:flex;align-items:flex-end;gap:7px;height:70px;padding-top:6px}
+.a-barre i{flex:1;border-radius:5px 5px 0 0;background:rgba(168,255,96,.25)}
+.a-barre i.oggi{background:var(--sig)}
+/* dal disegno al vero: a sinistra la frase e il menu degli esempi, a destra il 3D scelto */
+.vero{height:calc(5 * 115vh + 100vh);position:relative}
+.vero .stick{position:sticky;top:0;height:100vh;height:100svh;display:grid;grid-template-columns:.9fr 1.1fr;align-items:center;gap:clamp(28px,5vw,80px);padding:0 var(--gut);max-width:1320px;margin:0 auto}
+.vfrase{font-weight:500;font-size:clamp(1.9rem,3.6vw,3.3rem);line-height:1.06;letter-spacing:-.035em;color:#8e988b;max-width:15ch}
+.vfrase em{font-style:normal;color:#4a5348;transition:color .5s var(--ease)}
+.vfrase em.on{color:var(--sig)}
+.ve-stage{aspect-ratio:auto;width:100%;height:min(76svh,660px);background:none;border:0;border-radius:0;overflow:visible}   /* niente cornice */
+.ve-stage>div.cv{opacity:0;pointer-events:none;transition:opacity .7s var(--ease)}
+.ve-stage>div.cv.on{opacity:1;pointer-events:auto}
+/* "slow down!": compare al centro della vetrina solo se il 3D non è ancora arrivato */
+.cv .carica{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:6px;text-align:center;font-family:var(--mono);pointer-events:none;opacity:0;transition:opacity .5s}
+.cv .carica.su{opacity:1}
+.cv .carica b{font-weight:500;font-size:clamp(20px,2.4vw,28px);letter-spacing:-.02em;color:var(--sig)}
+.cv .carica span{font-size:12px;line-height:1.6;color:var(--mut)}
+.cv .carica i{font-style:normal;color:#cfd6cc}
+/* tieni premuto sull'immagine: torna il disegno */
+.stage3d>div.cv{touch-action:pan-y;-webkit-touch-callout:none;user-select:none}
+
+
+
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,7vw,120px);margin-top:clamp(56px,8vw,110px)}
+.pair .h{font-family:var(--mono);font-size:13px;color:var(--sig)}
+.pair h3{font-weight:500;font-size:1.8rem;letter-spacing:-.03em;margin-top:14px}
+.pair p{color:var(--mut);margin-top:10px;max-width:40ch}
+
+/* lavora con noi: pannello a tutto schermo sopra la pagina */
+.lav{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;align-items:center;overflow:auto;padding:clamp(90px,12vh,140px) 0 60px;animation:lavIn .45s var(--ease)}
+.lav[hidden]{display:none}
+@keyframes lavIn{from{opacity:0;transform:translateY(18px)}}
+.lav-x{position:fixed;top:18px;right:max(18px,var(--gut));width:48px;height:48px;border:0;background:none;color:var(--txt);font-size:34px;line-height:1;z-index:2}
+.lav-x:hover{color:var(--sig)}
+.lav-k{display:block;font-family:var(--mono);font-size:13px;color:var(--sig);margin-bottom:22px}
+footer a{color:var(--mut);transition:color .3s}
+footer .leg{display:flex;gap:18px;flex-wrap:wrap}
+/* la riga privacy sotto i pulsanti di invio: piccola, ma sempre lì */
+.priv{font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--mut);margin-top:14px}
+.priv a{color:var(--mut);text-decoration:underline;text-decoration-color:rgba(125,135,123,.5);text-underline-offset:3px;transition:color .3s}
+.priv a:hover{color:var(--sig)}
+.console .priv{margin:-6px 0 0;padding:0 22px 20px}
+footer a:hover{color:var(--sig)}
+body.lav-aperto{overflow:hidden}
+main,footer{transition:opacity .16s ease}
+body.salto main,body.salto footer{opacity:0}
+.amb{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(40px,7vw,120px);align-items:end}
+.code{font-family:var(--mono);font-size:clamp(2rem,4.4vw,3.6rem);letter-spacing:.04em;color:var(--sig);border-bottom:1px solid var(--line);padding-bottom:10px;display:inline-block}
+.amb ol{list-style:none;margin-top:32px;counter-reset:a}
+.amb li{counter-increment:a;display:grid;grid-template-columns:44px 1fr;padding:14px 0;border-top:1px solid var(--faint);color:#cfd6cc}
+.amb li:last-child{border-bottom:1px solid var(--faint)}
+.amb li::before{content:"0" counter(a);font-family:var(--mono);font-size:13px;color:var(--sig);padding-top:3px}
+.amb-f{display:flex;gap:10px;align-items:center;margin-top:28px;max-width:420px;border-bottom:1px solid var(--line)}
+.amb-f input{flex:1;background:none;border:0;padding:12px 0;min-height:48px;font-size:1.02rem}
+.amb-f input:focus{outline:none}
+.amb-f:focus-within{border-color:var(--sig)}
+.amb-f button{background:none;border:0;color:var(--sig);font-weight:500;min-height:44px}
+.amb-f[hidden]{display:none}
+.contatti{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,7vw,120px);align-items:start}
+.ct .go{margin-top:26px}
+.ct .go[hidden]{display:none}
+.ct-msg{margin-top:12px;min-height:1.3em;color:#ff8a7a}
+.ct-ok{margin-top:18px;color:var(--sig)}
+/* il modulo in fondo è bianco come quello in apertura: si riconosce subito dove scrivere */
+.ct{background:#f4f6f2;color:#0d110c;border-radius:18px;padding:clamp(22px,3vw,34px);box-shadow:0 40px 120px rgba(0,0,0,.55),0 0 0 1px rgba(168,255,96,.25),0 0 90px rgba(168,255,96,.1)}
+.ct .f>span{color:#5f685c}
+.ct .f>span small{color:#9aa296}
+.ct .f input,.ct .f textarea{border-color:rgba(0,0,0,.18);color:#0d110c}
+.ct .f input:focus,.ct .f textarea:focus{border-color:#0d110c}
+.ct .f input::placeholder,.ct .f textarea::placeholder{color:#a3aba0}
+.ct .go{background:#0d110c;color:var(--sig)}
+.ct .ct-msg{color:#c2410c}
+.ct .ct-ok{color:#2f7a00}
+.ct .priv{color:#6b7468}
+.ct .priv a{color:#0d110c}
+.amb-msg{margin-top:14px;color:#aeb7ab;max-width:44ch;min-height:1.4em}
+.amb-msg.err{color:#ff8a7a}
+.amb-ok{margin-top:24px;max-width:48ch;color:#aeb7ab}
+.amb-ok b{color:var(--txt);font-weight:500}
+.amb-link{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:18px;font-family:var(--mono);font-size:14px}
+.amb-link span{color:var(--sig);word-break:break-all}
+.amb-link button,.amb-link a{background:none;border:0;border-bottom:1px solid var(--line);color:var(--txt);padding:6px 0;min-height:44px;font:inherit}
+.amb-link button:hover,.amb-link a:hover{border-color:var(--sig);color:var(--sig)}
+
+.truth{font-size:clamp(1.7rem,3.6vw,3rem);line-height:1.2;letter-spacing:-.03em;font-weight:400;max-width:24ch}
+.truth em{font-style:normal;color:var(--sig)}
+
+footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var(--faint);padding:40px var(--gut);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--mut)}
+.toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,12px);z-index:90;background:var(--sig);color:#061003;padding:12px 18px;border-radius:10px;font-weight:600;font-size:.95rem;opacity:0;transition:all .35s var(--ease);pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+.rv{opacity:0;transform:translateY(28px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.rv.shown{opacity:1;transform:none}
+
+/* ─── esempi: tre siti interi di attività inventate. Niente cornici: l'anteprima è il link.
+   Mentre la scheda passa a metà schermo, l'anteprima va dall'apertura del sito al suo momento migliore ─── */
+.es-lista{list-style:none;margin-top:clamp(64px,8vw,120px);display:grid;gap:clamp(80px,9vw,140px)}
+.es-voce{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(32px,5vw,80px);align-items:end}
+.es-vista{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#0a0c0a}
+.es-vista img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
+.es-vista img.es-b{opacity:0;transition:opacity .8s var(--ease),transform 1.2s var(--ease)}
+.es-vista img.es-b.on{opacity:1}
+.es-vista::after{content:"";position:absolute;inset:0;border-radius:inherit;border:1px solid var(--faint);pointer-events:none}   /* un filo appena: le demo scure non si perdono nel fondo */
+.es-voce h3{font-weight:500;font-size:clamp(2rem,3.4vw,3rem);line-height:1.02;letter-spacing:-.04em;margin-top:14px}
+.es-stile{color:#aeb7ab;font-size:1.1rem;margin-top:12px;max-width:30ch}
+.es-apri{display:inline-block;margin-top:22px;padding-bottom:6px;font-family:var(--mono);font-size:13px;color:var(--txt);border-bottom:1px solid var(--line);transition:color .3s,border-color .3s}
+.es-voce:hover .es-apri{color:var(--sig);border-color:var(--sig)}
+.es-voce:hover .es-vista img{transform:scale(1.025)}
+
+@media (max-width:1020px){
+  .es-voce{grid-template-columns:minmax(0,1fr);gap:26px}
+  .hero{grid-template-columns:1fr;padding-top:100px}
+  .then,.amb,.pair,.contatti{grid-template-columns:1fr}
+  .servizi .stick{grid-template-columns:minmax(0,1fr);align-content:center;gap:18px}
+  .sv-voci{margin-top:14px}
+  .sv-voce{display:none;border:0;padding:0}
+  .sv-voce.on{display:block}
+  .tel{width:min(230px,58vw)}
+        }
+@media (max-width:640px){
+  body{font-size:17px}
+  /* sul telefono il menu in alto resta, più corto: si salta dove si vuole senza scorrere tutto */
+  .top nav{gap:16px;font-size:12px}
+  .top nav .nl{display:none}
+  .top nav .ns{display:inline}
+  /* esempi e servizi più corti da scorrere */
+  .vero{height:calc(5 * 80vh + 100vh)}
+  .servizi{height:270vh}
+  .two{grid-template-columns:1fr}
+  .thumbs{grid-template-columns:repeat(4,1fr)}
+  .stage3d{aspect-ratio:1/1}
+  .vero .stick{grid-template-columns:minmax(0,1fr);align-content:center;gap:14px;padding-top:70px}
+  .vero .sv-voce{display:none;border:0;padding:0}
+  .vero .sv-voce.on{display:block}
+  .ve-stage{height:min(52svh,110vw)}
+  .es-vista{aspect-ratio:600/1015;border-radius:12px}
+  .es-lista{margin-top:56px;gap:88px}
+}
+/* telefoni stretti (360–400 px): con la voce in più il menu resta su una riga, staccato dal marchio */
+@media (max-width:400px){.top nav{gap:14px;font-size:11px}}
+@media (max-width:370px){.top nav{gap:10px}}
+@media (prefers-reduced-motion:reduce){
+  .rv{opacity:1;transform:none;transition:none}
+  .brand i,h1 .strike::after{animation:none}
+  h1 .strike::after{transform:scaleX(1)}
+}
+</style>
+<script type="importmap">{ "imports": {
+  "three": "/lib/three.module.min.js",
+  "three/addons/": "/lib/addons/",
+  "@sparkjsdev/spark": "/lib/spark.module.js" } }</script>
+</head>
+<body class="has-cur">
+
+
+<div class="cur" id="cur"></div><div class="cur-dot" id="curDot"></div><div class="cur-xy" id="curXY"></div>
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<header class="top">
+  <a class="brand" href="#inizio" aria-label="Scrollify, torna all'inizio"><span id="logoTxt" aria-hidden="true">scroll<span class="br">ify</span></span><i></i></a>
+  <nav><a href="#vero"><span class="nl">cosa facciamo</span><span class="ns">3D</span></a><a href="#servizi">servizi</a><a href="#esempi">template</a><a href="#contatti">contatti</a></nav>
+</header>
+
+<main>
+  <!-- ═══ HERO: mandaci il tuo locale ═══ -->
+  <section class="hero" id="inizio">
+    <div>
+      <h1>Crea il nuovo sito <span class="sig">3D</span> della tua attività in 24h.</h1>
+      <p class="lede">Raccontaci la tua attività: la analizziamo e entro 24 ore ti ricontattiamo per parlarne insieme.</p>
+      <ol class="path">
+        <li><b>Ci racconti la tua attività</b>link, foto, due righe su di te</li>
+        <li><b>Ti chiamiamo entro 24 ore</b>capiamo cosa ti serve e ti facciamo il preventivo</li>
+        <li><b>Ci mandi foto e logo</b>in pochi giorni hai la demo del tuo sito</li>
+      </ol>
+    </div>
+
+    <form class="console" id="intake" name="richiesta" novalidate autocomplete="on">
+      <input type="hidden" name="form-name" value="richiesta"><input type="hidden" name="richiesta_n"><p hidden><label>non compilare <input name="bot-field"></label></p>
+      <p hidden><input type="file" name="foto1"><input type="file" name="foto2"><input type="file" name="foto3"><input type="file" name="foto4"><input type="file" name="foto5"><input type="file" name="foto6"></p>
+      <div class="c-head"><i></i><i></i><i></i><span>nuovo-sito.scrollify</span><b id="stepN">1 / 4</b></div>
+      <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+
+      <fieldset class="step on">
+        <h2>Come si chiama la tua attività?</h2>
+        <label class="f"><span>nome dell'attività</span><input name="attivita" placeholder="Bar Centrale" autocomplete="organization"></label>
+      </fieldset>
+
+      <fieldset class="step">
+        <h2>Dove ti troviamo online?</h2>
+        <p class="q">Se ce li hai. Altrimenti vai pure avanti.</p>
+        <label class="f"><span>il sito che hai adesso</span><input name="sito" inputmode="url" placeholder="barcentrale.it"></label>
+        <label class="f"><span>instagram</span><input name="instagram" placeholder="@barcentrale"></label>
+        <label class="f"><span>altri link</span><textarea name="link" rows="2" placeholder="Facebook, TikTok, Google Maps…"></textarea></label>
+      </fieldset>
+
+      <fieldset class="step">
+        <h2>Hai delle foto?</h2>
+        <p class="q">Dall'alto, l'esterno, gli interni, i prodotti, il logo. Se non le hai ora, le mandi più tardi.</p>
+        <label class="drop" id="drop"><input type="file" id="files" accept="image/*" multiple>
+          <b>Trascina qui le foto</b><span>oppure tocca per sceglierle · fino a 12</span></label>
+        <div class="thumbs" id="thumbs"></div>
+        <button class="later" type="button" id="later">Le mando più tardi →</button>
+      </fieldset>
+
+      <fieldset class="step">
+        <h2>Chi ti chiama?</h2>
+        <p class="q">Ti richiamiamo per parlarne insieme.</p>
+        <div class="two">
+          <label class="f"><span>nome</span><input name="nome" autocomplete="given-name" placeholder="Marco"></label>
+          <label class="f"><span>cognome <small>· se vuoi</small></span><input name="cognome" autocomplete="family-name" placeholder="Rossi"></label>
+        </div>
+        <div class="two">
+          <label class="f"><span>email</span><input name="email" type="email" autocomplete="email" placeholder="marco@barcentrale.it"></label>
+          <label class="f"><span>cellulare</span><input name="tel" type="tel" autocomplete="tel" placeholder="333 123 4567"></label>
+        </div>
+        <div class="f"><span>quando ti chiamiamo</span>
+          <div class="when" role="radiogroup" aria-label="Quando preferisci essere chiamato">
+            <label><input type="radio" name="quando" value="mattina"><span>mattina</span></label>
+            <label><input type="radio" name="quando" value="pomeriggio" checked><span>pomeriggio</span></label>
+            <label><input type="radio" name="quando" value="sera"><span>sera</span></label>
+          </div></div>
+        <div class="f bud"><span>budget a disposizione <small>· se vuoi</small></span>
+          <p class="bud-q">Inserisci la cifra che ti fa stare più sereno per un nuovo sito web. Ci aiuta a impostare la prima demo e a capire a quanti professionisti affidare il tuo progetto.</p>
+          <output class="bud-v" id="budV" for="budR">non so ancora</output>
+          <input type="range" id="budR" min="0" max="9" step="1" value="0" aria-label="Budget a disposizione" aria-valuetext="non so ancora">
+          <p class="bud-s" aria-hidden="true"><span>499 €</span><span>19.999 € e oltre</span></p>
+          <p class="bud-q bud-nota" id="budN"></p>
+          <input type="hidden" name="budget"></div>
+        <label class="f"><span>una nota <small>· se vuoi</small></span><textarea name="note" rows="2" placeholder="Vorrei far vedere il dehors e i cocktail"></textarea></label>
+        <label class="f"><span>codice ambassador <small>· 10% di sconto</small></span><input name="codice" placeholder="LUCA10" autocapitalize="characters"></label>
+      </fieldset>
+
+      <div class="term" id="term" hidden aria-live="polite"></div>
+      <p class="err" id="err" role="alert"></p>
+      <div class="nav" id="navBar">
+        <button class="back" type="button" id="back" hidden>← indietro</button>
+        <button class="go" type="submit" id="next"><span id="nextT">Avanti</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+      <p class="priv" id="privI">I dati servono solo a risponderti · <a href="/privacy/">privacy</a></p>
+    </form>
+  </section>
+
+  <!-- ═══ DAL DISEGNO AL VERO: la frase, il menu degli esempi e un solo spazio 3D (vero3d.js) ═══ -->
+  <section class="vero" id="vero" aria-label="Dal disegno al vero: cinque esempi">
+    <div class="stick">
+      <div>
+        <h2 class="vfrase">Prima lo <em class="on">disegniamo</em>. Poi prende <em>forma</em>. E diventa <em>vero</em>.</h2>
+        <ul class="sv-voci">
+          <li class="sv-voce on"><b>Stanza d'hotel</b><p>Hotel e b&amp;b: la camera da scorrere prima ancora di prenotare.</p></li>
+          <li class="sv-voce"><b>Villa con piscina</b><p>Ville ed eventi: il parco e la piscina dall'alto, come col drone.</p></li>
+          <li class="sv-voce"><b>Pizza</b><p>Ristoranti e pizzerie: il piatto forte in 3D, da girare.</p></li>
+          <li class="sv-voce"><b>Cocktail</b><p>Bar e locali: il drink di punta, dal bicchiere al colore.</p></li>
+          <li class="sv-voce"><b>Automobile</b><p>Concessionari: l'auto in vetrina, che gira mentre scorri.</p></li>
+          <li class="sv-altro"><a href="#contatti" data-spunto="Ho un'idea: ">Hai un'idea, una proposta? <span>Scrivici →</span></a></li>
+        </ul>
+      </div>
+      <div class="stage3d ve-stage">
+        <div class="cv on" data-vero="camera" aria-hidden="true"></div>
+        <div class="cv" data-vero="piscina" aria-hidden="true"></div>
+        <div class="cv" data-vero="pizza" aria-hidden="true"></div>
+        <div class="cv" data-vero="cocktail" aria-hidden="true"></div>
+        <div class="cv" data-vero="auto" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ OLTRE AL SITO: i servizi, ognuno mostrato "acceso" sullo schermo di un telefono ═══ -->
+  <section class="servizi" id="servizi" aria-label="Oltre al sito, tutto quello che serve">
+    <div class="stick">
+      <div>
+        <h2 class="big">Oltre al sito, <em>tutto quello che serve</em>.</h2>
+        <ul class="sv-voci">
+          <li class="sv-voce on"><b>Menu digitale</b><p>Si aggiorna in un attimo, anche dal telefono. I clienti lo aprono dal tavolo.</p></li>
+          <li class="sv-voce"><b>Prenotazioni</b><p>Campi da padel, tavoli, camere: l'agenda si riempie da sola.</p></li>
+          <li class="sv-voce"><b>Ordini</b><p>Asporto e consegna, direttamente dal tuo sito.</p></li>
+          <li class="sv-voce"><b>Chat di assistenza</b><p>Risponde ai clienti a qualsiasi ora, e passa a te quando serve.</p></li>
+          <li class="sv-voce"><b>Gestionale</b><p>Turni, incassi e prenotazioni del giorno, in un posto solo.</p></li>
+          <li class="sv-altro"><a href="#contatti" data-spunto="Mi servirebbe: ">Ti serve qualcos'altro? <span>Scrivici →</span></a></li>
+        </ul>
+      </div>
+      <div class="tel-wrap" aria-hidden="true"><div class="tel">
+        <div class="schermo on">
+          <div class="a-top"><b>Trattoria da Enzo</b><small>menu · cena</small></div>
+          <div class="a-foto"><img src="3d/pizza-menu.webp" alt="" width="64" height="64" loading="lazy"><div><b>Margherita</b><small>fior di latte, basilico</small></div><span>9 €</span></div>
+          <div class="a-riga"><div>Burrata e acciughe<small>pomodorini, olio nuovo</small></div><span>9 €</span></div>
+          <div class="a-riga"><div>Spaghettino<small>pomodoro e stracciatella</small></div><span>11 €</span></div>
+          <div class="a-riga"><div>Battuta di scottona<small>al coltello</small></div><span>13 €</span></div>
+          <div class="a-riga"><div>Tiramisù<small>della casa</small></div><span>6 €</span></div>
+          <p class="a-nota">aggiornato oggi alle 11:40</p>
+        </div>
+        <div class="schermo">
+          <div class="a-top"><b>Padel · campo 2</b><small>scegli giorno e ora</small></div>
+          <div class="a-giorni"><i>lun<br>23</i><i>mar<br>24</i><i>mer<br>25</i><i class="si">gio<br>26</i><i>ven<br>27</i></div>
+          <div class="a-slot"><i class="no">17:00</i><i>17:30</i><i class="no">18:00</i><i class="si">18:30</i><i>19:30</i><i class="no">20:00</i><i>20:30</i><i>21:00</i><i class="no">21:30</i></div>
+          <div class="a-riga"><div>90 minuti · 4 giocatori<small>paghi al centro o online</small></div><span>40 €</span></div>
+          <div class="a-btn">Prenota gio 26 · 18:30</div>
+        </div>
+        <div class="schermo">
+          <div class="a-top"><b>Ordine n. 214</b><small>asporto · ritiro alle 20:15</small></div>
+          <div class="a-riga"><div>2 × Margherita</div><span>18 €</span></div>
+          <div class="a-riga"><div>1 × Supplì</div><span>4 €</span></div>
+          <div class="a-riga"><div>1 × Birra artigianale</div><span>5 €</span></div>
+          <div class="a-riga"><div><b>Totale</b></div><span>27 €</span></div>
+          <div class="a-stato"><i class="fatto">ricevuto</i><i class="fatto">in preparazione</i><i>pronto</i></div>
+          <p class="a-nota">ti avvisiamo appena è pronto</p>
+        </div>
+        <div class="schermo">
+          <div class="a-top"><b>Assistenza</b><small>risponde subito</small></div>
+          <div class="a-bolla lui">Avete posto stasera per 4?</div>
+          <div class="a-bolla noi">Sì: alle 20:30 o alle 21:15. Quale preferisci?</div>
+          <div class="a-bolla lui">21:15</div>
+          <div class="a-bolla noi">Fatto: tavolo per 4 alle 21:15. Ti ho mandato la conferma.</div>
+          <div class="a-scrivi">Scrivi un messaggio</div>
+        </div>
+        <div class="schermo">
+          <div class="a-top"><b>Oggi</b><small>giovedì 26 settembre</small></div>
+          <div class="a-numeri"><div><b>38</b><small>prenotazioni</small></div><div><b>1.240 €</b><small>incasso</small></div><div><b>3</b><small>in turno</small></div></div>
+          <div class="a-barre"><i style="height:40%"></i><i style="height:55%"></i><i style="height:48%"></i><i style="height:70%"></i><i class="oggi" style="height:86%"></i><i style="height:30%"></i><i style="height:24%"></i></div>
+          <div class="a-riga"><div>Giulia<small>sala</small></div><span>17–23</span></div>
+          <div class="a-riga"><div>Marco<small>cucina</small></div><span>18–24</span></div>
+          <div class="a-riga"><div>Sara<small>bar</small></div><span>19–01</span></div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ═══ TEMPLATE (in fondo, prima dei contatti): tre siti interi di attività inventate, da aprire (nella stessa scheda: in alto c'è "Torna a Scrollify") e scorrere. Spunti, non modelli fissi ═══ -->
+  <section class="sec es" id="esempi" aria-labelledby="esT"><div class="wrap">
+    <div class="es-testa">
+      <h2 class="big rv" id="esT">Prendi ispirazione <em>dai nostri template.</em></h2>
+      <p class="p rv">Se sei a corto di idee, cerca tra i nostri template: personalizzabili al 100% secondo le tue esigenze.</p>
+    </div>
+    <ol class="es-lista">
+      <li class="rv"><a class="es-voce" href="/esempi/pizzeria/">
+        <div class="es-vista">
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/pizzeria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/pizzeria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Pizzeria Peppè: il panetto sul tagliere, su fondo azzurro" loading="lazy" decoding="async"></picture>
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/pizzeria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/pizzeria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+        </div>
+        <div>
+          <h3>Pizzeria Peppè</h3>
+          <p class="es-stile">La pizza che nasce mentre scorri.</p>
+          <span class="es-apri">apri il sito →</span>
+        </div>
+      </a></li>
+      <li class="rv"><a class="es-voce" href="/esempi/gioielleria/">
+        <div class="es-vista">
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/gioielleria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/gioielleria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Lumen: cinque orologi in fila sotto il nome" loading="lazy" decoding="async"></picture>
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/gioielleria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/gioielleria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+        </div>
+        <div>
+          <h3>Lumen</h3>
+          <p class="es-stile">La giostra degli orologi in 3D.</p>
+          <span class="es-apri">apri il sito →</span>
+        </div>
+      </a></li>
+      <li class="rv"><a class="es-voce" href="/esempi/concessionario/">
+        <div class="es-vista">
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/concessionario-tel-a.webp" width="600" height="1015"><img src="/img/esempi/concessionario-a.webp" width="1200" height="750" alt="Il sito d'esempio di Riva Motori: il piazzale visto dall'alto al tramonto" loading="lazy" decoding="async"></picture>
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/concessionario-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/concessionario-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+        </div>
+        <div>
+          <h3>Riva Motori</h3>
+          <p class="es-stile">Il volo dal piazzale dentro al salone.</p>
+          <span class="es-apri">apri il sito →</span>
+        </div>
+      </a></li>
+      <li class="rv"><a class="es-voce" href="/esempi/basket/">
+        <div class="es-vista">
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/basket-tel-a.webp" width="600" height="1015"><img src="/img/esempi/basket-a.webp" width="1200" height="750" alt="Il sito d'esempio di Dinamo Scroll: la palestra vista dalla linea del tiro libero, con il pallone in mano" loading="lazy" decoding="async"></picture>
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/basket-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/basket-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+        </div>
+        <div>
+          <h3>Dinamo Scroll</h3>
+          <p class="es-stile">Il tiro in prima persona, fino a canestro.</p>
+          <span class="es-apri">apri il sito →</span>
+        </div>
+      </a></li>
+      <li class="rv"><a class="es-voce" href="/esempi/poligono/">
+        <div class="es-vista">
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/poligono-tel-a.webp" width="600" height="1015"><img src="/img/esempi/poligono-a.webp" width="1200" height="750" alt="Il sito d'esempio di Centro, poligono di tiro: i pezzi di una pistola inventata sospesi nel buio, pronti a montarsi" loading="lazy" decoding="async"></picture>
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/poligono-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/poligono-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+        </div>
+        <div>
+          <h3>Centro</h3>
+          <p class="es-stile">Dal primo pezzo al centro del bersaglio.</p>
+          <span class="es-apri">apri il sito →</span>
+        </div>
+      </a></li>
+      <li class="rv"><a class="es-voce" href="/esempi/soldi/">
+        <div class="es-vista">
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/soldi-tel-a.webp" width="600" height="1015"><img src="/img/esempi/soldi-a.webp" width="1200" height="750" alt="Il sito d'esempio Una montagna di soldi: un montagnone di banconote finte su fondo verde" loading="lazy" decoding="async"></picture>
+          <picture><source media="(max-width:640px)" srcset="/img/esempi/soldi-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/soldi-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+        </div>
+        <div>
+          <h3>Una montagna di soldi</h3>
+          <p class="es-stile">Da tagliare, lanciare, far crollare.</p>
+          <span class="es-apri">apri il sito →</span>
+        </div>
+      </a></li>
+    </ol>
+  </div></section>
+
+  <!-- ═══ CONTATTI: per qualsiasi cosa, due righe e ti rispondiamo ═══ -->
+  <section class="sec" id="contatti"><div class="wrap contatti">
+    <div>
+      <h2 class="big rv">Per qualsiasi cosa, <em>scrivici</em>.</h2>
+      <p class="p rv">Ci basta un'email o un numero di cellulare: ti riscriviamo o ti richiamiamo noi.</p>
+    </div>
+    <form class="ct rv" id="ctF" name="contatti" novalidate>
+      <input type="hidden" name="form-name" value="contatti"><p hidden><label>non compilare <input name="bot-field"></label></p>
+      <label class="f"><span>il tuo messaggio <small>· se vuoi</small></span><textarea name="messaggio" rows="3" placeholder="Cosa ti serve, anche in due parole"></textarea></label>
+      <label class="f"><span>email o cellulare</span><input name="contatto" type="text" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nome@esempio.it oppure 333 123 4567"></label>
+      <p class="ct-msg" id="ctMsg" aria-live="polite"></p>
+      <button class="go" type="submit" id="ctB">Invia <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <p class="ct-ok" id="ctOk" hidden>Ricevuto. Ti rispondiamo entro 24 ore.</p>
+      <p class="priv">I dati servono solo a risponderti · <a href="/privacy/">privacy</a></p>
+    </form>
+  </div></section>
+
+</main>
+
+<div class="sign" id="sign" aria-hidden="true">
+  <div class="word"><span style="transition-delay:0ms">s</span><span style="transition-delay:55ms">c</span><span style="transition-delay:110ms">r</span><span style="transition-delay:165ms">o</span><span style="transition-delay:220ms">l</span><span style="transition-delay:275ms">l</span><span style="transition-delay:330ms" class="br">i</span><span style="transition-delay:385ms" class="br">f</span><span style="transition-delay:440ms" class="br">y</span><i></i></div>
+</div>
+<footer><span>Scrollify · P.IVA 04981960273</span><span class="leg"><a href="/privacy/">privacy e note legali</a><a href="/ambassador/">regolamento ambassador</a><a href="#lavora-con-noi" id="lavA">lavora con noi →</a></span><span>© 2026</span></footer>
+<!-- ═══ LAVORA CON NOI: il programma ambassador, in un pannello che si apre dal link in fondo o da #lavora-con-noi ═══ -->
+<div class="lav" id="lavora" role="dialog" aria-modal="true" aria-labelledby="lavT" hidden>
+  <button class="lav-x" type="button" id="lavX" aria-label="Chiudi">×</button>
+  <div class="wrap amb">
+    <div>
+      <span class="lav-k">lavora con noi</span>
+      <h2 class="big" id="lavT">Conosci un locale <em>che se lo merita?</em></h2>
+      <p class="p">Diventa ambassador. Chi usa il tuo codice ha il 10% di sconto sul suo sito, e a te va il 10%.</p>
+      <form class="amb-f" id="ambF" name="ambassador" novalidate><input type="hidden" name="form-name" value="ambassador"><input type="hidden" name="nome"><input type="hidden" name="email"><input type="hidden" name="codice"><p hidden><label>non compilare <input name="bot-field"></label></p><input id="ambN" placeholder="Il tuo nome" aria-label="Il tuo nome" autocomplete="given-name"><button type="submit" id="ambB">Crea il mio codice →</button></form>
+      <p class="amb-msg" id="ambMsg" aria-live="polite"></p>
+      <p class="priv" id="privA">Partecipando accetti il <a href="/ambassador/">regolamento</a> · <a href="/privacy/">privacy</a></p>
+      <div class="amb-ok" id="ambOk" hidden>
+        <p>Fatto. Entro 24 ore ti scriviamo a <b id="ambMail"></b> con il codice e il tuo link: controlla la casella di posta (anche lo spam). Quando un sito nato dal tuo codice è pagato e consegnato, ti scriviamo lì per la commissione.</p>
+        <div class="amb-link"><span id="ambLink"></span><button type="button" id="ambCopy">copia</button><a id="ambWa" target="_blank" rel="noopener">WhatsApp</a></div>
+      </div>
+    </div>
+    <div >
+      <span class="code" id="ambCode">TUONOME10</span>
+      <ol>
+        <li>Giri il codice a chi ha un'attività</li>
+        <li>Lo scrive nella richiesta e ha il 10% di sconto</li>
+        <li>Quando il sito è pagato, il 10% è tuo</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let mx=innerWidth/2,my=innerHeight/2;
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2600)};
+
+/* ─── logo: le lettere si "decodificano" come in un terminale ─── */
+const logo=$('#logoTxt'),WORD='scrollify',NOISE='01<>/{}#$%&*+=';
+function decode(){
+  if(reduced) return;
+  let f=0;const tot=WORD.length*3+6;clearInterval(logo._t);
+  logo._t=setInterval(()=>{f++;
+    const out=[...WORD].map((c,i)=>f>i*3+6?c:NOISE[(Math.random()*NOISE.length)|0]).join('');
+    logo.innerHTML=out.slice(0,6)+'<span class="br">'+out.slice(6)+'</span>';
+    if(f>=tot)clearInterval(logo._t)},38);
+}
+decode(); $('.brand').addEventListener('pointerenter',decode);
+new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){$('#sign').classList.add('shown');o.disconnect()}},{threshold:.3}).observe($('#sign'));
+
+/* ─── pioggia di codice, leggera ─── */
+const cv=$('#rain'),cx=cv.getContext('2d'),GL='<>/{}[]=;:01scroll.divcss()=>#$%'.split('');
+let cols=[],cw=16;
+function sizeRain(){const d=Math.min(devicePixelRatio,1.5);cv.width=innerWidth*d;cv.height=innerHeight*d;cx.setTransform(d,0,0,d,0,0);
+  cw=innerWidth<640?22:16;cols=Array.from({length:Math.ceil(innerWidth/cw)},()=>({y:Math.random()*-innerHeight,v:.4+Math.random()*1.1}))}
+sizeRain();
+function rain(){
+  cx.fillStyle='rgba(5,6,5,.12)';cx.fillRect(0,0,innerWidth,innerHeight);cx.font='13px "Geist Mono", monospace';
+  cols.forEach((c,i)=>{const x=i*cw,near=Math.hypot(x-mx,c.y-my)<140;
+    cx.fillStyle=near?'rgba(210,255,180,.95)':'rgba(168,255,96,.3)';cx.fillText(GL[(Math.random()*GL.length)|0],x,c.y);
+    c.y+=c.v*(near?3:1)*4.5;if(c.y>innerHeight+20){c.y=-20;c.v=.4+Math.random()*1.1}});
+}
+
+/* ─── cursore ─── */
+const cur=$('#cur'),dot=$('#curDot'),xy=$('#curXY');let cxp=mx,cyp=my;
+addEventListener('pointermove',e=>{mx=e.clientX;my=e.clientY;dot.style.transform=`translate(${mx}px,${my}px)`;xy.style.transform=`translate(${mx}px,${my}px)`;
+  xy.textContent=`x:${String(mx|0).padStart(4,'0')} y:${String(my|0).padStart(4,'0')}`},{passive:true});
+document.addEventListener('pointerover',e=>cur.classList.toggle('hot',!!e.target.closest('a,button,input,textarea,select,.drop,label')));
+
+/* ═══ il modulo: quattro passaggi (la bozza resta salvata nel browser) ═══ */
+const form=$('#intake'),steps=$$('.step'),bars=$$('.steps i'),err=$('#err'),N=steps.length;
+let st=0; const photos=[];
+/* budget: finché non la tocchi vale "non so ancora"; al primo tocco parte da 499 € (il minimo) e arriva a "19.999 € e oltre".
+   Gli scatti sono più fitti in basso, dove cade la maggior parte dei progetti */
+const BUD=[499,999,1499,1999,2999,4999,7499,9999,14999,19999], budR=$('#budR'), budV=$('#budV');
+// sotto la barra, una frase diversa per ogni tacca: cosa ci si può aspettare a quella cifra
+const BUDFRASI=[
+  'Prova Scrollify con la tua prima landing page: 499 €, online in 24 ore!',
+  'Un sito vetrina fatto bene: le tue foto, i tuoi servizi, i contatti a portata di mano.',
+  'Più pagine, più storia: il tuo sito con le prime animazioni allo scroll.',
+  "Inizia l'esperienza 3D: il tuo prodotto o il tuo locale, da girare col dito.",
+  'Il 3D, ma meglio: più scene in 3D e ogni sezione animata come un racconto.',
+  'Il sito in 3D completo, con menu digitale e prenotazioni online.',
+  'Tutto il sito in 3D, più ordini online, chat di assistenza e gestionale.',
+  'Shooting dedicato: foto e video della tua attività, trasformati in 3D.',
+  "Shooting, riprese col drone e la tua app mobile: un progetto su misura, dall'inizio alla fine.",
+  'Dove sei stato fino a oggi?'];
+function budSet(){
+  const i=+budR.value, t=i===BUD.length-1?'19.999 € e oltre':String(BUD[i]).replace(/\B(?=(\d{3})+$)/g,'.')+' €';
+  budV.textContent=t; budR.setAttribute('aria-valuetext',t); form.elements.budget.value=t;
+  budR.closest('.bud').classList.add('toccato'); budR.style.setProperty('--p',i/(BUD.length-1)*100+'%');
+  const f=BUDFRASI[i]; if($('#budN').textContent!==f)$('#budN').textContent=f;
+}
+budR.addEventListener('input',budSet); budR.addEventListener('pointerdown',budSet,{once:true});
+const KEY='scrollify_bozza', FIELDS=['attivita','sito','instagram','link','nome','cognome','email','tel','quando','note','codice'];
+try{const d=JSON.parse(localStorage.getItem(KEY)||'{}');FIELDS.forEach(n=>{if(d[n]&&form.elements[n])form.elements[n].value=d[n]})}catch{}
+{const c=new URLSearchParams(location.search).get('codice');if(c&&/^[A-Za-z0-9]{3,16}$/.test(c))form.elements.codice.value=c.toUpperCase()}   // dal link personale di un ambassador
+let saveT;
+form.addEventListener('input',()=>{clearTimeout(saveT);saveT=setTimeout(()=>{
+  const d={};FIELDS.forEach(n=>d[n]=form.elements[n]?.value||'');try{localStorage.setItem(KEY,JSON.stringify(d))}catch{}},400)});
+function show(i){
+  st=i;steps.forEach((s,k)=>s.classList.toggle('on',k===i));bars.forEach((b,k)=>b.classList.toggle('on',k<=i));
+  $('#stepN').textContent=`${i+1} / ${N}`;$('#back').hidden=i===0;err.textContent='';
+  $('#nextT').textContent=i===N-1?'Invia la richiesta':'Avanti';
+  const f=steps[i].querySelector('input:not([type=radio]):not([type=file]),textarea'); if(f&&fine) f.focus({preventScroll:true});
+}
+/* ─── controlli comuni dei moduli: email e numero veri, niente link nei nomi, niente invii dei robot.
+   Obbligatori solo i dati che servono per richiamare: il resto si può saltare ─── */
+const APERTA=performance.now();   // chi invia entro 3 secondi dall'apertura della pagina è quasi sempre un robot
+function emailOk(s){s=(s||'').trim();return s.length<=100&&!/\.\./.test(s)&&/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(s)}
+function telOk(s){
+  s=(s||'').trim(); if(!/^[+\d\s().\/-]{6,24}$/.test(s)) return false;   // solo cifre, spazi e + ( ) . / -
+  let d=s.replace(/\D/g,'');
+  if(s.startsWith('+')||d.startsWith('00')){d=d.replace(/^00/,''); if(d.startsWith('39')) d=d.slice(2); else return d.length>=8&&d.length<=15}   // dall'estero: 8–15 cifre
+  if(!/^(3\d{8,9}|0\d{5,10})$/.test(d)) return false;   // in Italia: cellulare 3… (9–10 cifre) o fisso 0…
+  return !/^(\d)\1+$/.test(d.slice(1))&&!'01234567890123456789'.includes(d)&&!'98765432109876543210'.includes(d);   // niente 3333333333 o 0123456789
+}
+function conLink(s){return /https?:|www\.|[<>]/i.test(s||'')}
+function robot(f){return (f.elements['bot-field']?.value||'')!==''||performance.now()-APERTA<3000}
+const val=n=>(form.elements[n]?.value||'').trim();
+function check(i){
+  if(i===0){const a=val('attivita'); if(a.length<2)return'Scrivi il nome della tua attività'; if(a.length>80||conLink(a))return'Scrivi solo il nome della tua attività'}
+  if(i===3){
+    const n=val('nome'); if(n.length<2)return'Scrivi il tuo nome'; if(n.length>60||conLink(n)||/\d/.test(n))return'Controlla il tuo nome';
+    if(conLink(val('cognome'))||val('cognome').length>60)return'Controlla il cognome';
+    if(!emailOk(val('email')))return'Serve un\'email valida: ti mandiamo lì il riepilogo';
+    if(!telOk(val('tel')))return'Serve un numero di cellulare valido per chiamarti';
+  }
+  return'';
+}
+$('#back').onclick=()=>show(Math.max(0,st-1));
+$('#later').onclick=()=>show(3);
+form.addEventListener('submit',e=>{e.preventDefault();const m=check(st);if(m){err.textContent=m;return}if(st<N-1){show(st+1);return}send()});
+// foto: anteprime subito, fino a 12
+const files=$('#files'),drop=$('#drop'),thumbs=$('#thumbs');
+function addFiles(list){[...list].filter(f=>f.type.startsWith('image/')).slice(0,12-photos.length).forEach(f=>photos.push({f,url:URL.createObjectURL(f)}));drawThumbs()}
+function drawThumbs(){thumbs.innerHTML=photos.map((p,i)=>`<figure><img src="${p.url}" alt="Foto ${i+1}"><button type="button" aria-label="Togli la foto ${i+1}" data-i="${i}">×</button></figure>`).join('');
+  $('#later').textContent=photos.length?'Avanti →':'Le mando più tardi →'}
+thumbs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const [p]=photos.splice(+b.dataset.i,1);URL.revokeObjectURL(p.url);drawThumbs()});
+files.addEventListener('change',()=>{addFiles(files.files);files.value=''});
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+/* ─── invio dei moduli con FormSubmit (il sito sta su GitHub Pages, che non riceve moduli): arrivano via email
+   a contact@scrollify.online, ognuno col suo oggetto; le foto della richiesta arrivano come allegati ─── */
+const LOCALE=/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const MODULI='https://formsubmit.co/contact@scrollify.online';   // dopo l'attivazione si può mettere qui il codice che dà FormSubmit al posto dell'indirizzo
+const OGGETTI={richiesta:'Scrollify · nuova richiesta',contatti:'Scrollify · nuovo contatto',ambassador:'Scrollify · nuovo ambassador'};
+function perFormSubmit(fd,nome){
+  fd.delete('form-name'); fd.delete('bot-field');   // la trappola per i robot la controlliamo già noi (robot())
+  fd.set('modulo',nome); fd.set('_subject',OGGETTI[nome]||'Scrollify · modulo dal sito'); fd.set('_template','table'); fd.set('_captcha','false');
+  const risp=fd.get('email')||(/@/.test(fd.get('contatto')||'')?fd.get('contatto'):''); if(risp) fd.set('_replyto',risp);   // "rispondi" va dritto a chi ha scritto
+  return fd;
+}
+// invio "classico" (multipart): è l'unico con cui FormSubmit porta gli allegati; la risposta non si legge (no-cors), un errore di rete sì
+async function manda(fd,nome){
+  if(LOCALE){await new Promise(r=>setTimeout(r,400));return true}   // in locale non si spedisce niente: si fa finta
+  try{await fetch(MODULI,{method:'POST',body:perFormSubmit(fd,nome),mode:'no-cors'});return true}catch{return false}
+}
+const spedisci=fd=>manda(fd,'richiesta');
+async function spedisciTesto(dati){const fd=new FormData();Object.entries(dati).forEach(([k,v])=>fd.set(k,v));return manda(fd,dati['form-name'])}
+// le foto del telefono pesano molto: le riduco a 1600 px prima di spedirle (FormSubmit accetta al massimo 10 MB di allegati per invio)
+async function riduci(file){
+  try{
+    const img=await createImageBitmap(file), k=Math.min(1,1600/Math.max(img.width,img.height));
+    const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.8));
+    return new File([b],file.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'});
+  }catch{return file.size<1.2e6?file:null}
+}
+// dopo l'invio: il riepilogo, come un ordine
+let inviando=false;
+async function send(){
+  if(inviando) return; inviando=true;
+  const code='SCR-'+String(Date.now()).slice(-5);
+  const btn=$('#next'), prima=btn.innerHTML; btn.disabled=true; btn.textContent='Invio…'; err.textContent='';
+  const fd=new FormData(form); fd.set('richiesta_n',code); fd.set('quando',val('quando'));
+  const foto=(await Promise.all(photos.slice(0,6).map(p=>riduci(p.f)))).filter(Boolean);
+  foto.forEach((f,i)=>fd.append('attachment',f,'foto-'+(i+1)+'.jpg'));
+  const ok=robot(form)?true:await spedisci(fd);   // un robot vede "inviato", ma a noi non arriva niente
+  inviando=false; btn.disabled=false; btn.innerHTML=prima;
+  if(!ok){err.textContent='Invio non riuscito: controlla la connessione e riprova.';return}
+  steps.forEach(s=>s.classList.remove('on'));$('#navBar').hidden=true;$('#privI').hidden=true;$('.steps').hidden=true;err.textContent='';
+  const online=[val('sito'),val('instagram'),val('link')].filter(Boolean).map(esc).join('<br>')||'—';
+  const row=(k,v)=>`<div><dt>${k}</dt><dd>${v}</dd></div>`;
+  $('#stepN').textContent=code;
+  const t=$('#term');t.hidden=false;
+  t.innerHTML=`<span class="ok">✓ richiesta ${code} inviata</span>
+    <h2>Grazie, ${esc(val('nome'))}.</h2>
+    <p>Ti chiamiamo entro 24 ore, di ${esc(val('quando'))}, al ${esc(val('tel'))}. Il riepilogo ti arriva anche a ${esc(val('email'))}.</p>
+    <dl class="recap">${row('attività',esc(val('attivita')))}${row('online',online)}${row('foto',photos.length?photos.length+' allegate':'le mandi più tardi')}
+      ${row('ti chiamiamo',esc(val('quando'))+' · '+esc(val('tel')))}${val('note')?row('nota',esc(val('note'))):''}${val('codice')?row('ambassador',esc(val('codice').toUpperCase())):''}</dl>`;
+  try{localStorage.removeItem(KEY)}catch{}
+}
+
+/* ─── salti interni: niente corsa lungo la pagina; si sfuma un attimo e si è già arrivati ─── */
+function salta(top){
+  if(reduced){scrollTo(0,top);return}
+  document.body.classList.add('salto');
+  setTimeout(()=>{scrollTo(0,top);setTimeout(()=>document.body.classList.remove('salto'),40)},160);
+}
+// "esempi" arriva un attimo dentro la sezione, quando il primo disegno è già partito (all'inizio lo spazio sarebbe vuoto)
+$$('.top a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(!t)return;e.preventDefault();
+  const d=t.id==='esempi'?t.querySelector('.es-testa'):t;
+  salta(d.getBoundingClientRect().top+scrollY+(t.id==='vero'?(t.offsetHeight-innerHeight)*.12/VN:t.id==='esempi'?-110:0))}));
+
+/* ─── dal disegno al vero: lo scroll sceglie l'esempio e ne guida le tre fasi; il menu ci salta ─── */
+const ve=$('#vero'), veVoci=$$('#vero .sv-voce'), veCv=$$('#vero .cv'), parole=$$('.vfrase em'), VN=veVoci.length;
+let veK=-1, veF=-1, veCaricato=false;
+function veroStep(){
+  const b=ve.getBoundingClientRect(), span=b.height-innerHeight, p=Math.min(1,Math.max(0,-b.top/span));
+  const x=p*VN*.9999, k=Math.floor(x), r=x-k, t=Math.min(1,r/.72), h=Math.max(0,(r-.72)/.28);   // le tre fasi finiscono al 72% del tratto: nel resto (h) l'esempio resta vero e continua a girare piano
+  // ogni esempio ha il suo tratto: quelli passati restano "veri", quelli dopo ripartono dal disegno
+  if(!window.__p3dLock) veCv.forEach((c,i)=>{window['__pV_'+c.dataset.vero]=i<k?1:i>k?0:t;window['__pH_'+c.dataset.vero]=i<k?1:i>k?0:h});   // __p3dLock: solo per le verifiche
+  if(k!==veK){veK=k;veVoci.forEach((e,i)=>e.classList.toggle('on',i===k));veCv.forEach((e,i)=>e.classList.toggle('on',i===k))}
+  const f=t<.34?0:t<.68?1:2; if(f!==veF){veF=f;parole.forEach((e,i)=>e.classList.toggle('on',i===f))}
+  // il 3D (librerie e file, qualche MB) parte al primo scroll: chi scende trova gli esempi già pronti
+  if(!veCaricato&&(scrollY>0||b.top<innerHeight*1.6)){veCaricato=true;import('./vero3d.js?v=2').catch(()=>{})}
+}
+addEventListener('scroll',veroStep,{passive:true});
+veVoci.forEach((e,i)=>e.addEventListener('click',()=>{const span=ve.offsetHeight-innerHeight;salta(ve.offsetTop+span*(i+.1)/VN)}));
+
+/* ─── esempi: quando il centro dell'anteprima passa la metà dello schermo, l'apertura sfuma nel momento migliore del sito;
+   tornando su (sopra il 62%) si rivede l'apertura. Scatta a soglia, non segue lo scroll: così non resta mai a metà fra le due ─── */
+const es=$('#esempi'), esB=$$('#esempi .es-b');
+function esStep(){
+  const r=es.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight) return;
+  esB.forEach(b=>{const v=b.closest('.es-vista').getBoundingClientRect(), c=(v.top+v.bottom)/2/innerHeight;
+    if(c<.5) b.classList.add('on'); else if(c>.62) b.classList.remove('on')});
+}
+if(!reduced){addEventListener('scroll',esStep,{passive:true});esStep()}
+
+/* ─── oltre al sito: la voce accesa e lo schermo del telefono seguono lo scroll; il telefono si inclina col cursore ─── */
+const sv=$('#servizi'), svVoci=$$('#servizi .sv-voce'), svSchermi=$$('#servizi .schermo'), tel=$('#servizi .tel');
+let svK=-1;
+function servStep(){
+  const b=sv.getBoundingClientRect(), span=b.height-innerHeight, p=Math.min(1,Math.max(0,-b.top/span));
+  const k=Math.min(svVoci.length-1,Math.floor(p*svVoci.length*.999));
+  if(k===svK) return; svK=k;
+  svVoci.forEach((e,i)=>e.classList.toggle('on',i===k));
+  svSchermi.forEach((e,i)=>{e.classList.toggle('on',i===k);e.classList.toggle('prima',i<k)});
+}
+addEventListener('scroll',servStep,{passive:true}); servStep();
+// toccando una voce si scorre fino al suo schermo
+svVoci.forEach((e,i)=>e.addEventListener('click',()=>{const span=sv.offsetHeight-innerHeight;salta(sv.offsetTop+span*(i+.5)/svVoci.length)}));
+if(fine) sv.addEventListener('pointermove',e=>{const r=sv.getBoundingClientRect();
+  tel.style.setProperty('--ry',((e.clientX-r.left)/r.width-.5)*-24+'deg'); tel.style.setProperty('--rx',((e.clientY-innerHeight/2)/innerHeight)*10+'deg')});
+sv.addEventListener('pointerleave',()=>{tel.style.removeProperty('--ry');tel.style.removeProperty('--rx')});
+
+/* ─── "hai un'idea?" / "ti serve altro?": porta al form in fondo con il messaggio già iniziato ─── */
+$$('.sv-altro a').forEach(l=>l.addEventListener('click',e=>{e.preventDefault();
+  const ta=$('#ctF').messaggio; if(!ta.value.trim()) ta.value=l.dataset.spunto;
+  salta($('#contatti').getBoundingClientRect().top+scrollY);
+  setTimeout(()=>{ta.focus({preventScroll:true});ta.setSelectionRange(ta.value.length,ta.value.length)},reduced?0:400)}));
+
+/* ─── contatto semplice: due righe e un solo recapito, email o cellulare ─── */
+// l'invio vero arriva quando colleghiamo i form al dominio
+async function inviaContatto(dati){ return spedisciTesto({'form-name':'contatti',...dati}) }
+$('#ctF').addEventListener('submit',async e=>{e.preventDefault();
+  const f=e.target, msg=$('#ctMsg'), testo=f.messaggio.value.trim(), contatto=f.contatto.value.trim(), cifre=contatto.replace(/\D/g,'');
+  // con la chiocciola è un'email, altrimenti un numero (almeno 9 cifre)
+  if(!contatto||(!contatto.includes('@')&&!cifre)){msg.textContent='Lasciaci un\'email o un numero, così ti ricontattiamo.';f.contatto.focus();return}
+  if(contatto.includes('@')?!emailOk(contatto):!telOk(contatto)){msg.textContent=contatto.includes('@')?'Controlla l\'email: sembra sbagliata.':'Controlla il numero: sembra sbagliato.';f.contatto.focus();return}
+  if(testo.length>2000){msg.textContent='Il messaggio è troppo lungo: bastano due righe.';f.messaggio.focus();return}
+  msg.textContent=''; $('#ctB').disabled=true;
+  if(!robot(f)&&!await inviaContatto({messaggio:testo,contatto})){msg.textContent='Invio non riuscito: controlla la connessione e riprova.';$('#ctB').disabled=false;return}
+  [...f.elements].forEach(el=>el.disabled=true); $('#ctB').hidden=true; $('#ctOk').hidden=false});
+
+/* ─── lavora con noi: si apre dal link in fondo o arrivando con #lavora-con-noi; si chiude con ×, Esc o indietro ─── */
+const lav=$('#lavora'); let lavDa=null;
+function apriLav(){ if(!lav.hidden) return; lavDa=document.activeElement; lav.hidden=false; document.body.classList.add('lav-aperto');
+  if(location.hash!=='#lavora-con-noi') history.pushState(null,'','#lavora-con-noi'); setTimeout(()=>$('#ambN').focus(),60) }
+function chiudiLav(){ if(lav.hidden) return; lav.hidden=true; document.body.classList.remove('lav-aperto');
+  if(location.hash==='#lavora-con-noi') history.pushState(null,'',location.pathname+location.search); lavDa?.focus?.() }
+$('#lavA').addEventListener('click',e=>{e.preventDefault();apriLav()});
+$('#lavX').addEventListener('click',chiudiLav);
+addEventListener('keydown',e=>{if(e.key==='Escape')chiudiLav()});
+addEventListener('popstate',()=>location.hash==='#lavora-con-noi'?apriLav():chiudiLav());
+if(location.hash==='#lavora-con-noi') apriLav();
+
+/* ─── ambassador: nome → codice, poi email → conferma col link personale ─── */
+const SITO='https://scrollify.online';   // il dominio definitivo
+const amb={fase:'nome',nome:'',codice:''}, ambN=$('#ambN'), ambB=$('#ambB'), ambMsg=$('#ambMsg');
+// l'invio vero (email di conferma + registro degli ambassador) arriva quando colleghiamo i form al dominio
+// per ora l'email con codice e link parte a mano, dopo l'avviso che arriva a contact@
+async function inviaAmbassador(dati){ return spedisciTesto({'form-name':'ambassador',...dati}) }
+$('#ambF').addEventListener('submit',async e=>{e.preventDefault(); ambMsg.classList.remove('err');
+  if(amb.fase==='nome'){
+    const n=ambN.value.trim().split(/\s+/)[0]; if(!n){ambN.focus();return}
+    if(conLink(ambN.value)||ambN.value.trim().length>60||/\d/.test(ambN.value)){ambMsg.textContent='Scrivi solo il tuo nome.';ambMsg.classList.add('err');ambN.focus();return}
+    amb.nome=ambN.value.trim(); amb.codice=n.normalize('NFD').replace(/[^\w]/g,'').toUpperCase().slice(0,10)+'10';
+    $('#ambCode').textContent=amb.codice;
+    amb.fase='email'; ambN.value=''; ambN.type='email'; ambN.placeholder='La tua email'; ambN.setAttribute('aria-label','La tua email'); ambN.autocomplete='email';
+    ambB.textContent='Attiva il codice →';
+    ambMsg.textContent=`Il tuo codice è ${amb.codice}. Lasciaci l'email: ti mandiamo la conferma, e ci scriviamo lì per la commissione.`;
+    ambN.focus(); return}
+  const email=ambN.value.trim();
+  if(!emailOk(email)){ambMsg.textContent='Controlla l\'email: sembra sbagliata.';ambMsg.classList.add('err');ambN.focus();return}
+  ambB.disabled=true;
+  if(!robot($('#ambF'))&&!await inviaAmbassador({nome:amb.nome,codice:amb.codice,email})){ambMsg.textContent='Invio non riuscito: controlla la connessione e riprova.';ambMsg.classList.add('err');ambB.disabled=false;return}
+  const link=`${SITO}/?codice=${amb.codice}`;
+  $('#ambMail').textContent=email; $('#ambLink').textContent=link.replace('https://','');
+  $('#ambWa').href='https://wa.me/?text='+encodeURIComponent(`Ti giro il mio codice Scrollify: con ${amb.codice} hai il 10% di sconto sul nuovo sito 3D della tua attività. ${link}`);
+  $('#ambF').hidden=true; $('#privA').hidden=true; ambMsg.textContent=''; $('#ambOk').hidden=false});
+$('#ambCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(`${SITO}/?codice=${amb.codice}`);toast('Link copiato')}catch{toast('Copia non riuscita: tienilo premuto e copialo')}});
+
+/* ─── un solo ciclo per tutto ─── */
+let last=0;
+function loop(t){
+  if(!reduced&&t-last>45&&scrollY<innerHeight*1.4){rain();last=t}
+  cxp+=(mx-cxp)*.18;cyp+=(my-cyp)*.18;cur.style.transform=`translate(${cxp}px,${cyp}px)`;
+  veroStep();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);veroStep();
+let lw=innerWidth;addEventListener('resize',()=>{if(innerWidth!==lw){lw=innerWidth;sizeRain()}});
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('shown');io.unobserve(e.target)}}),{rootMargin:'0px 0px -10% 0px'});
+$$('.rv').forEach(el=>io.observe(el));
+})();
+</script>
+</body>
+</html>

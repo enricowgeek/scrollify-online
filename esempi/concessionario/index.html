@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0c0c0d">
+<title>Riva Motori · auto selezionate</title>
+<meta name="description" content="Riva Motori, auto nuove e usate selezionate: scegli online, provala in salone. Sito dimostrativo fatto con Scrollify.">
+<link rel="preload" href="font/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<!-- la prima cosa che si vede è la locandina del video del piazzale (il video la mette solo in fondo alla pagina): parte subito, prima
+     dei due video, così su una rete lenta l'apertura non resta nera. Stessa scelta dello script: verticale → versione "tel" -->
+<link rel="preload" as="image" href="video/esterno-tel.jpg" media="(max-aspect-ratio:1/1)" fetchpriority="high">
+<link rel="preload" as="image" href="video/esterno-pc.jpg" media="not all and (max-aspect-ratio:1/1)" fetchpriority="high">
+<link rel="stylesheet" href="font/font.css">
+<link rel="icon" href="data:,">   <!-- nessuna icona: così il browser non chiede /favicon.ico alla radice del sito -->
+<!-- Template "concessionario" di Scrollify. Tutto è servito dal sito stesso.
+     Il volo: due video (video/esterno-*, video/salone-*) guidati dallo scroll, pc 16:9 e telefono 9:16 tagliato dal 4K;
+     alla fine l'ultimo fotogramma del salone (img/salone-fine.webp) con le auto da toccare.
+     Il parco auto (filtri e ordinamento) e la rata funzionano davvero; le prenotazioni mostrano solo un avviso. -->
+<style>
+:root{
+  --bg:#0c0c0d; --bg-2:#141416; --txt:#f2f2f0; --mut:#9a9a9e; --faint:rgba(255,255,255,.12);
+  --wide:"Archivo",system-ui,sans-serif; --sans:"Inter",system-ui,sans-serif;
+  --gut:clamp(20px,5vw,72px); --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button,input{font:inherit;color:inherit}
+::selection{background:#fff;color:#000}
+:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.k{font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+h1,h2,h3{font-family:var(--wide);font-stretch:125%;font-weight:600;letter-spacing:-.01em;line-height:1}
+h2{font-size:clamp(2rem,5vw,4rem);text-transform:uppercase}
+h2 em{font-style:normal;color:var(--mut)}
+
+/* ─── testata ─── */
+.top{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px var(--gut);background:linear-gradient(rgba(12,12,13,.92),rgba(12,12,13,0))}
+/* fuori dal volo (la sezione ferma in apertura), quando la pagina scorre e il testo passa sotto, la testata si copre: una fascia
+   del colore della pagina che sfuma in basso, così schede e prezzi non finiscono sotto al logo e al pulsante (.coperta la mette
+   lo script; come nella gioielleria) */
+.top::before{content:"";position:absolute;inset:0 0 -32px;z-index:-1;pointer-events:none;background:linear-gradient(var(--bg) 58%,rgba(12,12,13,0));opacity:0;transition:opacity .35s}
+.top.coperta::before{opacity:1}
+.logo{font-family:var(--wide);font-stretch:125%;font-weight:700;font-size:17px;letter-spacing:.06em;text-transform:uppercase}
+.logo{white-space:nowrap}
+.logo span{font-weight:400;color:var(--mut)}
+.top nav{display:flex;align-items:center;gap:26px;font-size:14px;color:#d6d6d4}
+.lnk{border-bottom:1px solid var(--faint);padding-bottom:2px}
+.lnk:hover{color:#fff;border-color:#fff}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:4px;background:#fff;color:#0c0c0d;font-weight:600;font-size:14px;border:0;cursor:pointer;transition:transform .3s var(--ease),background .3s}
+.btn:hover{transform:translateY(-2px);background:#e6e6e3}
+.btn .lungo{display:contents}   /* il testo resta attaccato a "test drive" (senza lo spazio del flex) */
+
+/* ─── il volo: due video guidati dallo scroll, il momento del nome in mezzo, le auto da toccare alla fine ─── */
+.volo{position:relative;height:900vh}
+.volo .pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#000}
+.schermo{position:absolute;inset:0;overflow:hidden}
+.schermo video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform,opacity}
+#v2{opacity:0}
+.velo{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none}
+.volo .pin::after{content:"";position:absolute;left:0;right:0;bottom:0;height:55%;pointer-events:none;background:linear-gradient(rgba(12,12,13,0),rgba(12,12,13,.8));z-index:1}
+/* il momento del nome, al centro */
+.nome{position:absolute;inset:0;display:grid;place-content:center;text-align:center;z-index:3;opacity:0;pointer-events:none}
+.nome h2{font-size:clamp(3rem,11vw,9.5rem);letter-spacing:.02em;line-height:.9}
+.nome p{margin-top:18px;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#d6d6d4}
+/* la fine: l'ultimo fotogramma del salone, con le auto da toccare */
+.finale{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;z-index:2}
+.finale.on{pointer-events:auto}
+.quadro{position:relative;aspect-ratio:1600/846;will-change:transform}
+.quadro img{width:100%;height:100%;display:block}
+.punto{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:0;background:none;cursor:pointer;opacity:0;transition:opacity .4s}
+.finale.on .punto{opacity:1}
+.punto::before{content:"";position:absolute;inset:14px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25),0 4px 14px rgba(0,0,0,.5)}
+.punto::after{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8);animation:respira 2.2s var(--ease) infinite}
+.punto:hover::before,.punto.on::before{background:#fff;box-shadow:0 0 0 8px rgba(255,255,255,.35),0 4px 14px rgba(0,0,0,.5)}
+@keyframes respira{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.6);opacity:0}}
+/* la scheda dell'auto toccata */
+.scheda{position:absolute;top:50%;z-index:5;width:min(360px,calc(100vw - 2*var(--gut)));transform:translate(20px,-50%);opacity:0;pointer-events:none;background:rgba(18,18,20,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--faint);border-radius:8px;overflow:hidden;transition:opacity .35s var(--ease),transform .35s var(--ease)}
+.scheda.on{opacity:1;transform:translate(0,-50%);pointer-events:auto}
+.scheda[data-lato="destra"]{right:var(--gut)}
+.scheda[data-lato="sinistra"]{left:var(--gut);transform:translate(-20px,-50%)}
+.scheda[data-lato="sinistra"].on{transform:translate(0,-50%)}
+.scheda .diff{font-size:13px;color:#a8ff60;min-height:0}
+.scheda .diff:empty{display:none}
+.schede .conf{position:absolute;left:50%;top:clamp(90px,14vh,130px);transform:translateX(-50%);z-index:5;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#fff;opacity:0;transition:opacity .3s}
+.schede.due .conf{opacity:1}
+.scheda img{width:100%;aspect-ratio:16/9;object-fit:cover}
+.scheda .corpo{padding:20px 22px 22px;display:grid;gap:6px}
+.scheda h3{font-size:20px;font-stretch:115%;text-transform:uppercase}
+.scheda .meta{font-size:14px;color:var(--mut)}
+.scheda .prezzo{margin-top:6px;font-family:var(--wide);font-stretch:115%;font-weight:600;font-size:24px}
+.scheda .azioni{margin-top:12px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.scheda .chiudi{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:20px;line-height:1;cursor:pointer}
+.titoli{position:absolute;left:var(--gut);right:var(--gut);bottom:clamp(36px,7vh,80px);z-index:4;pointer-events:none}
+.tit{position:absolute;left:0;bottom:0;max-width:40em;opacity:0;transform:translateY(16px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.tit.on{opacity:1;transform:none}
+.tit h1{font-size:clamp(2.8rem,8vw,7rem);text-transform:uppercase;letter-spacing:-.02em}
+.tit h3{margin-top:10px;font-size:clamp(1.8rem,4.4vw,3.6rem);text-transform:uppercase}
+.tit p{margin-top:12px;color:#e2e2df}
+.tit small{display:block;margin-top:22px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#bdbdba}
+
+/* ─── il parco auto ─── */
+.parco{padding:clamp(80px,12vw,160px) var(--gut);border-top:1px solid var(--faint)}
+.filtri{margin-top:44px;display:grid;gap:18px;font-size:14px}
+.filtri .riga{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px}
+.filtri .riga>span{width:9em;color:var(--mut)}
+.filtri button{background:none;border:0;padding:4px 0;color:#bdbdba;cursor:pointer;border-bottom:1px solid transparent}
+.filtri button:hover{color:#fff}
+.filtri button.on{color:#fff;border-color:#fff}
+.filtri input[type=range]{width:min(320px,60vw);accent-color:#fff}
+.filtri output{font-weight:600;color:#fff;min-width:6em}
+.griglia{margin-top:48px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px 32px}
+.auto{display:flex;flex-direction:column;gap:14px}
+.auto[hidden]{display:none}
+.auto .foto{aspect-ratio:16/9;overflow:hidden;background:#101012}
+.auto .foto img{width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
+.auto:hover .foto img{transform:scale(1.04)}
+.auto h3{font-size:18px;font-stretch:115%;text-transform:uppercase}
+.auto .meta{font-size:14px;color:var(--mut)}
+.auto .prezzo{font-family:var(--wide);font-stretch:115%;font-weight:600;font-size:22px}
+.auto .azioni{display:flex;gap:22px;font-size:14px}
+.auto .azioni button{background:none;border:0;padding:0;cursor:pointer;color:#fff;border-bottom:1px solid var(--faint)}
+.auto .azioni button:hover{border-color:#fff}
+.vuoto{margin-top:40px;color:var(--mut)}
+.conta{margin-top:36px;font-size:14px;color:var(--mut)}
+.auto .stato{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+
+/* ─── la rata ─── */
+.rata{padding:clamp(80px,12vw,160px) var(--gut);border-top:1px solid var(--faint);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(40px,7vw,120px);align-items:start}
+.rata>div>p{margin-top:18px;color:#c9c9c6;max-width:26em}
+.calc{display:grid;gap:30px}
+.calc label{display:grid;gap:10px;font-size:14px;color:var(--mut)}
+.calc label span{display:flex;justify-content:space-between}
+.calc output{color:#fff;font-weight:600}
+.calc input[type=range]{width:100%;accent-color:#fff}
+.durata{display:flex;gap:22px;font-size:14px;align-items:center}
+.durata>span{color:var(--mut);margin-right:auto}
+.durata button{background:none;border:0;padding:4px 0;color:#bdbdba;cursor:pointer;border-bottom:1px solid transparent}
+.durata button.on{color:#fff;border-color:#fff}
+.rata-v{padding-top:26px;border-top:1px solid var(--faint)}
+.rata-v b{font-family:var(--wide);font-stretch:125%;font-weight:600;font-size:clamp(2.6rem,6vw,4.4rem);line-height:1}
+.rata-v span{color:var(--mut);margin-left:10px}
+.nota{font-size:13px;color:var(--mut)}
+
+/* ─── dove siamo ─── */
+.info{padding:clamp(80px,12vw,160px) var(--gut);border-top:1px solid var(--faint);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,6vw,96px);align-items:end}
+.info .dati{display:grid;gap:18px}
+.info .dati div{display:grid;grid-template-columns:9em minmax(0,1fr);gap:16px;padding-bottom:16px;border-bottom:1px solid var(--faint)}
+.info .dati span{color:var(--mut);font-size:14px}
+.info .azioni{margin-top:32px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+
+/* ─── la fascia di Scrollify: i colori del marchio invertiti (fondo verde segnale, testo quasi nero), così stacca dal fondo di
+       qualsiasi sito e l'occhio ci cade; l'unico pulsante pieno è nero con il testo verde. Questo blocco è IDENTICO nelle tre demo,
+       con le misure scritte qui (non ereditate dalla pagina): se si cambia, cambiarlo in tutte e tre ─── */
+.pacchetto{padding:clamp(56px,8vw,96px) var(--gut);background:#a8ff60;color:#050605;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:28px;font-family:var(--sans);font-size:16px;line-height:1.6}
+.pacchetto ::selection{background:#050605;color:#a8ff60}
+.pacchetto .k{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(5,6,5,.6)}
+.pacchetto h3{margin-top:12px;font-family:var(--sans);font-stretch:100%;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.6rem);letter-spacing:-.03em;line-height:1.08;text-transform:none;color:#050605}
+.pacchetto p{margin-top:12px;font-size:16px;color:rgba(5,6,5,.75);max-width:36em}
+.pacchetto a{display:inline-block;padding:14px 22px;border-radius:12px;background:#050605;color:#a8ff60;font-family:var(--sans);font-size:16px;font-weight:600;line-height:1.6;white-space:nowrap;transition:background .3s,transform .3s var(--ease)}
+.pacchetto a:hover{background:#1d2419;transform:translateY(-2px)}
+.pacchetto a:focus-visible{outline:2px solid #050605;outline-offset:4px}
+.demo{padding:28px var(--gut);border-top:1px solid var(--faint);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.demo a{color:#d6d6d4;border-bottom:1px solid var(--faint)}
+.avviso{position:fixed;left:50%;bottom:28px;z-index:60;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:#fff;color:#0c0c0d;padding:14px 20px;border-radius:8px;font-size:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);transition:all .4s var(--ease);max-width:calc(100vw - 40px)}
+.avviso.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:900px){
+  .griglia{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rata,.info{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .top nav .lnk{display:none}
+  .top .lungo{display:none}
+  .logo{font-size:15px}
+  .volo{height:760vh}
+  .scheda,.scheda[data-lato]{left:var(--gut);right:var(--gut);width:auto;top:auto;bottom:16px;transform:translateY(20px)}
+  .scheda.on,.scheda[data-lato].on{transform:none}
+  .scheda img{aspect-ratio:2/1}
+  /* due schede sul telefono: affiancate, a metà larghezza, più compatte */
+  .schede.due .scheda[data-lato="sinistra"]{right:calc(50% + 4px)}
+  .schede.due .scheda[data-lato="destra"]{left:calc(50% + 4px)}
+  .schede.due .scheda img{aspect-ratio:4/3}
+  .schede.due .scheda .corpo{padding:12px 12px 14px;gap:4px}
+  .schede.due .scheda h3{font-size:14px}
+  .schede.due .scheda .meta{font-size:12px}
+  .schede.due .scheda .prezzo{font-size:18px}
+  .schede.due .scheda .azioni{margin-top:6px}
+  .schede.due .scheda .btn{padding:9px 12px;font-size:13px}
+  .schede.due .scheda .lnk,.schede.due .scheda .lungo{display:none}
+  .schede .conf{top:84px}
+  .finale{transition:transform .45s var(--ease)}
+  .titoli{transition:opacity .3s}
+  .griglia{grid-template-columns:minmax(0,1fr)}
+  .filtri .riga>span{width:100%}
+  .info .dati div{grid-template-columns:minmax(0,1fr);gap:2px}
+  .pacchetto{grid-template-columns:minmax(0,1fr);align-items:start}
+}
+@media (prefers-reduced-motion:reduce){.dida{transition:none}}
+
+/* barra di Scrollify: le demo si aprono nella stessa scheda, da qui si torna ai template */
+.scrollify-barra{position:fixed;inset:0 0 auto;z-index:1000;height:var(--sb);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,48px);background:#050605;font:600 17px/1 "Inter",system-ui,-apple-system,sans-serif}
+.scrollify-barra a{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#a8ff60;text-decoration:none;letter-spacing:0;text-transform:none}
+.scrollify-barra a:hover{color:#fff}
+.scrollify-barra a:focus-visible{outline:2px solid #a8ff60;outline-offset:2px;border-radius:4px}
+.scrollify-barra .sb-marchio{font:500 14px/1 ui-monospace,"Geist Mono",Menlo,monospace;color:#eef2ec;letter-spacing:.02em}
+.scrollify-barra .sb-marchio b{font-weight:500;color:#a8ff60}
+:root{--sb:50px}
+@media (max-width:640px){:root{--sb:46px}.scrollify-barra{font-size:16px}.scrollify-barra .sb-marchio{font-size:12px}}
+.top{top:var(--sb)}
+</style>
+</head>
+<body>
+<nav class="scrollify-barra" aria-label="Scrollify"><a href="https://scrollify.online/#esempi" id="sbTorna"><span aria-hidden="true" style="font-size:1.25em">←</span> Torna a Scrollify</a><span class="sb-marchio" aria-hidden="true">scroll<b>ify</b></span></nav>
+<script>/* se arrivi dalla home di Scrollify torni indietro nella storia: stessa scheda, stesso punto della pagina */
+document.getElementById('sbTorna').addEventListener('click',function(e){try{if(document.referrer&&new URL(document.referrer).origin===location.origin&&history.length>1){e.preventDefault();history.back()}}catch(_){}});</script>
+
+<header class="top">
+  <a class="logo" href="#" aria-label="Riva Motori, torna all'inizio">Riva <span>Motori</span></a>
+  <nav><a class="lnk" href="#parco">parco auto</a><a class="lnk" href="#rata">finanziamento</a><a class="lnk" href="#dove">dove siamo</a><a class="btn" href="#" data-prova><span class="lungo">Prenota un </span>test drive</a></nav>
+</header>
+
+<main>
+  <!-- ═══ IL VOLO: il drone scende sul piazzale, il nome, poi dentro il salone; alla fine le auto si toccano ═══ -->
+  <section class="volo" id="volo" aria-label="Dal piazzale al salone">
+    <div class="pin">
+      <div class="schermo" id="schermo">
+        <video id="v1" muted playsinline preload="auto" aria-hidden="true"></video>
+        <video id="v2" muted playsinline preload="auto" aria-hidden="true"></video>
+        <div class="velo" id="velo"></div>
+        <div class="finale" id="finale">
+          <div class="quadro" id="quadro"><img src="img/salone-fine.webp" alt="Il salone di Riva Motori con le auto in esposizione" decoding="async"><div id="punti"></div></div>
+        </div>
+      </div>
+      <div class="nome" id="nome" aria-hidden="true"><h2>Riva Motori</h2><p>auto selezionate</p></div>
+      <div class="titoli" aria-live="polite">
+        <div class="tit on" data-f="0"><p class="k">auto selezionate</p><h1>Riva Motori</h1><p>Nuove e usate garantite. Scegli online, provala da noi.</p><small>scorri per arrivare ↓</small></div>
+        <div class="tit" data-f="1"><p class="k">il piazzale</p><h3>Oltre quaranta auto pronte da provare.</h3></div>
+        <div class="tit" data-f="2"><p class="k">il salone</p><h3>Entra pure.</h3></div>
+        <div class="tit" data-f="3"><p class="k">il salone</p><h3>Tocca un'auto.</h3><p>Si aprono dettagli, prezzo e test drive.</p></div>
+      </div>
+      <div class="schede" id="schede" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ═══ IL PARCO AUTO: i filtri funzionano davvero ═══ -->
+  <section class="parco" id="parco">
+    <p class="k">il parco auto</p>
+    <h2>Scegli online.<br><em>Provala da noi.</em></h2>
+    <div class="filtri">
+      <div class="riga" data-filtro="stato"><span>condizione</span><button class="on" data-v="">tutte</button><button data-v="nuova">nuove</button><button data-v="usata">usate</button></div>
+      <div class="riga" data-filtro="tipo"><span>tipo</span><button class="on" data-v="">tutte</button><button data-v="suv">SUV e crossover</button><button data-v="berlina">berlina</button><button data-v="sportiva">sportiva</button></div>
+      <div class="riga" data-filtro="alim"><span>alimentazione</span><button class="on" data-v="">tutte</button><button data-v="benzina">benzina</button><button data-v="ibrida">ibrida</button><button data-v="elettrica">elettrica</button></div>
+      <div class="riga" data-filtro="cambio"><span>cambio</span><button class="on" data-v="">tutti</button><button data-v="automatico">automatico</button><button data-v="manuale">manuale</button></div>
+      <div class="riga"><span>anno dal</span><input type="range" id="fAnno" min="2020" max="2025" step="1" value="2020" aria-label="Anno minimo"><output id="fAnnoV">2020</output></div>
+      <div class="riga"><span>chilometri fino a</span><input type="range" id="fKm" min="0" max="40000" step="2000" value="40000" aria-label="Chilometri massimi"><output id="fKmV">40.000 km</output></div>
+      <div class="riga"><span>prezzo fino a</span><input type="range" id="fPrezzo" min="20000" max="60000" step="1000" value="60000" aria-label="Prezzo massimo"><output id="fPrezzoV">60.000 €</output></div>
+      <div class="riga" data-ordina><span>ordina per</span><button class="on" data-v="prezzo">prezzo più basso</button><button data-v="-prezzo">prezzo più alto</button><button data-v="-anno">più recenti</button><button data-v="km">meno km</button></div>
+    </div>
+    <p class="conta" id="conta"></p>
+    <div class="griglia" id="griglia"></div>
+    <p class="vuoto" id="vuoto" hidden>Nessuna auto con questi filtri. Chiamaci: sul piazzale ce ne sono altre quaranta, e ne arrivano ogni settimana.</p>
+  </section>
+
+  <!-- ═══ LA RATA ═══ -->
+  <section class="rata" id="rata">
+    <div>
+      <p class="k">finanziamento</p>
+      <h2>Quanto viene<br><em>al mese?</em></h2>
+      <p>Muovi i cursori e la rata si aggiorna subito. Poi ne parliamo con calma in salone.</p>
+    </div>
+    <div class="calc">
+      <label><span>prezzo dell'auto <output id="rPrezzoV">36.500 €</output></span><input type="range" id="rPrezzo" min="5000" max="60000" step="500" value="36500"></label>
+      <label><span>anticipo <output id="rAntV">5.000 €</output></span><input type="range" id="rAnt" min="0" max="27500" step="500" value="5000"></label>
+      <div class="durata" id="durata"><span>durata</span><button data-m="24">24 mesi</button><button data-m="36">36</button><button class="on" data-m="48">48</button><button data-m="60">60</button></div>
+      <p class="rata-v"><b id="rVal">0 €</b><span>al mese</span></p>
+      <p class="nota">Esempio indicativo con TAN fisso 6,90%. Sito dimostrativo: non è un'offerta.</p>
+    </div>
+  </section>
+
+  <!-- ═══ DOVE SIAMO ═══ -->
+  <section class="info" id="dove">
+    <div>
+      <p class="k">dove siamo</p>
+      <h2>Vieni in<br><em>salone.</em></h2>
+      <div class="azioni"><a class="btn" href="#" data-prova>Prenota un test drive</a><a class="lnk" href="#" data-prova>Chiamaci</a></div>
+    </div>
+    <div class="dati">
+      <div><span>salone</span><p>Via Esempio 12 · La tua città</p></div>
+      <div><span>aperti</span><p>Da lunedì a sabato, 9:00 – 19:00</p></div>
+      <div><span>officina</span><p>Tagliandi e revisioni, su appuntamento</p></div>
+    </div>
+  </section>
+</main>
+
+<aside class="pacchetto">
+  <div><p class="k">fatto con Scrollify</p><h3>Il pacchetto concessionario</h3><p>Un sito come questo, più il catalogo online delle auto con la prenotazione del test drive. Ogni sito è su misura e personalizzabile al 100%: questo è solo un esempio.</p></div>
+  <a href="https://scrollify.online/#contatti" rel="noopener">Lo voglio per il mio salone →</a>
+</aside>
+<footer class="demo">
+  <span>Riva Motori è un concessionario immaginario: questo è un sito dimostrativo, con immagini e video generati con l'intelligenza artificiale.</span>
+  <span>Lo vuoi per il tuo salone? <a href="https://scrollify.online/#contatti" rel="noopener">fatto con Scrollify →</a></span>
+</footer>
+<div class="avviso" id="avviso" role="status"></div>
+
+<script src="lib/lenis.min.js"></script>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const tra=(p,a,b)=>cl((p-a)/(b-a));
+const morb=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const euro=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+$)/g,'.')+' €';
+const ridotto=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* scroll morbido (spento con "movimento ridotto") */
+let lenis=null;
+if(!ridotto&&window.Lenis){lenis=new Lenis({lerp:.1});(function raf(t){lenis.raf(t);requestAnimationFrame(raf)})(performance.now())}
+$$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href');if(id==='#'&&a.hasAttribute('data-prova'))return;const t=id==='#'?document.body:$(id);if(!t)return;e.preventDefault();lenis?lenis.scrollTo(t,{duration:1.4}):t.scrollIntoView()}));
+
+/* sito dimostrativo: prenotazioni e chiamate spiegano cosa farebbero */
+const avviso=$('#avviso');let avT;
+function avvisa(t){avviso.textContent=t;avviso.classList.add('on');clearTimeout(avT);avT=setTimeout(()=>avviso.classList.remove('on'),3400)}
+$$('[data-prova]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();avvisa('Sito dimostrativo: nel sito vero qui scegli giorno e ora del test drive.')}));
+
+const avanti=el=>{const b=el.getBoundingClientRect(),span=b.height-innerHeight;return cl(-b.top/span)};
+
+/* ═══ IL VOLO ═══
+   tratti dello scroll: esterno (video 1) · il nome · salone (video 2) · la fine con le auto da toccare.
+   Il video non "parte": lo scroll ne sceglie il fotogramma. Sul telefono ci sono le versioni verticali, tagliate dal 4K */
+const V={esterno:[0,.4],nome:[.4,.52],salone:[.52,.88],fine:[.88,.97]};
+const volo=$('#volo'), v1=$('#v1'), v2=$('#v2'), velo=$('#velo'), nome=$('#nome'), finale=$('#finale'), quadro=$('#quadro'), tit=$$('.tit');
+const vert=matchMedia('(max-aspect-ratio:1/1)').matches, formato=vert?'tel':'pc';
+v1.poster=`video/esterno-${formato}.jpg`; v1.src=`video/esterno-${formato}.mp4`;
+v2.poster=`video/salone-${formato}.jpg`; v2.src=`video/salone-${formato}.mp4`;
+// iPhone: un video mai avviato non mostra i fotogrammi quando lo sposti; lo "sblocco" una volta sola
+let sbloccati=false; const sblocca=()=>{if(sbloccati)return;sbloccati=true;[v1,v2].forEach(v=>v.play().then(()=>v.pause()).catch(()=>{}))};
+addEventListener('touchstart',sblocca,{once:true,passive:true}); addEventListener('scroll',sblocca,{once:true,passive:true});
+// lo scroll dice a che punto del video siamo; un giro di animazione lo applica senza intasare il video di richieste
+const meta={v1:0,v2:0};
+function cerca(v,t){if(!v.duration||v.seeking)return;const x=Math.min(v.duration-.04,t*v.duration);if(Math.abs(v.currentTime-x)>.015)v.currentTime=x}
+(function giro(){requestAnimationFrame(giro);cerca(v1,meta.v1);cerca(v2,meta.v2)})();
+// il quadro finale: sul computer riempie lo schermo come il video; sul telefono parte a riempire e si allarga fino a mostrare tutto il salone
+function scale(){const w=innerWidth,h=innerHeight,a=1600/846,cw=Math.min(w,h*a),ch=cw/a;quadro.style.width=cw+'px';quadro.style.height=ch+'px';return Math.max(w/cw,h/ch)}
+let copri=scale(); addEventListener('resize',()=>{copri=scale()});
+function voloScroll(){
+  const p=avanti(volo);
+  const e=tra(p,...V.esterno), n=tra(p,...V.nome), sa=tra(p,...V.salone), f=tra(p,...V.fine);
+  meta.v1=e; meta.v2=sa;
+  // il nome: il drone si avvicina all'ingresso, lo schermo si scurisce, compare il nome, poi si entra
+  v1.style.transform=`scale(${1+.3*morb(n)})`; v1.style.transformOrigin='50% 58%'; v1.style.opacity=n<1?1:0;   // una volta dentro, l'esterno sparisce
+  velo.style.opacity=Math.sin(Math.PI*n)*.6;
+  nome.style.opacity=Math.min(tra(n,.15,.45),1-tra(n,.75,.95)); nome.style.transform=`scale(${.96+.04*tra(n,.15,.6)})`;
+  v2.style.opacity=tra(n,.7,1)*(vert?1-tra(f,.05,.5):1);   // sul telefono il video sfuma mentre la vista si allarga su tutto il salone
+  // la fine: al video subentra l'ultimo fotogramma (identico), con i punti da toccare
+  finale.style.opacity=f>0?1:0; finale.classList.toggle('on',f>=.35);
+  const k=vert?copri+(1-copri)*morb(tra(f,.1,.8)):copri; quadro.style.transform=`scale(${k})`;
+  if(f<.3)chiudiScheda(); else if(aperte.length)alza();   // se la vista si allarga con le schede aperte, i punti restano sopra
+  const fase=p<.06?0:p<V.nome[0]?1:p<V.fine[0]+.02?2:3;
+  tit.forEach(el=>{const k=+el.dataset.f;el.classList.toggle('on',k===fase&&!(k===1&&(p<.14||p>.34))&&!(k===2&&(p<.58||p>.8)))});
+}
+// le auto da toccare: ogni auto la sua scheda. Al massimo due aperte insieme, una per lato, e allora si confrontano;
+// una terza prende il posto della più vecchia; ritoccare la stessa auto (o la ×) la chiude
+const box=$('#schede'), aperte=[];
+box.innerHTML='<p class="conf" aria-hidden="true">a confronto</p>';
+function apriScheda(a,btn){
+  const gia=aperte.find(x=>x.a===a); if(gia){chiudi(gia);return}
+  if(aperte.length===2)chiudi(aperte[0]);
+  const lato=aperte.length?(aperte[0].lato==='destra'?'sinistra':'destra'):(a.x<.5?'destra':'sinistra');   // dalla parte opposta all'auto
+  const el=document.createElement('aside'); el.className='scheda'; el.dataset.lato=lato;
+  el.innerHTML=`<button class="chiudi" type="button" aria-label="Chiudi">×</button><img src="${a.img}" alt="${a.n}"><div class="corpo"><p class="k">${a.stato}</p><h3>${a.n}</h3><p class="meta">${a.anno} · ${a.km?a.km.toLocaleString('it-IT')+' km':'km zero'} · ${a.alim} · ${a.cambio}</p><p class="prezzo">${euro(a.prezzo)}</p><p class="diff"></p><div class="azioni"><button class="btn" type="button"><span class="lungo">Prenota un </span>test drive</button><a class="lnk" href="#parco">vedi nel parco auto</a></div></div>`;
+  const x={a,el,lato,btn}; aperte.push(x); box.appendChild(el); btn.classList.add('on');
+  el.querySelector('.chiudi').onclick=()=>chiudi(x);
+  el.querySelector('.btn').onclick=()=>avvisa(`Sito dimostrativo: nel sito vero prenoti il test drive della ${a.n.toLowerCase()} in due tocchi.`);
+  el.querySelector('.lnk').onclick=e=>{e.preventDefault();chiudiScheda();lenis?lenis.scrollTo('#parco',{duration:1.4}):$('#parco').scrollIntoView()};
+  requestAnimationFrame(()=>el.classList.add('on')); confronto();
+}
+function chiudi(x){const i=aperte.indexOf(x);if(i<0)return;aperte.splice(i,1);x.btn.classList.remove('on');x.el.classList.remove('on');setTimeout(()=>x.el.remove(),400);confronto()}
+function chiudiScheda(){[...aperte].forEach(chiudi)}
+// con due schede aperte: quanto costa in più o in meno rispetto all'altra
+function confronto(){
+  box.classList.toggle('due',aperte.length===2);
+  aperte.forEach(x=>{const altra=aperte.find(y=>y!==x), d=x.el.querySelector('.diff');
+    if(!altra){d.textContent='';return}
+    const diff=x.a.prezzo-altra.a.prezzo; d.textContent=diff===0?'stesso prezzo dell\'altra':`${euro(Math.abs(diff))} ${diff<0?'in meno':'in più'} dell'altra`});
+  alza();
+}
+// sul telefono le schede stanno in basso e coprirebbero le auto: il salone sale quanto basta perché i punti restino
+// toccabili (così si può aprire la seconda auto e metterle a confronto). Sul computer le schede stanno di lato: niente.
+const telefono=matchMedia('(max-width:640px)'), titoli=$('.titoli'); let alzato=0;
+function alza(){
+  let su=0;
+  if(telefono.matches&&aperte.length){
+    const cima=Math.min(...aperte.map(x=>x.el.offsetTop));                 // dove comincia la scheda più alta (senza l'animazione)
+    const punti=[...$$('#punti .punto')].map(b=>b.getBoundingClientRect()), fondo=Math.max(...punti.map(r=>r.bottom))+alzato;
+    const tetto=Math.min(...punti.map(r=>r.top))+alzato-76;               // non oltre la testata
+    su=Math.max(0,Math.min(fondo+14-cima,tetto));
+  }
+  titoli.style.opacity=telefono.matches&&aperte.length?0:'';   // il titolo in basso non spunta tra le due schede
+  if(Math.abs(su-alzato)<1)return; alzato=su; finale.style.transform=su?`translateY(${-su}px)`:'';
+}
+addEventListener('keydown',e=>{if(e.key==='Escape')chiudiScheda()});
+
+/* ═══ IL PARCO AUTO ═══ */
+const AUTO=[
+  {id:'l1',n:'Crossover elettrico',tipo:'suv',alim:'elettrica',cambio:'automatico',stato:'nuova',anno:2025,km:0,prezzo:44900,img:'img/salone-l1.webp',x:.13,y:.47},
+  {id:'l2',n:'Berlina ibrida',tipo:'berlina',alim:'ibrida',cambio:'automatico',stato:'usata',anno:2024,km:8000,prezzo:36500,img:'img/salone-l2.webp',x:.29,y:.44},
+  {id:'l3',n:'Coupé quattro porte',tipo:'sportiva',alim:'benzina',cambio:'automatico',stato:'usata',anno:2023,km:22000,prezzo:39900,img:'img/salone-l3.webp',x:.385,y:.455},
+  {id:'r1',n:'SUV ibrido plug-in',tipo:'suv',alim:'ibrida',cambio:'automatico',stato:'nuova',anno:2025,km:0,prezzo:58900,img:'img/salone-r1.webp',x:.86,y:.44},
+  {id:'r2',n:'SUV compatto ibrido',tipo:'suv',alim:'ibrida',cambio:'automatico',stato:'usata',anno:2024,km:12000,prezzo:31900,img:'img/salone-r2.webp',x:.705,y:.445},
+  {id:'r3',n:'Crossover',tipo:'suv',alim:'benzina',cambio:'manuale',stato:'usata',anno:2022,km:34000,prezzo:24400,img:'img/salone-r3.webp',x:.62,y:.455},
+];
+// i punti sulle auto del salone
+AUTO.forEach(a=>{const b=document.createElement('button');b.type='button';b.className='punto';b.style.left=a.x*100+'%';b.style.top=a.y*100+'%';b.setAttribute('aria-label',a.n+', dettagli');b.onclick=()=>apriScheda(a,b);$('#punti').appendChild(b)});
+const griglia=$('#griglia'), vuoto=$('#vuoto'), conta=$('#conta');
+const filtro={stato:'',tipo:'',alim:'',cambio:'',anno:2020,km:40000,max:60000}; let ordine='prezzo';
+const schede=AUTO.map(a=>{const el=document.createElement('article');el.className='auto';
+  el.innerHTML=`<div class="foto"><img src="${a.img}" alt="${a.n}" loading="lazy" decoding="async"></div><p class="stato">${a.stato}</p><h3>${a.n}</h3><p class="meta">${a.anno} · ${a.km?a.km.toLocaleString('it-IT')+' km':'km zero'} · ${a.alim} · ${a.cambio}</p><p class="prezzo">${euro(a.prezzo)}</p><div class="azioni"><button type="button" data-azione="prova">Prenota un test drive</button><button type="button" data-azione="rata">Calcola la rata</button></div>`;
+  el.querySelector('[data-azione="prova"]').onclick=()=>avvisa(`Sito dimostrativo: nel sito vero prenoti il test drive della ${a.n.toLowerCase()} in due tocchi.`);
+  el.querySelector('[data-azione="rata"]').onclick=()=>{rPrezzo.value=a.prezzo;aggRata();lenis?lenis.scrollTo('#rata',{duration:1.2}):$('#rata').scrollIntoView()};
+  return el});
+function filtra(){
+  const ok=AUTO.map(a=>(!filtro.stato||a.stato===filtro.stato)&&(!filtro.tipo||a.tipo===filtro.tipo)&&(!filtro.alim||a.alim===filtro.alim)&&(!filtro.cambio||a.cambio===filtro.cambio)&&a.anno>=filtro.anno&&a.km<=filtro.km&&a.prezzo<=filtro.max);
+  const campo=ordine.replace('-',''), verso=ordine[0]==='-'?-1:1;
+  const idx=AUTO.map((a,i)=>i).sort((i,j)=>(AUTO[i][campo]-AUTO[j][campo])*verso);
+  idx.forEach(i=>{schede[i].hidden=!ok[i];griglia.appendChild(schede[i])});
+  const n=ok.filter(Boolean).length; vuoto.hidden=n>0; conta.textContent=n===1?'1 auto':n+' auto';
+}
+$$('.filtri .riga[data-filtro]').forEach(r=>r.querySelectorAll('button').forEach(b=>b.onclick=()=>{r.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));filtro[r.dataset.filtro]=b.dataset.v;filtra()}));
+$$('.filtri [data-ordina] button').forEach(b=>b.onclick=()=>{$$('.filtri [data-ordina] button').forEach(x=>x.classList.toggle('on',x===b));ordine=b.dataset.v;filtra()});
+const fAnno=$('#fAnno'), fKm=$('#fKm'), fPrezzo=$('#fPrezzo');
+fAnno.oninput=()=>{filtro.anno=+fAnno.value;$('#fAnnoV').textContent=fAnno.value;filtra()};
+fKm.oninput=()=>{filtro.km=+fKm.value;$('#fKmV').textContent=(+fKm.value).toLocaleString('it-IT')+' km';filtra()};
+fPrezzo.oninput=()=>{filtro.max=+fPrezzo.value;$('#fPrezzoV').textContent=euro(filtro.max);filtra()};
+filtra();
+
+/* ═══ LA RATA: TAN 6,90%, rata costante ═══ */
+const rPrezzo=$('#rPrezzo'), rAnt=$('#rAnt'); let mesi=48;
+function aggRata(){
+  rAnt.max=rPrezzo.value; if(+rAnt.value>+rPrezzo.value)rAnt.value=rPrezzo.value;
+  const P=rPrezzo.value-rAnt.value, i=.069/12, r=P>0?P*i/(1-Math.pow(1+i,-mesi)):0;
+  $('#rPrezzoV').textContent=euro(+rPrezzo.value); $('#rAntV').textContent=euro(+rAnt.value); $('#rVal').textContent=euro(r);
+}
+rPrezzo.oninput=aggRata; rAnt.oninput=aggRata;
+$$('#durata button').forEach(b=>b.onclick=()=>{mesi=+b.dataset.m;$$('#durata button').forEach(x=>x.classList.toggle('on',x===b));aggRata()});
+aggRata();
+
+// la testata si copre quando il volo non è fermo in cima: il testo le passa sotto
+const laTestata=$('.top'), pinVolo=$('.volo .pin'); let testataCoperta=null;
+function copriTestata(){const c=Math.abs(pinVolo.getBoundingClientRect().top)>=.5;if(c!==testataCoperta){testataCoperta=c;laTestata.classList.toggle('coperta',c)}}
+function aggiorna(){voloScroll();copriTestata()}
+lenis?lenis.on('scroll',aggiorna):addEventListener('scroll',aggiorna,{passive:true});
+addEventListener('resize',aggiorna);
+aggiorna();
+</script>
+</body>
+</html>

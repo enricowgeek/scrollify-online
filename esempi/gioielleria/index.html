@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#070707">
+<title>Lumen · orologi e gioielli</title>
+<meta name="description" content="Lumen, orologi e gioielli: la vetrina in 3D. Sito dimostrativo fatto con Scrollify.">
+<link rel="icon" href="data:,">
+<link rel="preload" href="font/cormorant-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="font/font.css">
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js", "three/addons/": "./lib/addons/" } }</script>
+<!-- Template "gioielleria" di Scrollify, versione minimale: il meccanismo della giostra e la qualità del 3D, poco altro.
+     Tutto è servito dal sito stesso. Ordine della pagina:
+     1. LA GIOSTRA è l'apertura: i cinque orologi in 3D (libreria lumen3d/, Three.js) in una sola scena, su nero. All'inizio sono
+        raccolti in profondità (panoramica: il centrale davanti e più grande, i due vicini più indietro, i due estremi ancora più
+        indietro), con il logo e una riga di benvenuto che svaniscono appena si scorre; scorrendo ognuno va dal suo posto a quello
+        della giostra, che porta al centro un orologio alla volta (la fila è chiusa ad anello). Sotto il centrale la sua piccola
+        scheda: nome, una riga di dettagli, prezzo e "Aggiungi al carrello". Frecce, tastiera, click sui laterali, swipe; il
+        centrale si gira col dito o col mouse. Si monta subito (è sopra la piega): il testo c'è da subito, gli orologi entrano in
+        dissolvenza; si scarica prima il centrale (modulepreload qui sotto, solo se c'è WebGL2), gli altri dopo il primo fotogramma.
+     2. DA VICINO (#dettaglio): il Meridiano Verde parte per parte (lumen3d/dettaglio.js + vetrina.js, un secondo renderer). Lo scroll
+        lo gira e sosta su quadrante, lunetta, corona, fondello, chiusura, bracciale, cassa; la descrizione (una riga) segue la parte
+        girata verso di noi, anche a mano; un punto sull'orologio (o un tocco sul quadrante di fronte) lo gira verso la sua parte e ci
+        avvicina la camera, qui nella sezione (niente foto a tutto schermo): si torna all'orologio intero con un secondo clic, con
+        "allontana", con Esc o scorrendo. In fondo nome, prezzo e carrello. Si scarica quando la sezione si avvicina.
+     3. CHI SIAMO (#chi-siamo): la fiducia sull'acquisto in una sezione sola: chi siamo, certificato e garanzia, laboratorio, ritiro
+        in negozio, dove siamo con "Prenota una visita" (dimostrativo). Niente recensioni: ripetevano le tre promesse.
+     4. La fascia di Scrollify e la nota sull'AI.
+     Il carrello è solo il contatore in alto e un avviso (sito dimostrativo: il pagamento non è attivo). Menu: vetrina, da vicino,
+     chi siamo, carrello (sul telefono il logo e il carrello); fuori dai due 3D fermi la testata si copre (il testo non le passa sopra).
+     Un solo pulsante pieno per sezione (quello di un pezzo già nel carrello si svuota). I due 3D (giostra e dettaglio, due
+     tele) disegnano solo quando si vedono.
+     Verifica: ~/lab3d/strumenti/rec/lumen-pagina.mjs (foglio src/lumen3d/fogli/lumen-minimale.jpg); l'apertura in tutti i formati:
+     lumen-apertura.mjs. Senza WebGL2 (o se il 3D non si carica) resta la foto del pezzo al centro, con nomi, schede e frecce; nel
+     dettaglio la foto del Verde, con le descrizioni che seguono lo scroll e il link "guarda il quadrante da vicino" che la ingrandisce. -->
+<script>
+// WebGL2 c'è? (Three.js r180 lo chiede) Se sì, il 3D dell'apertura comincia a scaricarsi subito, in parallelo con la pagina:
+// three.js, la giostra e il primo orologio (Meridiano Blu) con la foto del suo quadrante. Senza WebGL2 non si scarica niente.
+window.__webgl2=(()=>{try{const gl=document.createElement('canvas').getContext('webgl2');gl?.getExtension('WEBGL_lose_context')?.loseContext();return !!gl}catch(e){return false}})();
+if(window.__webgl2)['lib/three.module.min.js','lib/three.core.min.js','lumen3d/giostra.js','lumen3d/motore.js','lumen3d/modelli/indice.js','lumen3d/officina.js','lumen3d/modelli/meridiano-blu.js']
+  .forEach(h=>{const l=document.createElement('link');l.rel='modulepreload';l.href=h;document.head.appendChild(l)});
+if(window.__webgl2){const l=document.createElement('link');l.rel='preload';l.as='image';l.href='3d/lumen/meridiano-blu-quadrante.webp';l.crossOrigin='anonymous';document.head.appendChild(l)}
+</script>
+<style>
+:root{
+  --bg:#070707; --txt:#f2f0ec; --mut:#9a978f; --faint:rgba(255,255,255,.12);   /* nero profondo: la luce sono gli orologi */
+  --serif:"Cormorant",Georgia,serif; --sans:"Inter",system-ui,sans-serif;
+  --gut:clamp(20px,5vw,72px); --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit}
+ol,ul{list-style:none}
+::selection{background:#fff;color:#000}
+:focus-visible{outline:1px solid #fff;outline-offset:4px}
+.k{font-size:11px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:var(--mut)}
+h1,h2,h3{font-family:var(--serif);font-weight:300;letter-spacing:.01em;line-height:1}
+h2{font-size:clamp(2.6rem,6vw,5rem)}
+h2 em{font-style:italic;color:var(--mut)}
+
+/* ─── testata: il logo piccolo compare quando la giostra lascia la panoramica (--logo lo mette lo script) ─── */
+.top{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px var(--gut);background:linear-gradient(rgba(7,7,7,.9),rgba(7,7,7,0))}
+/* fuori dai due 3D fermi (quando la pagina scorre e il testo passa sotto) la testata si copre: una fascia del colore della pagina
+   che sfuma in basso, così il testo non finisce sopra al logo e al menu (.coperta la mette lo script) */
+.top::before{content:"";position:absolute;inset:0 0 -32px;z-index:-1;pointer-events:none;background:linear-gradient(var(--bg) 58%,rgba(7,7,7,0));opacity:0;transition:opacity .35s}
+.top.coperta::before{opacity:1}
+.logo{font-family:var(--serif);font-size:28px;font-weight:400;letter-spacing:.32em;text-transform:uppercase}
+.top .logo{opacity:var(--logo,0);transition:opacity .3s}
+.top .logo:focus-visible{opacity:1}   /* col tasto Tab si vede anche nella panoramica */
+.top nav{display:flex;align-items:center;gap:28px;font-size:13px;color:#d8d5cf}
+.lnk{position:relative;border-bottom:1px solid var(--faint);padding-bottom:2px}
+.lnk:hover{color:#fff;border-color:#fff}
+/* link e pulsanti piccoli: il bersaglio è più grande di quello che si vede (almeno 44 px col dito) */
+.lnk::after,.carrello::after,.da-vicino::after{content:"";position:absolute;inset:-13px -8px}
+.carrello{position:relative;display:inline-flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;font-size:13px;color:#d8d5cf}
+.carrello b{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#fff;color:#070707;font-size:11px;font-weight:600;transition:transform .3s var(--ease)}
+.carrello b.su{transform:scale(1.25)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:2px;background:#fff;color:#070707;font-weight:500;font-size:13px;letter-spacing:.06em;border:0;cursor:pointer;transition:background .3s}
+.btn:hover{background:#e7e4de}
+/* già nel carrello: il pulsante si svuota (resta un filo), così si vede che è fatto */
+.btn.dentro{background:none;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.btn.dentro:hover{background:rgba(255,255,255,.06)}
+
+/* ─── LA GIOSTRA, in apertura. Scroll: prima --intro (la panoramica si apre nella giostra), poi --passo per ogni orologio,
+   poi --coda (l'ultimo resta al centro un momento prima che la sezione se ne vada, come gli altri). --passi = orologi − 1 (lo mette lo script) ─── */
+.giostra{--intro:70vh;--passo:92vh;--coda:28vh;position:relative;height:calc(100vh + var(--intro) + var(--passi,4) * var(--passo) + var(--coda))}
+.giostra .pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:var(--bg)}
+/* un velo di luce dall'alto, niente di più */
+.giostra .pin::before{content:"";position:absolute;left:50%;top:-38%;width:min(120vw,1500px);height:80%;transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(50% 50% at 50% 50%,rgba(255,255,255,.075),rgba(255,255,255,.022) 55%,transparent 78%)}
+/* la tela 3D copre tutto lo schermo (la giostra sa dove mettere il centrale: sopra la scheda); touch-action pan-y: il dito in verticale scorre */
+.fila{position:absolute;inset:0;touch-action:pan-y;--rip-y:50%;--rip-w:min(40vh,340px,62vw)}
+.fila canvas{outline:none;opacity:0;transition:opacity .9s var(--ease)}
+.fila.pronto canvas{opacity:1}
+/* il nome del modello, grande, dietro al centrale */
+.nomone{position:absolute;left:0;right:0;top:39%;transform:translateY(-50%);text-align:center;pointer-events:none;font-family:var(--serif);font-weight:300;font-size:clamp(4rem,15vw,15rem);line-height:1;letter-spacing:.02em;color:rgba(255,255,255,.05);white-space:nowrap}
+/* benvenuto: logo sopra gli orologi, una riga sotto; svaniscono appena si scorre */
+.benvenuto{position:absolute;inset:0;z-index:2;pointer-events:none;text-align:center}
+.benvenuto .alto{position:absolute;left:0;right:0;top:clamp(92px,13vh,150px)}
+.benvenuto h1{margin-top:14px;font-size:clamp(3.2rem,7.2vw,6.4rem);letter-spacing:.3em;padding-left:.3em;text-transform:uppercase}
+.benvenuto .basso{position:absolute;left:0;right:0;bottom:clamp(40px,12vh,140px)}
+.benvenuto .motto{font-family:var(--serif);font-style:italic;font-weight:300;font-size:clamp(1.45rem,2.3vw,2rem);color:#dcd9d3}
+.benvenuto .scorri{margin-top:16px}
+.giostra .dito{position:absolute;left:0;right:0;top:calc(72% - 30px);z-index:3;text-align:center;pointer-events:none;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);opacity:0}
+/* ripiego senza WebGL: la foto del pezzo al centro (in panoramica a metà schermo, in giostra dove sta il centrale) */
+.ripiego{position:absolute;left:50%;top:var(--rip-y);width:var(--rip-w);aspect-ratio:1;transform:translate(-50%,-50%);object-fit:cover;pointer-events:none;opacity:0;transition:opacity .4s var(--ease);
+  -webkit-mask-image:radial-gradient(closest-side,#000 60%,transparent 97%);mask-image:radial-gradient(closest-side,#000 60%,transparent 97%)}
+.ripiego.on{opacity:1}
+/* la piccola scheda e le frecce: solo quando la giostra è aperta (.giro) */
+.giostra .scheda{position:absolute;left:var(--gut);bottom:clamp(28px,6vh,64px);z-index:3;width:min(440px,calc(100vw - 2*var(--gut)))}
+.giostra .scheda,.frecce{transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.giostra .pin:not(.giro) .scheda,.giostra .pin:not(.giro) .frecce{opacity:0;transform:translateY(14px);pointer-events:none;visibility:hidden}
+/* le schede si danno il cambio: quella che esce svanisce in fretta, quella che entra aspetta un attimo (i testi non si sovrappongono) */
+/* (le schede spente sono anche invisibili: il tasto Tab non si ferma sui loro pulsanti; quella accesa eredita, così nella panoramica resta nascosta con la .scheda) */
+.info-or{position:absolute;left:0;bottom:0;width:100%;opacity:0;transform:translateY(12px);pointer-events:none;visibility:hidden;transition:opacity .2s ease,transform .2s ease,visibility 0s .2s}
+.info-or.on{opacity:1;transform:none;pointer-events:auto;visibility:inherit;transition:opacity .5s var(--ease) .16s,transform .5s var(--ease) .16s,visibility 0s}
+.info-or h3{font-size:clamp(2.3rem,3.6vw,3.3rem)}
+.info-or .det{margin-top:10px;font-size:14px;color:#cfccc6}
+.info-or .riga3{margin-top:18px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.info-or .prezzo{font-family:var(--serif);font-size:30px}
+.frecce{position:absolute;right:var(--gut);bottom:clamp(28px,6vh,64px);z-index:3;display:flex;align-items:center;gap:18px;font-size:12px;letter-spacing:.2em;color:var(--mut)}
+.frecce button{width:44px;height:44px;border-radius:50%;border:1px solid var(--faint);background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:16px;transition:opacity .3s,border-color .3s}
+.frecce button:hover{border-color:#fff}
+.frecce button:disabled{opacity:.25;cursor:default;border-color:var(--faint)}
+.frecce b{font-weight:500;color:#fff}
+
+/* ─── il dettaglio: il Meridiano Verde da vicino, parte per parte. L'orologio (lumen3d/dettaglio.js + vetrina.js) fa il giro con lo
+   scroll e sosta su ogni parte; la descrizione accanto segue la parte girata verso di noi; i punti sull'orologio lo girano e ci avvicinano
+   la camera (da vicino: classe .vicino sulla sezione, il punto della parte ha .dentro, sotto l'orologio compare "allontana") ─── */
+.dettaglio{position:relative;height:380vh;border-top:1px solid var(--faint)}
+.dettaglio .pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:radial-gradient(36% 52% at 30% 48%,#1f1f21 0%,#111112 45%,var(--bg) 78%)}
+.dettaglio .pin::before{content:"";position:absolute;left:30%;top:-10%;width:min(56vw,760px);height:85%;transform:translateX(-50%);pointer-events:none;filter:blur(30px);
+  background:radial-gradient(50% 100% at 50% 0%,rgba(255,255,255,.14),rgba(255,255,255,.035) 60%,transparent 80%)}
+/* la scena: la tela 3D e, sopra, lo strato dei punti (stesse misure) */
+.dettaglio .scena{position:absolute;left:0;top:0;bottom:0;width:60%}
+.dettaglio .tela{position:absolute;inset:0;cursor:grab;touch-action:pan-y}
+.dettaglio .tela:active{cursor:grabbing}
+.dettaglio .tela.sul-quadrante{cursor:zoom-in}
+.dettaglio.vicino .tela.sul-quadrante{cursor:zoom-out}
+.dettaglio .tela canvas{position:absolute;inset:0;width:100%;height:100%;outline:none;opacity:0;transition:opacity .8s var(--ease)}
+.dettaglio .tela.pronto canvas{opacity:1}
+/* da vicino l'orologio esce dalla tela: il bordo verso il testo sfuma invece di tagliare (--sfuma 0…1 lo mette dettaglio.js con l'ingrandimento) */
+.dettaglio .tela.sfuma canvas{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - var(--sfuma,0) * 22%),transparent);mask-image:linear-gradient(to right,#000 calc(100% - var(--sfuma,0) * 22%),transparent)}
+.dettaglio .ripiego{position:absolute;left:50%;top:50%;width:min(62vh,500px,84%);aspect-ratio:1;transform:translate(-50%,-50%);object-fit:cover;pointer-events:none;opacity:0;transition:opacity .4s var(--ease);
+  -webkit-mask-image:radial-gradient(closest-side,#000 60%,transparent 97%);mask-image:radial-gradient(closest-side,#000 60%,transparent 97%)}
+.dettaglio .ripiego.on{opacity:1}
+.dettaglio .punti{position:absolute;inset:0;pointer-events:none}
+/* un punto: bersaglio di 44 px, si vede un cerchio di 14 con un + (ci si avvicina); quello della parte vista da vicino è pieno, con un − */
+.dettaglio .punto{position:absolute;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;padding:0;border:0;background:none;cursor:pointer;pointer-events:none;opacity:0;
+  transition:opacity .35s var(--ease);touch-action:pan-y;-webkit-tap-highlight-color:transparent;will-change:transform}
+.dettaglio .punto.vis{opacity:1;pointer-events:auto}
+.dettaglio .punto::before{content:"";position:absolute;left:15px;top:15px;width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,.85);background:rgba(10,10,10,.35);transition:transform .35s var(--ease),background .35s}
+.dettaglio .punto::after{content:"";position:absolute;left:18px;top:18px;width:8px;height:8px;background:linear-gradient(#fff,#fff) 50%/8px 1px no-repeat,linear-gradient(#fff,#fff) 50%/1px 8px no-repeat;transition:background .35s}
+.dettaglio .punto:hover::before,.dettaglio .punto:focus-visible::before{transform:scale(1.3)}
+.dettaglio .punto:focus-visible{outline:0}
+.dettaglio .punto.on::before{background:#fff}
+.dettaglio .punto.on::after{background:linear-gradient(#0a0a0a,#0a0a0a) 50%/8px 1px no-repeat,linear-gradient(#0a0a0a,#0a0a0a) 50%/1px 8px no-repeat}
+.dettaglio .punto.dentro::before{background:#fff}
+.dettaglio .punto.dentro::after{background:linear-gradient(#0a0a0a,#0a0a0a) 50%/8px 1px no-repeat}
+/* il nome della parte accanto al punto: al passaggio del mouse o col tasto Tab */
+.dettaglio .punto .nome{position:absolute;left:38px;top:50%;transform:translate(-4px,-50%);white-space:nowrap;font-size:11px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#fff;
+  text-shadow:0 1px 10px rgba(0,0,0,.9);opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
+.dettaglio .punto:focus-visible .nome{opacity:1;transform:translate(0,-50%)}
+@media (hover:hover){.dettaglio .punto:hover .nome{opacity:1;transform:translate(0,-50%)}}
+/* un alone che respira, piano, solo sui punti visibili */
+.dettaglio .punto.vis:not(.on) i{position:absolute;left:15px;top:15px;width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,.6);animation:dettaglio-onda 3.2s var(--ease) infinite}
+@keyframes dettaglio-onda{0%{transform:scale(1);opacity:.7}60%,100%{transform:scale(2.3);opacity:0}}
+/* il testo: una casella sola in cui si danno il cambio intro e parti (la più alta dà l'altezza), sotto la scheda */
+.dettaglio .testo{position:absolute;right:var(--gut);top:50%;transform:translateY(-50%);width:min(500px,36vw);display:grid;gap:40px}
+.dettaglio .casella,.dettaglio .parti{display:grid}
+.dettaglio .casella>*,.dettaglio .parti>li{grid-area:1/1}
+.dettaglio.vivo .intro,.dettaglio.vivo .parti>li,.dettaglio.vivo .scheda{opacity:0;transform:translateY(10px);visibility:hidden;transition:opacity .2s ease,transform .2s ease,visibility 0s .2s}
+.dettaglio.vivo .intro.on,.dettaglio.vivo:not(.in-intro) .parti>li.on,.dettaglio.vivo .scheda.on{opacity:1;transform:none;visibility:visible;transition:opacity .5s var(--ease) .16s,transform .5s var(--ease) .16s,visibility 0s}
+/* il titolo sta su due righe ("Il Meridiano Verde," e "parte per parte.") in tutti i formati (a 800 px col minimo di 2,2rem) */
+.dettaglio .intro h2{margin-top:12px;font-size:clamp(2.2rem,4vw,3.6rem)}
+.dettaglio .intro p:not(.k){margin-top:18px;color:#cfccc6;max-width:24em}
+.dettaglio .parti h3{margin-top:12px;font-size:clamp(2.2rem,3.4vw,3.2rem)}
+.dettaglio .parti p:not(.k){margin-top:14px;color:#cfccc6;font-size:15px;line-height:1.65;max-width:28em}
+.dettaglio .da-vicino{position:relative;margin-top:18px;background:none;border:0;border-bottom:1px solid var(--faint);padding:2px 0;font-size:13px;color:#fff;cursor:pointer}
+.dettaglio .da-vicino:hover{border-color:#fff}
+.dettaglio .scheda{padding-top:30px;border-top:1px solid var(--faint)}
+.dettaglio .scheda h3{font-size:clamp(2rem,2.8vw,2.6rem)}
+.dettaglio .scheda .det{margin-top:8px;font-size:14px;color:#cfccc6}
+.dettaglio .scheda .riga{margin-top:18px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.dettaglio .scheda .prezzo{font-family:var(--serif);font-size:30px}
+/* il suggerimento sotto l'orologio: "trascina · clicca i punti" (col dito: "tocca i punti") */
+.dettaglio .dito{position:absolute;left:30%;bottom:clamp(24px,5vh,56px);transform:translateX(-50%);white-space:nowrap;pointer-events:none;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);opacity:0;transition:opacity .5s}
+.dettaglio .dito.on{opacity:1}
+.dettaglio .dito .tocco{display:none}
+@media (pointer:coarse){.dettaglio .dito .tocco{display:inline}.dettaglio .dito .clic{display:none}}
+.dettaglio.senza3d .punti,.dettaglio.senza3d .dito{display:none}
+/* da vicino: "allontana" sotto l'orologio, dove c'è il suggerimento (che intanto si spegne). Testo piccolo con una ✕ sottile,
+   bersaglio di 44 px; si vede solo da vicino */
+.dettaglio .allontana{position:absolute;left:50%;bottom:clamp(14px,4vh,46px);z-index:2;transform:translate(-50%,6px);display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;
+  background:none;border:0;cursor:pointer;font-size:11px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.95);
+  opacity:0;visibility:hidden;pointer-events:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity .35s var(--ease),transform .35s var(--ease),visibility 0s .35s}
+.dettaglio.vicino .allontana{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0);transition:opacity .5s var(--ease) .25s,transform .5s var(--ease) .25s,visibility 0s}
+.dettaglio .allontana .x{position:relative;width:12px;height:12px}
+.dettaglio .allontana .x::before,.dettaglio .allontana .x::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:1px;background:currentColor;box-shadow:0 0 8px rgba(0,0,0,.8);transform:translate(-50%,-50%) rotate(45deg)}
+.dettaglio .allontana .x::after{transform:translate(-50%,-50%) rotate(-45deg)}
+.dettaglio .allontana span:last-child{border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2px;transition:border-color .3s}
+.dettaglio .allontana:hover span:last-child{border-color:#fff}
+.dettaglio .allontana:focus-visible{outline:1px solid #fff;outline-offset:2px}
+/* senza 3D: il link "guarda il quadrante da vicino" ingrandisce la foto sul quadrante (al 43% dell'altezza della foto) e lo porta al centro */
+.dettaglio .ripiego{transform-origin:50% 43%}
+.dettaglio.senza3d.vicino .ripiego{transform:translate(-50%,-43%) scale(1.9)}
+.dettaglio.senza3d .ripiego{transition:opacity .4s var(--ease),transform .7s cubic-bezier(.65,0,.35,1)}
+@media (prefers-reduced-motion:reduce){.dettaglio .punto i{animation:none!important;display:none}}
+@media (max-width:640px){
+  .dettaglio{height:360vh}
+  .dettaglio .pin{background:radial-gradient(70% 40% at 50% 35%,#1f1f21 0%,#111112 50%,var(--bg) 82%)}
+  .dettaglio .pin::before{left:50%;width:100vw;height:55%}
+  /* l'orologio in alto (sotto la testata), il testo in basso: sul telefono la scheda prende il posto della descrizione */
+  .dettaglio .scena{right:0;width:auto;top:56px;bottom:auto;height:calc(63% - 56px)}
+  .dettaglio .testo{left:var(--gut);right:var(--gut);width:auto;top:calc(63% + 30px);transform:none;gap:0;align-items:start}
+  .dettaglio .testo>*{grid-area:1/1}
+  /* nascosta del tutto (anche la parte accesa, che altrimenti resterebbe cliccabile sopra la scheda) */
+  .dettaglio.vivo.in-scheda .casella,.dettaglio.vivo.in-scheda .casella .parti>li.on{opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+  .dettaglio .intro h2{font-size:2.6rem}
+  .dettaglio .intro p:not(.k){margin-top:14px;font-size:15px}
+  .dettaglio .parti h3{margin-top:10px;font-size:2.1rem}
+  .dettaglio .parti p:not(.k){margin-top:10px;font-size:14px;line-height:1.6}
+  .dettaglio .da-vicino{margin-top:12px}
+  .dettaglio .scheda{border-top:0;padding-top:0}
+  .dettaglio .scheda h3{font-size:2.2rem}
+  .dettaglio .dito{left:0;right:0;transform:none;text-align:center;bottom:auto;top:calc(63% - 20px)}
+  .dettaglio .allontana{bottom:0}
+  /* sul telefono la tela è larga quanto lo schermo: sfumano il bordo alto (sotto la testata) e quello basso (sopra il testo) */
+  .dettaglio .tela.sfuma canvas{-webkit-mask-image:linear-gradient(transparent,#000 calc(var(--sfuma,0) * 9%),#000 calc(100% - var(--sfuma,0) * 16%),transparent);mask-image:linear-gradient(transparent,#000 calc(var(--sfuma,0) * 9%),#000 calc(100% - var(--sfuma,0) * 16%),transparent)}
+}
+/* telefoni bassi (fino a 720 px): l'orologio un po' più piccolo, il testo ci sta tutto */
+@media (max-width:640px) and (max-height:720px){
+  .dettaglio .scena{height:calc(57% - 56px)}
+  .dettaglio .dito{top:calc(57% - 20px)}
+  .dettaglio .testo{top:calc(57% + 22px)}
+  .dettaglio .intro h2{font-size:2.2rem}
+  .dettaglio .parti h3{font-size:1.8rem}
+}
+
+/* ─── CHI SIAMO: la fiducia sull'acquisto, una sezione sola. Niente caselle: tipografia, aria e qualche filo sottile ─── */
+.fiducia{padding:clamp(104px,14vw,200px) var(--gut) clamp(88px,11vw,160px);border-top:1px solid var(--faint)}
+.fiducia .testa{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(32px,6vw,120px);align-items:end}
+.fiducia h2{margin-top:18px;font-size:clamp(2.8rem,6.2vw,5.6rem)}
+.fiducia .chi{font-family:var(--serif);font-weight:300;font-size:clamp(1.4rem,1.9vw,1.8rem);line-height:1.4;color:#dcd9d3;max-width:25em}
+/* le tre promesse: un filo sopra, un numero, il titolo e due righe */
+.promesse{margin-top:clamp(80px,10vw,150px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(32px,4vw,72px)}
+.promesse li{padding-top:28px;border-top:1px solid var(--faint)}
+.promesse h3{margin-top:22px;font-size:clamp(1.8rem,2.4vw,2.3rem)}
+.promesse p{margin-top:12px;color:#bdb9b2;font-size:15px;max-width:25em}
+/* dove siamo: l'indirizzo grande, gli orari, l'unico pulsante pieno della sezione */
+.dove{margin-top:clamp(96px,12vw,180px);padding-top:clamp(44px,5vw,72px);border-top:1px solid var(--faint);display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) auto;gap:clamp(28px,4vw,80px);align-items:end}
+.dove .indirizzo{margin-top:16px;font-family:var(--serif);font-weight:300;font-size:clamp(2.1rem,3.6vw,3.2rem);line-height:1.08}
+/* l'indirizzo va a capo prima della città (il punto resta per chi legge con la sintesi vocale) */
+.dove .a-capo{display:block;height:0;overflow:hidden}
+.dove dl{display:grid;gap:16px;font-size:15px;color:#cfccc6}
+.dove dt{margin-bottom:2px}
+
+/* ─── la fascia di Scrollify: i colori del marchio invertiti (fondo verde segnale, testo quasi nero), così stacca dal fondo di
+       qualsiasi sito e l'occhio ci cade; l'unico pulsante pieno è nero con il testo verde. Questo blocco è IDENTICO nelle tre demo,
+       con le misure scritte qui (non ereditate dalla pagina): se si cambia, cambiarlo in tutte e tre ─── */
+.pacchetto{padding:clamp(56px,8vw,96px) var(--gut);background:#a8ff60;color:#050605;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:28px;font-family:var(--sans);font-size:16px;line-height:1.6}
+.pacchetto ::selection{background:#050605;color:#a8ff60}
+.pacchetto .k{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(5,6,5,.6)}
+.pacchetto h3{margin-top:12px;font-family:var(--sans);font-stretch:100%;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.6rem);letter-spacing:-.03em;line-height:1.08;text-transform:none;color:#050605}
+.pacchetto p{margin-top:12px;font-size:16px;color:rgba(5,6,5,.75);max-width:36em}
+.pacchetto a{display:inline-block;padding:14px 22px;border-radius:12px;background:#050605;color:#a8ff60;font-family:var(--sans);font-size:16px;font-weight:600;line-height:1.6;white-space:nowrap;transition:background .3s,transform .3s var(--ease)}
+.pacchetto a:hover{background:#1d2419;transform:translateY(-2px)}
+.pacchetto a:focus-visible{outline:2px solid #050605;outline-offset:4px}
+.demo{padding:28px var(--gut);border-top:1px solid var(--faint);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.demo a{color:#d8d5cf;border-bottom:1px solid var(--faint)}
+/* l'avviso: largo quanto il testo (con left:50% il browser lo stringerebbe a mezzo schermo), mai più dello schermo */
+.avviso{position:fixed;left:50%;bottom:28px;z-index:60;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:#fff;color:#070707;padding:14px 20px;border-radius:4px;font-size:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);transition:all .4s var(--ease);width:max-content;max-width:calc(100vw - 40px)}
+.avviso.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:900px){
+  .fiducia .testa{grid-template-columns:minmax(0,1fr);align-items:start}
+  .promesse{grid-template-columns:minmax(0,1fr);gap:44px;max-width:34em}
+  .dove{grid-template-columns:minmax(0,1fr);align-items:start;gap:36px}
+  .dove .btn{justify-self:start}
+}
+@media (max-width:640px){
+  .top nav .lnk{display:none}
+  .logo{font-size:22px}
+  .giostra{--intro:60vh;--passo:76vh;--coda:24vh}
+  .nomone{top:33%}
+  .giostra .dito{top:calc(62% - 26px)}
+  .giostra .scheda{bottom:92px;right:var(--gut);width:auto}
+  .info-or h3{font-size:2.2rem}
+  .info-or .det{font-size:13px}
+  .frecce{left:var(--gut);right:var(--gut);justify-content:space-between;bottom:24px}
+  .pacchetto{grid-template-columns:minmax(0,1fr);align-items:start}
+}
+/* telefono in orizzontale (schermo basso e largo): il titolo grande non ci sta sopra agli orologi, quindi il logo è in testata da
+   subito e resta solo il motto; scheda della giostra più compatta (la giostra le lascia spazio: ZONA); nel dettaglio un testo alla
+   volta sotto la testata, e in fondo la scheda al posto della descrizione, come sul telefono in verticale */
+@media (max-height:500px) and (min-aspect-ratio:3/2){
+  .top{padding-top:12px;padding-bottom:12px}
+  .top .logo{opacity:1}
+  .benvenuto .alto,.benvenuto .scorri,.giostra .dito{display:none}
+  .benvenuto .basso{bottom:14px}
+  .benvenuto .motto{font-size:1.3rem}
+  .giostra .scheda{bottom:16px}
+  .frecce{bottom:16px}
+  .info-or h3{font-size:1.8rem}
+  .info-or .det{margin-top:6px;font-size:13px}
+  .info-or .riga3{margin-top:10px}
+  .info-or .prezzo,.dettaglio .scheda .prezzo{font-size:24px}
+  .info-or .btn,.dettaglio .scheda .btn{padding:11px 18px}
+  .dettaglio .testo{top:64px;bottom:14px;transform:none;gap:0;align-items:center}
+  .dettaglio .testo>*{grid-area:1/1}
+  .dettaglio.vivo.in-scheda .casella,.dettaglio.vivo.in-scheda .casella .parti>li.on{opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+  .dettaglio .scheda{border-top:0;padding-top:0}
+  .dettaglio .intro h2{margin-top:8px;font-size:2.1rem}
+  .dettaglio .intro p:not(.k){margin-top:10px;font-size:14px}
+  .dettaglio .parti h3,.dettaglio .scheda h3{margin-top:8px;font-size:1.8rem}
+  .dettaglio .parti p:not(.k){margin-top:8px;font-size:14px}
+  .dettaglio .da-vicino{margin-top:10px}
+  .dettaglio .scheda .riga{margin-top:10px}
+  .dettaglio .dito{bottom:10px}
+  .dettaglio .allontana{bottom:2px}
+}
+
+/* barra di Scrollify: le demo si aprono nella stessa scheda, da qui si torna ai template */
+.scrollify-barra{position:fixed;inset:0 0 auto;z-index:1000;height:var(--sb);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,48px);background:#050605;font:600 17px/1 "Inter",system-ui,-apple-system,sans-serif}
+.scrollify-barra a{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#a8ff60;text-decoration:none;letter-spacing:0;text-transform:none}
+.scrollify-barra a:hover{color:#fff}
+.scrollify-barra a:focus-visible{outline:2px solid #a8ff60;outline-offset:2px;border-radius:4px}
+.scrollify-barra .sb-marchio{font:500 14px/1 ui-monospace,"Geist Mono",Menlo,monospace;color:#eef2ec;letter-spacing:.02em}
+.scrollify-barra .sb-marchio b{font-weight:500;color:#a8ff60}
+:root{--sb:50px}
+@media (max-width:640px){:root{--sb:46px}.scrollify-barra{font-size:16px}.scrollify-barra .sb-marchio{font-size:12px}}
+.top{top:var(--sb)}
+</style>
+</head>
+<body>
+<nav class="scrollify-barra" aria-label="Scrollify"><a href="https://scrollify.online/#esempi" id="sbTorna"><span aria-hidden="true" style="font-size:1.25em">←</span> Torna a Scrollify</a><span class="sb-marchio" aria-hidden="true">scroll<b>ify</b></span></nav>
+<script>/* se arrivi dalla home di Scrollify torni indietro nella storia: stessa scheda, stesso punto della pagina */
+document.getElementById('sbTorna').addEventListener('click',function(e){try{if(document.referrer&&new URL(document.referrer).origin===location.origin&&history.length>1){e.preventDefault();history.back()}}catch(_){}});</script>
+
+<header class="top">
+  <a class="logo" href="#" aria-label="Lumen, torna all'inizio">Lumen</a>
+  <nav><a class="lnk" href="#giostra" data-vetrina>vetrina</a><a class="lnk" href="#dettaglio">da vicino</a><a class="lnk" href="#chi-siamo">chi siamo</a><button class="carrello" type="button" id="carrello">carrello <b id="nCarrello">0</b></button></nav>
+</header>
+
+<main>
+  <!-- ═══ LA GIOSTRA (apertura): i cinque orologi in 3D; prima raccolti in profondità, poi uno alla volta al centro ═══ -->
+  <section class="giostra" id="giostra" aria-label="La vetrina di Lumen">
+    <div class="pin">
+      <p class="nomone" id="nomone" aria-hidden="true"></p>
+      <div class="fila" id="fila" role="group" aria-label="Gli orologi in 3D: trascina quello al centro per girarlo, tocca uno ai lati per portarlo al centro"></div>
+      <div class="benvenuto" id="benvenuto">
+        <div class="alto"><p class="k">orologi e gioielli</p><h1>Lumen</h1></div>
+        <div class="basso"><p class="motto">Pezzi scelti uno a uno.</p><p class="k scorri">scorri ↓</p></div>
+      </div>
+      <p class="dito" id="ditoG" aria-hidden="true">↔ trascina per girarlo</p>
+      <div class="scheda"><div id="infoOr"></div></div>
+      <div class="frecce"><button type="button" id="prima" aria-label="Orologio precedente">←</button><span id="contatore"><b>01</b> / 05</span><button type="button" id="dopo" aria-label="Orologio successivo">→</button></div>
+    </div>
+  </section>
+
+  <!-- ═══ DA VICINO: il Meridiano Verde parte per parte (lumen3d/dettaglio.js). "vivo" già nel markup: finché il modulo non arriva
+       si vede solo l'intro (le parti e la scheda si danno il cambio nello stesso posto) ═══ -->
+  <section class="dettaglio vivo" id="dettaglio" aria-label="Il Meridiano Verde da vicino">
+    <div class="pin">
+      <div class="scena">
+        <div class="tela" role="img" aria-label="Il Meridiano Verde in 3D: trascina per girarlo"></div>
+        <div class="punti"></div>
+        <button class="allontana" type="button" aria-label="Allontana: torna all'orologio intero"><span class="x" aria-hidden="true"></span><span>allontana</span></button>
+      </div>
+      <div class="testo">
+        <div class="casella">
+          <div class="intro on">
+            <p class="k">da vicino</p>
+            <h2>Il Meridiano Verde,<br><em>parte per parte.</em></h2>
+            <p>Scorri e te lo giriamo davanti. Oppure trascinalo, o scegli un punto.</p>
+          </div>
+          <ol class="parti">
+            <li data-parte="quadrante" data-nome="quadrante"><p class="k">01 / 07</p><h3>Quadrante soleil</h3>
+              <p>Verde profondo a raggi sottili: cambia tono a ogni movimento del polso.</p>
+              <button class="da-vicino" type="button" data-via="Allontana">Guarda il quadrante da vicino</button></li>
+            <li data-parte="lunetta" data-nome="lunetta"><p class="k">02 / 07</p><h3>Lunetta ottagonale</h3>
+              <p>Piano satinato, smussi a specchio: la luce si ferma sugli spigoli.</p></li>
+            <li data-parte="corona" data-nome="corona"><p class="k">03 / 07</p><h3>Corona a vite</h3>
+              <p>Zigrinata, si avvita sul tubo: impermeabile fino a 100&nbsp;metri.</p></li>
+            <li data-parte="fondello" data-nome="fondello"><p class="k">04 / 07</p><h3>Fondello a raggiera</h3>
+              <p>Otto viti; sotto, un automatico con 48&nbsp;ore di riserva.</p></li>
+            <li data-parte="chiusura" data-nome="chiusura"><p class="k">05 / 07</p><h3>Chiusura déployante</h3>
+              <p>Si apre con i due pulsanti sui fianchi, si richiude con un clic.</p></li>
+            <li data-parte="bracciale" data-nome="bracciale"><p class="k">06 / 07</p><h3>Bracciale a tre file</h3>
+              <p>Maglie piene e satinate che seguono il polso senza giochi.</p></li>
+            <li data-parte="cassa" data-nome="cassa"><p class="k">07 / 07</p><h3>Cassa e anse</h3>
+              <p>Un solo blocco d'acciaio da 41&nbsp;mm: il bracciale nasce dalla cassa.</p></li>
+          </ol>
+        </div>
+        <div class="scheda">
+          <h3>Meridiano Verde</h3>
+          <p class="det">Acciaio, quadrante verde · Automatico · 41&nbsp;mm</p>
+          <div class="riga"><span class="prezzo">9.400 €</span><button class="btn" type="button">Aggiungi al carrello</button></div>
+        </div>
+      </div>
+      <p class="dito" aria-hidden="true">↔ trascina per girarlo · <span class="clic">clicca i punti</span><span class="tocco">tocca i punti</span></p>
+    </div>
+  </section>
+
+  <!-- ═══ CHI SIAMO: chi siamo, garanzie, laboratorio, ritiro, dove siamo (dati di esempio) ═══ -->
+  <section class="fiducia" id="chi-siamo" aria-label="Chi siamo, garanzie e dove trovarci">
+    <div class="testa">
+      <div><p class="k">chi siamo</p><h2>Comprato qui,<br><em>seguito da noi.</em></h2></div>
+      <p class="chi">Lumen è una piccola orologeria indipendente: pochi pezzi e il tempo di raccontarteli con calma.</p>
+    </div>
+    <ol class="promesse">
+      <li><p class="k">01</p><h3>Certificato e garanzia</h3><p>Ogni orologio ha il suo certificato di autenticità e due anni di garanzia, firmati da noi.</p></li>
+      <li><p class="k">02</p><h3>Laboratorio interno</h3><p>Revisione, pulizia e assistenza, anche anni dopo l'acquisto: se ne occupa il nostro orologiaio, qui in negozio.</p></li>
+      <li><p class="k">03</p><h3>Ritiro in negozio</h3><p>Compri online e passi quando vuoi: te lo regoliamo al polso sul momento.</p></li>
+    </ol>
+    <div class="dove">
+      <div><p class="k">dove siamo</p><p class="indirizzo">Via Esempio 7<span class="a-capo"> · </span>La tua città</p></div>
+      <dl>
+        <div><dt class="k">aperti</dt><dd>Da martedì a sabato, 10:00 – 19:30</dd></div>
+        <div><dt class="k">su appuntamento</dt><dd>Visite private, anche fuori orario</dd></div>
+      </dl>
+      <a class="btn" href="#" data-demo="Sito dimostrativo: nel sito vero qui prenoti una visita privata in negozio.">Prenota una visita</a>
+    </div>
+  </section>
+</main>
+
+<aside class="pacchetto">
+  <div><p class="k">fatto con Scrollify</p><h3>Il pacchetto gioielleria</h3><p>Una vetrina come questa, più il negozio online con il pagamento sicuro. Ogni sito è su misura e personalizzabile al 100%: questo è solo un esempio.</p></div>
+  <a href="https://scrollify.online/#contatti" rel="noopener">Lo voglio per la mia gioielleria →</a>
+</aside>
+<footer class="demo">
+  <span>Lumen è una gioielleria immaginaria: questo è un sito dimostrativo, con immagini generate con l'intelligenza artificiale.</span>
+  <span>Lo vuoi per il tuo negozio? <a href="https://scrollify.online/#contatti" rel="noopener">fatto con Scrollify →</a></span>
+</footer>
+<div class="avviso" id="avviso" role="status"></div>
+
+<script src="lib/lenis.min.js"></script>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)), tra=(p,a,b)=>cl((p-a)/(b-a));
+const euro=n=>n.toString().replace(/\B(?=(\d{3})+$)/g,'.')+' €';
+const ridotto=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const webgl2=!!window.__webgl2;
+let lenis=null;
+if(!ridotto&&window.Lenis){lenis=new Lenis({lerp:.1});(function raf(t){lenis.raf(t);requestAnimationFrame(raf)})(performance.now())}
+const vai=(y)=>lenis?lenis.scrollTo(y,{duration:1.1}):scrollTo({top:typeof y==='number'?y:y.getBoundingClientRect().top+scrollY,behavior:ridotto?'auto':'smooth'});
+history.scrollRestoration='manual';   // si riparte sempre dall'apertura
+// i link interni scorrono (morbidi); "vetrina" porta alla giostra aperta sul primo orologio
+$$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{if(a.dataset.demo)return;const id=a.getAttribute('href'),t=id==='#'?0:$(id);if(t===null)return;e.preventDefault();
+  if(a.hasAttribute('data-vetrina'))aOrologio(0);else vai(t)}));
+const avviso=$('#avviso');let avT;
+function avvisa(t){avviso.textContent=t;avviso.classList.add('on');clearTimeout(avT);avT=setTimeout(()=>avviso.classList.remove('on'),3800)}
+$$('[data-demo]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();avvisa(a.dataset.demo)}));
+// la foto al posto del 3D (ripiego): un'immagine al centro dell'host, che entra in dissolvenza
+function foto(host,src){let im=host.querySelector('.ripiego');if(!im){im=document.createElement('img');im.className='ripiego';im.alt='';im.decoding='async';host.appendChild(im)}
+  if(im.getAttribute('src')!==src){im.classList.remove('on');im.onload=()=>im.classList.add('on');im.src=src}else im.classList.add('on');return im}
+
+/* ═══ I PEZZI: i cinque della giostra. id = il modello 3D (lumen3d/modelli/<id>.js); img = la foto al centro se il 3D non c'è ═══ */
+const OROLOGI=[
+  {id:'meridiano-blu',n:'Meridiano Blu',det:'Acciaio, quadrante blu · Automatico · 41\u00a0mm',prezzo:8900,img:'img/orologio-1.webp'},
+  {id:'meridiano-verde',n:'Meridiano Verde',det:'Acciaio, quadrante verde · Automatico · 41\u00a0mm',prezzo:9400,img:'img/orologio-2.webp'},
+  {id:'abisso-bianco',n:'Abisso Bianco',det:'Ceramica bianca · Automatico · 300\u00a0m · 43\u00a0mm',prezzo:7200,img:'img/orologio-abisso-bianco.webp'},
+  {id:'aurora',n:'Aurora',det:'Oro rosa, pelle bordeaux · Carica manuale · 39\u00a0mm',prezzo:12900,img:'img/orologio-4.webp'},
+  {id:'rosa',n:'Rosa',det:'Acciaio, quadrante rosa · Quarzo · 22\u00a0×\u00a032\u00a0mm',prezzo:4600,img:'img/orologio-6.webp'},
+];
+const perId=id=>OROLOGI.find(o=>o.id===id);
+
+/* ═══ IL CARRELLO (dimostrativo): il contatore in alto e un avviso; un pezzo per tipo ═══ */
+const NOTA='Sito dimostrativo: il pagamento non è attivo.';
+const carrello=new Map(), bottoni=[];   // bottoni: [pulsante, pezzo] da rietichettare quando cambia il carrello
+function pulsante(btn,o){btn.dataset.testo=btn.textContent;btn.onclick=()=>aggiungi(o);bottoni.push([btn,o]);etichetta(btn,o)}
+function etichetta(btn,o){const c=carrello.has(o.id);btn.textContent=c?'Nel carrello':btn.dataset.testo;btn.classList.toggle('dentro',c)}
+function aggiungi(o){
+  if(carrello.has(o.id)){avvisa(`${o.n} è già nel carrello. ${NOTA}`);return}
+  carrello.set(o.id,o);$('#nCarrello').textContent=carrello.size;bottoni.forEach(([b,x])=>etichetta(b,x));
+  const b=$('#nCarrello');b.classList.add('su');setTimeout(()=>b.classList.remove('su'),300);
+  avvisa(`${o.n} è nel carrello. ${NOTA}`);
+}
+$('#carrello').onclick=()=>avvisa(carrello.size?`Nel carrello: ${[...carrello.values()].map(o=>o.n).join(', ')}. ${NOTA}`:`Il carrello è vuoto. ${NOTA}`);
+
+/* ═══ LA GIOSTRA ═══
+   la scena la fa lumen3d/giostra.js (montata subito); la pagina le dà la posizione (lo scroll: prima la panoramica, poi x)
+   e tiene benvenuto, nomone, schede, contatore, frecce e tastiera. Finché il 3D non c'è (o se manca) il centro lo decide lo scroll */
+const giostra=$('#giostra'), pin=giostra.querySelector('.pin'), fila=$('#fila'), infoOr=$('#infoOr'), nomone=$('#nomone'), ditoG=$('#ditoG'), benvenuto=$('#benvenuto');
+let VETRINA=[], schede=[], N=0, oraN=-1, g=null, senza3d=!webgl2, pano=1;
+const falliti=new Set();   // orologi che la giostra non è riuscita a costruire: al centro c'è la loro foto
+const dueCifre=n=>String(n).padStart(2,'0');
+// dove sta il centrale (frazione dell'altezza) e i margini della zona: sotto c'è la scheda (telefono in orizzontale: sotto la testata e sopra la scheda)
+const ZONA=(W,H)=>W/H<.7?{su:.04,giu:.38,lato:.07}:H<=500&&W/H>=1.5?{su:.16,giu:.33,lato:.1}:{su:.06,giu:.28,lato:.1};
+// la piccola scheda di ogni orologio: nome, una riga di dettagli, prezzo, carrello (prima quelli di OROLOGI, poi quelli che la giostra ha davvero)
+function preparaVetrina(lista){
+  VETRINA=lista; N=lista.length; oraN=-1; infoOr.innerHTML='';
+  schede=lista.map(o=>{const el=document.createElement('div');el.className='info-or';
+    el.innerHTML=`<h3>${o.n}</h3><p class="det">${o.det}</p><div class="riga3"><span class="prezzo">${o.prezzo?euro(o.prezzo):''}</span><button class="btn" type="button">Aggiungi al carrello</button></div>`;
+    pulsante(el.querySelector('.btn'),o); infoOr.appendChild(el); return el});
+  giostra.style.setProperty('--passi',Math.max(1,N-1));
+}
+preparaVetrina(OROLOGI);
+// lo scroll della sezione: intro (panoramica → giostra), un passo per orologio e la coda, in px (dalle variabili CSS --intro, --passo, --coda)
+function tappe(){
+  const cs=getComputedStyle(giostra), I=parseFloat(cs.getPropertyValue('--intro'))||70, Pv=parseFloat(cs.getPropertyValue('--passo'))||92, C=parseFloat(cs.getPropertyValue('--coda'))||0;
+  const span=Math.max(1,giostra.offsetHeight-innerHeight), u=span/(I+Math.max(1,N-1)*Pv+C);
+  return {intro:I*u,passo:Pv*u,span};
+}
+function posizione(){const T=tappe(),s=cl(-giostra.getBoundingClientRect().top,0,T.span);return {pano:1-cl(s/T.intro),x:cl((s-T.intro)/T.passo,0,N-1)}}
+// l'orologio n al centro: scheda, nomone, contatore, frecce (e la foto, se al posto del 3D)
+function mostra(n){
+  n=cl(n,0,N-1); if(n===oraN)return; oraN=n;
+  schede.forEach((s,i)=>s.classList.toggle('on',i===n)); nomone.textContent=VETRINA[n].n;
+  $('#contatore').innerHTML=`<b>${dueCifre(n+1)}</b> / ${dueCifre(N)}`;
+  $('#prima').disabled=n===0; $('#dopo').disabled=n===N-1;
+  if(senza3d||falliti.has(n))foto(fila,VETRINA[n].img);else fila.querySelector('.ripiego')?.classList.remove('on');
+}
+function giostraScroll(){
+  const P=posizione(), e=1-P.pano, f=Math.abs(P.x-Math.round(P.x)); pano=P.pano;
+  if(g){g.panoramica(P.pano);g.vai(P.x)}else mostra(Math.round(P.x));
+  // benvenuto: svanisce nella prima metà dell'intro; il logo piccolo in testata arriva dopo
+  const b=tra(e,0,.45); benvenuto.style.opacity=1-b; benvenuto.style.transform=`translateY(${-b*28}px)`; benvenuto.style.visibility=b>=1?'hidden':'';
+  document.documentElement.style.setProperty('--logo',tra(e,.35,1).toFixed(3));
+  pin.classList.toggle('giro',P.pano<.2);
+  nomone.style.opacity=((1-Math.min(1,f*3))*tra(e,.6,1)).toFixed(3);   // il nome sfuma mentre gli orologi si scambiano
+  ditoG.style.opacity=g&&!senza3d?((1-Math.min(1,f*4))*.9*tra(e,.7,1)).toFixed(3):0;
+  // la foto di ripiego: in panoramica a metà schermo, in giostra dove sta il centrale
+  const tel=innerWidth/innerHeight<.7; fila.style.setProperty('--rip-y',(tel?33:39)+P.pano*(tel?17:11)+'%');
+}
+function montaGiostra(){
+  if(!webgl2){mostra(0);return}   // senza WebGL2 le foto (mostra)
+  const P=posizione();
+  import('./lumen3d/giostra.js').then(m=>m.monta(fila,{anello:true,primaIlCentro:true,panoramica:P.pano,x:P.x,fondo:'#070707',zona:ZONA})).then(gg=>{
+    // le voci che la giostra ha davvero, collegate ai pezzi (nome, dettagli, prezzo, carrello)
+    const lista=gg.voci.map(v=>perId(v.id)??{id:v.id,n:v.nome,det:'',prezzo:0,img:''});
+    if(lista.length!==N||lista.some((o,i)=>o!==VETRINA[i]))preparaVetrina(lista);
+    g=gg; window.__lumen.giostra=g;
+    const rifai=()=>{const n=oraN;oraN=-1;mostra(n<0?g.centro():n)};
+    g.su('centro',n=>mostra(n));
+    g.su('scelta',n=>aOrologio(n));                                  // click o tocco su un orologio (ai lati; in panoramica tutti)
+    g.su('scorri',d=>aOrologio(pano>.5?0:g.centro()+d));             // trascinamento fuori dal centrale
+    // un orologio che non si costruisce (o il cui modulo non arriva): al centro, al suo posto, la sua foto
+    g.su('errore',v=>{falliti.add(v.i);rifai()});
+    g.info().falliti.forEach(i=>falliti.add(i));
+    oraN=-1; mostra(g.centro()); giostraScroll();
+  }).catch(e=>{console.warn('Lumen: giostra 3D non disponibile, restano le foto.',e.message);senza3d=true;const n=oraN;oraN=-1;mostra(n<0?0:n);giostraScroll()});
+}
+// frecce, tastiera, swipe: portano all'orologio prima o dopo (è lo scroll della pagina che guida la giostra)
+function aOrologio(n){n=cl(n,0,N-1);const T=tappe();vai(giostra.offsetTop+T.intro+T.passo*n+1)}
+$('#prima').onclick=()=>aOrologio(oraN-1); $('#dopo').onclick=()=>aOrologio(oraN+1);
+addEventListener('keydown',e=>{if(e.altKey||e.metaKey||e.ctrlKey)return;const b=giostra.getBoundingClientRect();if(b.top>1||b.bottom<innerHeight-1)return;
+  if(e.key==='ArrowRight')aOrologio(pano>.5?0:oraN+1);if(e.key==='ArrowLeft'&&pano<=.5)aOrologio(oraN-1)});
+// swipe sulla fila senza 3D (col 3D lo riconosce la giostra: evento 'scorri')
+let x0=null; fila.addEventListener('pointerdown',e=>{if(!g)x0=e.clientX});
+addEventListener('pointerup',e=>{if(x0===null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>50)aOrologio(pano>.5?0:oraN+(dx<0?1:-1))});
+addEventListener('pointercancel',()=>{x0=null});
+// per le verifiche (lumen-pagina.mjs, lumen-apertura.mjs)
+window.__lumen={giostra:null,dettaglio:null,lenis,posizione,tappe,carrello};
+
+/* ═══ DA VICINO: IL DETTAGLIO ═══
+   il Meridiano Verde parte per parte (lumen3d/dettaglio.js): l'orologio fa il giro con lo scroll e sosta su ogni parte, la descrizione
+   segue la parte girata verso di noi (anche quando lo giri a mano), i punti lo girano e ci avvicinano la camera (tutto nella sezione).
+   L'intro c'è da subito (markup); il modulo si scarica quando la sezione è a due schermi, il suo 3D (un secondo renderer: si ferma
+   quando non si vede, come la giostra) a uno schermo.
+   La scheda in fondo prende nome, dettagli e prezzo da OROLOGI e usa il carrello della pagina (pulsante: niente opzione aggiungi) */
+const dettaglio=$('#dettaglio'), verde=perId('meridiano-verde'); let dett=null;
+const avanti=el=>{const b=el.getBoundingClientRect(),span=b.height-innerHeight;return span>0?cl(-b.top/span):0};   // 0…1 dentro una sezione col pin
+{const s=dettaglio.querySelector('.scheda');s.querySelector('h3').textContent=verde.n;s.querySelector('.det').textContent=verde.det;
+  s.querySelector('.prezzo').textContent=euro(verde.prezzo);pulsante(s.querySelector('.btn'),verde)}
+new IntersectionObserver((es,io)=>{
+  if(!es.some(e=>e.isIntersecting))return; io.disconnect();
+  import('./lumen3d/dettaglio.js').then(m=>m.monta(dettaglio,{senza3d:!webgl2,ripiego:verde.img})).then(d=>{
+    dett=d; window.__lumen.dettaglio=d; tutto();
+  }).catch(e=>{console.warn('Lumen: dettaglio non disponibile, resta la foto.',e.message);dettaglio.classList.add('senza3d');foto(dettaglio.querySelector('.tela'),verde.img)});
+},{rootMargin:'200% 0px'}).observe(dettaglio);
+
+// la testata si copre quando nessuno dei due 3D è fermo in cima (il testo le passa sotto)
+const testata=$('.top'), pinD=dettaglio.querySelector('.pin'), fermoInCima=el=>Math.abs(el.getBoundingClientRect().top)<.5;
+let coperta=null;
+function copri(){const c=!fermoInCima(pin)&&!fermoInCima(pinD);if(c!==coperta){coperta=c;testata.classList.toggle('coperta',c)}}
+// lo scroll (con Lenis, se c'è) guida la giostra e il dettaglio
+const tutto=()=>{giostraScroll();dett?.aggiorna(avanti(dettaglio));copri()};
+lenis?lenis.on('scroll',tutto):addEventListener('scroll',tutto,{passive:true});
+addEventListener('resize',tutto);
+mostra(0); giostraScroll(); copri();
+montaGiostra();   // subito: è l'apertura
+</script>
+</body>
+</html>

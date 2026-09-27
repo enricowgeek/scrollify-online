@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#060606">
+<title>Centro · poligono di tiro</title>
+<meta name="description" content="Centro, poligono di tiro: corsi con istruttore per chi inizia, linee da 25 metri, armeria e noleggio in sede. Sito dimostrativo fatto con Scrollify.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060606'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23ece8e1' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='6' fill='none' stroke='%23ece8e1' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23e0432a'/%3E%3C/svg%3E">
+<link rel="preload" href="font/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="font/font.css">
+<!-- Centro · poligono di tiro (attività immaginaria): sito dimostrativo di Scrollify. Un'unica esperienza a scroll:
+     0. l'apertura: il nome, cosa e dove, "scorri e montala" sopra l'esploso (c'è già mentre il 3D carica);
+     1. la pistola esplosa si monta, si carica e spara da sola (lib3d/scena.js, Three.js), con tre frasi in basso;
+     2. la camera segue il proiettile di lato lungo la linea di tiro (lib3d/poligono.js), con le frasi che entrano ed escono;
+     3. il proiettile colpisce il centro del bersaglio, che si spacca; resta il bersaglio forato e si passa a "prenota".
+     Poi: modulo di prenotazione (dimostrativo, nessun invio), dove siamo, la fascia di Scrollify, la nota in fondo.
+     Verifica: ~/lab3d/strumenti/rec/pistola-*.mjs e centro-*.mjs (vedi LEGGIMI.md). -->
+<style>
+  :root {
+    --bg: #060606; --txt: #ece8e1; --mut: #8d887f; --faint: rgba(236, 232, 225, .09); --acc: #e0432a;
+    --disp: "Archivo", "Arial Narrow", system-ui, sans-serif; --sans: "Inter", system-ui, sans-serif;
+    --gut: clamp(20px, 5vw, 72px); --ease: cubic-bezier(.16, 1, .3, 1);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  html.lenis, html.lenis body { height: auto; }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  body { background: var(--bg); color: var(--txt); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  ::selection { background: var(--acc); color: #fff; }
+  /* testata: il logo e "prenota" */
+  .top { position: fixed; inset: 0 0 auto; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 22px var(--gut);
+    background: linear-gradient(rgba(6, 6, 6, .72), rgba(6, 6, 6, 0)); pointer-events: none; }
+  .top a { pointer-events: auto; text-decoration: none; }
+  /* fuori dall'esperienza la testata si copre: il testo non le passa sotto */
+  .top.coperta { background: var(--bg); transition: background .3s; }
+  .logo { font-family: var(--disp); font-stretch: 75%; font-weight: 700; font-size: 22px; letter-spacing: .01em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 9px; min-height: 44px; }
+  .logo i { width: 9px; height: 9px; border-radius: 50%; background: var(--acc); }
+  .top .nav { font-size: 15px; color: var(--txt); opacity: .85; min-height: 44px; display: inline-flex; align-items: center; border-bottom: 1px solid transparent; transition: opacity .3s, border-color .3s; }
+  .top .nav:hover { opacity: 1; border-color: var(--txt); }
+  #pagina.scossa { animation: scossa .36s cubic-bezier(.36, .07, .19, .97) both; }
+  #pagina.scossa-piccola { animation: scossa-p .3s cubic-bezier(.36, .07, .19, .97) both; }
+  @keyframes scossa { 12% { transform: translate3d(-8px, 4px, 0) rotate(-.3deg); } 26% { transform: translate3d(7px, -5px, 0) rotate(.25deg); } 42% { transform: translate3d(-5px, 3px, 0); } 60% { transform: translate3d(3px, -1px, 0); } 100% { transform: none; } }
+  @keyframes scossa-p { 15% { transform: translate3d(-4px, 2px, 0); } 35% { transform: translate3d(3px, -2px, 0); } 60% { transform: translate3d(-1px, 1px, 0); } 100% { transform: none; } }
+
+  /* l'esperienza: sezione alta con il palco fisso */
+  #arma { position: relative; height: 1400vh; }
+  #arma .palco { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+    background: radial-gradient(120% 90% at 50% 45%, #111 0%, #050505 55%, #000 100%); }
+  #arma .tela { position: absolute; inset: 0; }
+  #arma .tela canvas { opacity: 0; transition: opacity .8s ease; }
+  #arma .tela.pronto canvas { opacity: 1; }
+  /* frasi del volo: grande tipografia che entra da destra ed esce a sinistra (niente caselle) */
+  .frasi { position: absolute; inset: 0; pointer-events: none; }
+  .frase { position: absolute; left: var(--gut); top: clamp(88px, 13vh, 140px); max-width: min(17ch, 76vw); font-family: var(--disp); font-stretch: 72%; font-weight: 800;
+    font-size: clamp(2.8rem, 6.2vw, 6.6rem); line-height: .92; letter-spacing: -.005em; text-transform: uppercase; color: var(--txt);
+    opacity: 0; transform: translate3d(10vw, 0, 0); will-change: transform, opacity; text-wrap: balance; }
+  /* apertura: il nome e l'invito a scorrere, sopra l'esploso; se ne va ai primi passi dello scroll (e c'è già mentre il 3D carica) */
+  .apertura { position: absolute; left: var(--gut); right: var(--gut); bottom: clamp(36px, 9vh, 96px); pointer-events: none; will-change: transform, opacity; }
+  .apertura h1 { font-family: var(--disp); font-stretch: 72%; font-weight: 800; font-size: clamp(2.4rem, 4.6vw, 5.2rem); line-height: .92; text-transform: uppercase; max-width: 17ch; text-wrap: balance; }
+  .apertura .cosa { margin-top: 20px; font-size: 17px; color: var(--txt); opacity: .86; }
+  .apertura .scorri { margin-top: 10px; font-size: 15px; color: var(--mut); }
+  /* frasi del montaggio: stesso stile di quelle del volo, in basso a sinistra (sopra ci sono i pezzi) */
+  .frase.giu { top: auto; bottom: clamp(36px, 9vh, 96px); font-size: clamp(2.4rem, 4.6vw, 5.2rem); }
+  .frase.giu.destra { left: auto; right: var(--gut); text-align: right; }
+  .frase small { display: block; margin-top: 18px; font-family: var(--sans); font-stretch: 100%; font-weight: 400; font-size: 15px; line-height: 1.4; letter-spacing: 0; text-transform: none; color: var(--mut); }
+  .finale { position: absolute; left: var(--gut); bottom: clamp(36px, 9vh, 96px); opacity: 0; transform: translate3d(0, 24px, 0); visibility: hidden;
+    transition: opacity .6s var(--ease), transform .6s var(--ease), visibility 0s .6s; }
+  .finale.on { opacity: 1; transform: none; visibility: visible; transition: opacity .6s var(--ease), transform .6s var(--ease), visibility 0s; }
+  .finale h2 { font-family: var(--disp); font-stretch: 72%; font-weight: 800; font-size: clamp(2.6rem, 6vw, 6rem); line-height: .92; text-transform: uppercase; max-width: 11ch; }
+  .pieno { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 26px; margin-top: 26px; border: 0; border-radius: 12px; background: var(--acc); color: #fff;
+    font-family: var(--sans); font-size: 16px; font-weight: 600; text-decoration: none; cursor: pointer; transition: transform .25s var(--ease), filter .25s; }
+  .pieno:hover { filter: brightness(1.08); transform: translateY(-2px); }
+  .pieno:active { transform: scale(.98); }
+  .pieno:focus-visible, .top a:focus-visible, .modulo :focus-visible { outline: 2px solid var(--acc); outline-offset: 4px; }
+  .ripiego { position: absolute; inset: 0; display: none; place-items: center; color: var(--mut); font-size: 15px; padding: var(--gut); text-align: center; }
+  .senza-3d .ripiego { display: grid; }
+
+  /* prenota */
+  .prenota { padding: clamp(96px, 16vh, 180px) var(--gut); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: clamp(40px, 8vw, 140px); align-items: start; }
+  .prenota h2, .dove h2 { font-family: var(--disp); font-stretch: 75%; font-weight: 800; font-size: clamp(2.6rem, 5.6vw, 5.4rem); line-height: .94; text-transform: uppercase; }
+  .prenota .testa p { margin-top: 22px; max-width: 30em; color: var(--mut); font-size: 17px; }
+  .modulo { background: #f4f2ee; color: #121212; border-radius: 18px; padding: clamp(24px, 3.4vw, 40px); box-shadow: 0 40px 120px rgba(0, 0, 0, .6); }
+  .f { display: block; margin-top: 20px; }
+  .f:first-of-type { margin-top: 0; }
+  .f > span, .scelta legend { display: block; font-size: 13px; color: #5c5850; }
+  .f > span small, .scelta legend small { color: #9a958b; font-size: 13px; }
+  .f input, .f textarea { display: block; width: 100%; margin-top: 4px; background: none; border: 0; border-bottom: 1px solid rgba(0, 0, 0, .2); border-radius: 0; color: #121212;
+    font: inherit; font-size: 17px; padding: 10px 0; resize: none; }
+  .f input:focus, .f textarea:focus { outline: none; border-color: #121212; }
+  .f input::placeholder, .f textarea::placeholder { color: #aaa59b; }
+  .scelta { border: 0; margin-top: 22px; }
+  .scelta label { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 17px; cursor: pointer; }
+  .scelta input { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid rgba(0, 0, 0, .35); display: grid; place-items: center; flex: none; margin: 0; }
+  .scelta input::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--acc); transform: scale(0); transition: transform .2s var(--ease); }
+  .scelta input:checked { border-color: #121212; }
+  .scelta input:checked::after { transform: scale(1); }
+  .modulo .pieno { margin-top: 30px; }
+  .modulo .msg { margin-top: 14px; min-height: 1.4em; color: #b3361f; font-size: 15px; }
+  .modulo .ok { margin-top: 18px; font-size: 16px; color: #121212; }
+  .modulo .ok[hidden], .modulo .pieno[hidden] { display: none; }
+  .trappola { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  /* dove siamo */
+  .dove { padding: clamp(40px, 8vh, 90px) var(--gut) clamp(96px, 16vh, 180px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: clamp(40px, 8vw, 140px); border-top: 1px solid var(--faint); padding-top: clamp(96px, 14vh, 160px); }
+  .dove .ind { margin-top: 22px; font-size: 19px; }
+  .orari { display: grid; grid-template-columns: auto 1fr; gap: 12px 32px; font-size: 17px; align-self: end; }
+  .orari dt { color: var(--mut); }
+
+  /* fascia di Scrollify (identica alle altre demo) */
+  .pacchetto{padding:clamp(56px,8vw,96px) var(--gut);background:#a8ff60;color:#050605;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:28px;font-family:var(--sans);font-size:16px;line-height:1.6}
+  .pacchetto ::selection{background:#050605;color:#a8ff60}
+  .pacchetto .k{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(5,6,5,.6)}
+  .pacchetto h3{margin-top:12px;font-family:var(--sans);font-stretch:100%;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.6rem);letter-spacing:-.03em;line-height:1.08;text-transform:none;color:#050605}
+  .pacchetto p{margin-top:12px;font-size:16px;color:rgba(5,6,5,.75);max-width:36em}
+  .pacchetto a{display:inline-block;padding:14px 22px;border-radius:12px;background:#050605;color:#a8ff60;font-family:var(--sans);font-size:16px;font-weight:600;line-height:1.6;white-space:nowrap;text-decoration:none;transition:background .3s,transform .3s var(--ease)}
+  .pacchetto a:hover{background:#1d2419;transform:translateY(-2px)}
+  .pacchetto a:focus-visible{outline:2px solid #050605;outline-offset:4px}
+  .demo{padding:28px var(--gut);border-top:1px solid var(--faint);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+  .demo a{color:var(--txt)}
+
+  @media (max-width: 820px) {
+    .prenota, .dove { grid-template-columns: minmax(0, 1fr); }
+    .pacchetto { grid-template-columns: minmax(0, 1fr); align-items: start; }
+    .frase { font-size: clamp(2.4rem, 12.5vw, 4.4rem); top: clamp(84px, 13vh, 130px); max-width: 88vw; }
+    .finale h2 { font-size: clamp(2.3rem, 11.5vw, 4rem); }
+    .apertura { bottom: 28px; }
+    .apertura h1 { font-size: clamp(2.1rem, 9.6vw, 3.6rem); max-width: 16ch; }
+    .apertura .cosa { margin-top: 12px; font-size: 16px; line-height: 1.45; max-width: 30ch; }
+    .apertura .scorri { margin-top: 8px; }
+    .frase.giu { bottom: 28px; font-size: clamp(2.1rem, 10vw, 3.6rem); }
+    .frase.giu.destra { left: var(--gut); right: auto; text-align: left; }
+    .apertura .cosa span { display: block; }
+    .apertura .cosa .sep { display: none; }
+    .frase small { margin-top: 12px; }
+    .top { padding: 14px var(--gut); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #pagina.scossa, #pagina.scossa-piccola { animation: none; }
+    .frase { transform: none !important; }
+  }
+
+/* barra di Scrollify: le demo si aprono nella stessa scheda, da qui si torna ai template */
+.scrollify-barra{position:fixed;inset:0 0 auto;z-index:1000;height:var(--sb);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,48px);background:#050605;font:600 17px/1 "Inter",system-ui,-apple-system,sans-serif}
+.scrollify-barra a{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#a8ff60;text-decoration:none;letter-spacing:0;text-transform:none}
+.scrollify-barra a:hover{color:#fff}
+.scrollify-barra a:focus-visible{outline:2px solid #a8ff60;outline-offset:2px;border-radius:4px}
+.scrollify-barra .sb-marchio{font:500 14px/1 ui-monospace,"Geist Mono",Menlo,monospace;color:#eef2ec;letter-spacing:.02em}
+.scrollify-barra .sb-marchio b{font-weight:500;color:#a8ff60}
+:root{--sb:50px}
+@media (max-width:640px){:root{--sb:46px}.scrollify-barra{font-size:16px}.scrollify-barra .sb-marchio{font-size:12px}}
+.top{top:var(--sb)}
+/* le frasi in alto scendono sotto la barra di Scrollify */
+.frase{top:calc(clamp(88px,13vh,140px) + var(--sb))}
+@media (max-width:820px){.frase{top:calc(clamp(84px,13vh,130px) + var(--sb))}}
+</style>
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
+</head>
+<body>
+<nav class="scrollify-barra" aria-label="Scrollify"><a href="https://scrollify.online/#esempi" id="sbTorna"><span aria-hidden="true" style="font-size:1.25em">←</span> Torna a Scrollify</a><span class="sb-marchio" aria-hidden="true">scroll<b>ify</b></span></nav>
+<script>/* se arrivi dalla home di Scrollify torni indietro nella storia: stessa scheda, stesso punto della pagina */
+document.getElementById('sbTorna').addEventListener('click',function(e){try{if(document.referrer&&new URL(document.referrer).origin===location.origin&&history.length>1){e.preventDefault();history.back()}}catch(_){}});</script>
+<header class="top">
+  <a class="logo" href="#arma" aria-label="Centro, torna all'inizio"><i aria-hidden="true"></i>Centro</a>
+  <a class="nav" href="#prenota">prenota</a>
+</header>
+<div id="pagina">
+  <main>
+    <section id="arma" aria-label="Centro, poligono di tiro">
+      <div class="palco">
+        <div class="tela" id="tela"></div>
+        <div class="apertura" id="apertura">
+          <h1>Centro · poligono di tiro</h1>
+          <p class="cosa"><span>Corsi, linee di tiro e armeria</span><span class="sep"> · </span><span>Via Esempio 9, La tua città</span></p>
+          <p class="scorri">scorri e montala ↓</p>
+        </div>
+        <div class="frasi">
+          <p class="frase giu" data-p=".034 .1">Si comincia dalla sicurezza</p>
+          <p class="frase giu" data-p=".11 .176">Corsi anche nel weekend</p>
+          <p class="frase giu" data-p=".186 .254">Ogni pezzo al suo posto</p>
+          <p class="frase giu" data-p=".264 .334">Tre livelli, fino alla gara</p>
+          <p class="frase giu" data-p=".344 .414">Ti prepariamo all'idoneità</p>
+          <p class="frase giu destra" data-p=".426 .494">Adesso, il primo colpo<small>scorri ↓</small></p>
+          <p class="frase" data-f=".1 .33">Istruttori sempre al tuo fianco</p>
+          <p class="frase" data-f=".35 .56">Linee da 25 metri</p>
+          <p class="frase" data-f=".58 .78">Armeria e noleggio in sede</p>
+        </div>
+        <div class="finale" id="finale">
+          <h2>Prenota la tua sessione</h2>
+          <a class="pieno" href="#prenota" tabindex="-1">Scegli il giorno →</a>
+        </div>
+        <p class="ripiego">Il 3D non si carica su questo dispositivo. Centro · poligono di tiro: corsi ogni settimana e nel weekend, tre livelli con istruttore, linee da 25 metri, armeria e noleggio in sede.</p>
+      </div>
+    </section>
+
+    <section class="prenota" id="prenota" aria-labelledby="prenota-t">
+      <div class="testa">
+        <h2 id="prenota-t">Ti richiamiamo noi</h2>
+        <p>Lasciaci un recapito e dicci cosa vuoi fare: ti confermiamo giorno e orario.</p>
+      </div>
+      <form class="modulo" id="modulo" novalidate>
+        <p class="trappola" aria-hidden="true"><label>non compilare <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+        <label class="f"><span>Nome</span><input name="nome" autocomplete="name" autocapitalize="words" placeholder="Il tuo nome"></label>
+        <label class="f"><span>Email o cellulare</span><input name="contatto" type="text" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="nome@esempio.it oppure 333 123 4567"></label>
+        <fieldset class="scelta">
+          <legend>Cosa vuoi fare</legend>
+          <label><input type="radio" name="cosa" value="corso">Corso per chi inizia</label>
+          <label><input type="radio" name="cosa" value="linea">Linea libera</label>
+          <label><input type="radio" name="cosa" value="non so">Non so ancora</label>
+        </fieldset>
+        <label class="f"><span>Giorno preferito <small>· se vuoi</small></span><input name="giorno" autocomplete="off" placeholder="Per esempio sabato mattina"></label>
+        <label class="f"><span>Note <small>· se vuoi</small></span><textarea name="note" rows="2" placeholder="Hai già sparato? Venite in due?"></textarea></label>
+        <button class="pieno" type="submit" id="invia">Invia la richiesta</button>
+        <p class="msg" id="msg" aria-live="polite"></p>
+        <p class="ok" id="ok" hidden>Sito dimostrativo: la prenotazione non è attiva.</p>
+      </form>
+    </section>
+
+    <section class="dove" id="dove" aria-labelledby="dove-t">
+      <div>
+        <h2 id="dove-t">Dove siamo</h2>
+        <p class="ind">Via Esempio 9 · La tua città</p>
+      </div>
+      <dl class="orari">
+        <dt>Martedì – venerdì</dt><dd>15 – 22</dd>
+        <dt>Sabato e domenica</dt><dd>10 – 20</dd>
+        <dt>Lunedì</dt><dd>chiuso</dd>
+      </dl>
+    </section>
+  </main>
+
+  <aside class="pacchetto">
+    <div><p class="k">fatto con Scrollify</p><h3>Il pacchetto poligono</h3><p>Un sito come questo, più le prenotazioni online. Ogni sito è su misura e personalizzabile al 100%: questo è solo un esempio.</p></div>
+    <a href="https://scrollify.online/#contatti" rel="noopener">Lo voglio per il mio poligono →</a>
+  </aside>
+  <footer class="demo">
+    <span>Centro è un poligono immaginario: questo è un sito dimostrativo.</span>
+    <span>Lo vuoi per la tua attività? <a href="https://scrollify.online/#contatti" rel="noopener">fatto con Scrollify →</a></span>
+  </footer>
+</div>
+<script src="lib/lenis.min.js"></script>
+<script type="module">
+import { monta, SEZ } from './lib3d/scena.js';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const sezione = $('#arma'), tela = $('#tela'), pagina = $('#pagina'), finale = $('#finale'), testata = $('.top'), apertura = $('#apertura');
+const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let lenis = null;
+try { if (window.Lenis && !ridotto) lenis = new window.Lenis({ autoRaf: true, lerp: .1 }); } catch (e) { lenis = null; }
+// link interni (#prenota, logo): vicino con lo scroll morbido; lontano (attraverso l'esperienza, 13 schermate) con un salto diretto,
+// così il colpo, l'impatto e le scosse non partono a raffica durante il viaggio
+$$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+  const d = $(a.getAttribute('href')); if (!d) return; e.preventDefault();
+  const lontano = Math.abs(d.getBoundingClientRect().top) > innerHeight * 2.5;
+  if (lenis) lenis.scrollTo(d, lontano ? { immediate: true, force: true } : { duration: 1.2 });
+  else d.scrollIntoView({ behavior: ridotto || lontano ? 'auto' : 'smooth' });
+}));
+const avanzamento = () => { const r = sezione.getBoundingClientRect(), corsa = sezione.offsetHeight - innerHeight; return Math.min(1, Math.max(0, -r.top / corsa)); };
+const scossa = (piccola = false) => { if (ridotto) return; const c = piccola ? 'scossa-piccola' : 'scossa'; pagina.classList.remove('scossa', 'scossa-piccola'); void pagina.offsetWidth; pagina.classList.add(c); };
+pagina.addEventListener('animationend', () => pagina.classList.remove('scossa', 'scossa-piccola'));
+
+let scena = null;
+try { scena = await monta(tela, { ridotto, liscio: lenis ? .22 : .12, suImpatto: () => { window.__impatti = (window.__impatti ?? 0) + 1; setTimeout(() => scossa(true), 40); } }); }
+catch (e) { console.warn('3D non disponibile:', e.message); sezione.classList.add('senza-3d'); }
+
+// frasi del montaggio (data-p: avanzamento della sezione) e del volo (data-f: avanzamento del volo): entrano da destra, restano,
+// escono a sinistra (con lo scroll, avanti e indietro). Dissolvenze di 0,016 in p (≈ 20vh) e 0,04 in f (la stessa lunghezza)
+const frasi = $$('.frase').map(el => { const suP = 'p' in el.dataset, [a, b] = (suP ? el.dataset.p : el.dataset.f).split(' ').map(Number); return { el, a, b, suP }; });
+const liscia = x => x * x * (3 - 2 * x);
+function frasiVolo(p) {
+  const f = Math.min(1, Math.max(0, (p - SEZ.voloDa) / (SEZ.voloA - SEZ.voloDa))), fin = Math.min(1, Math.max(0, (p - SEZ.voloA) / (1 - SEZ.voloA)));
+  for (const { el, a, b, suP } of frasi) {
+    const x = suP ? p : f, d = suP ? .016 : .04;
+    const dentro = liscia(Math.min(1, Math.max(0, (x - a) / d))), fuori = liscia(Math.min(1, Math.max(0, (x - b + d) / d)));
+    const o = dentro * (1 - fuori);
+    el.style.opacity = o.toFixed(3);
+    el.style.transform = ridotto ? 'none' : `translate3d(${((1 - dentro) * 10 - fuori * 10).toFixed(2)}vw,0,0)`;
+  }
+  const on = fin > .3; finale.classList.toggle('on', on); finale.querySelector('a').tabIndex = on ? 0 : -1;
+  // apertura: sparisce nei primi 40vh di scroll (sale un poco mentre sfuma)
+  const a = liscia(Math.min(1, Math.max(0, p / .028)));
+  apertura.style.opacity = (1 - a).toFixed(3); apertura.style.visibility = a >= 1 ? 'hidden' : 'visible';
+  apertura.style.transform = ridotto ? 'none' : `translate3d(0,${(-a * 28).toFixed(1)}px,0)`;
+}
+// il colpo: parte da solo arrivando alla posa del colpo scendendo, una volta per passaggio (si riarma tornando al montaggio)
+let pPrima = avanzamento(), sparato = pPrima >= SEZ.colpo;
+function aggiorna() {
+  const p = avanzamento();
+  scena?.vai(p);
+  if (p < SEZ.arma * .95 && sparato) { sparato = false; scena?.riarma(); }
+  // un salto (link della testata, tasto Fine, barra trascinata) non spara: il colpo parte solo scorrendo (Pag giù = .07: spara)
+  if (!sparato && p >= SEZ.colpo && Math.abs(p - pPrima) > .12) sparato = true;
+  if (!sparato && p >= SEZ.colpo && pPrima < SEZ.colpo && scena) {
+    sparato = true; scena.spara(); window.__colpi = (window.__colpi ?? 0) + 1;
+    setTimeout(() => scossa(false), 120);
+  }
+  frasiVolo(p);
+  testata.classList.toggle('coperta', sezione.getBoundingClientRect().bottom < 80);
+  pPrima = p;
+}
+if (lenis) lenis.on('scroll', aggiorna);
+addEventListener('scroll', aggiorna, { passive: true });
+addEventListener('resize', aggiorna);
+aggiorna();
+window.__scena = scena;
+
+// ——— modulo di prenotazione: controlli veri (come su scrollify.online), invio dimostrativo ———
+const APERTA = performance.now();   // chi invia entro 3 secondi dall'apertura della pagina è quasi sempre un robot
+function emailOk(s) { s = (s || '').trim(); return s.length <= 100 && !/\.\./.test(s) && /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(s); }
+function telOk(s) {
+  s = (s || '').trim(); if (!/^[+\d\s().\/-]{6,24}$/.test(s)) return false;   // solo cifre, spazi e + ( ) . / -
+  let d = s.replace(/\D/g, '');
+  if (s.startsWith('+') || d.startsWith('00')) { d = d.replace(/^00/, ''); if (d.startsWith('39')) d = d.slice(2); else return d.length >= 8 && d.length <= 15; }   // dall'estero: 8–15 cifre
+  if (!/^(3\d{8,9}|0\d{5,10})$/.test(d)) return false;   // in Italia: cellulare 3… (9–10 cifre) o fisso 0…
+  return !/^(\d)\1+$/.test(d.slice(1)) && !'01234567890123456789'.includes(d) && !'98765432109876543210'.includes(d);   // niente 3333333333 o 0123456789
+}
+function conLink(s) { return /https?:|www\.|[<>]/i.test(s || ''); }
+function robot(f) { return (f.elements['bot-field']?.value || '') !== '' || performance.now() - APERTA < 3000; }
+const modulo = $('#modulo'), msg = $('#msg');
+modulo.addEventListener('submit', e => {
+  e.preventDefault();
+  const f = modulo, v = n => (f.elements[n]?.value || '').trim();
+  const errore = (t, campo) => { msg.textContent = t; campo?.focus(); return false; };
+  const nome = v('nome'), contatto = v('contatto'), cosa = f.querySelector('input[name=cosa]:checked'), giorno = v('giorno'), note = v('note');
+  if (nome.length < 2) return errore('Scrivi il tuo nome.', f.nome);
+  if (nome.length > 60 || conLink(nome) || /\d/.test(nome)) return errore('Controlla il tuo nome.', f.nome);
+  if (!contatto || (!contatto.includes('@') && !contatto.replace(/\D/g, ''))) return errore('Lasciaci un\'email o un numero, così ti ricontattiamo.', f.contatto);
+  if (contatto.includes('@') ? !emailOk(contatto) : !telOk(contatto)) return errore(contatto.includes('@') ? 'Controlla l\'email: sembra sbagliata.' : 'Controlla il numero: sembra sbagliato.', f.contatto);
+  if (!cosa) return errore('Scegli cosa vuoi fare: va bene anche «Non so ancora».', f.querySelector('input[name=cosa]'));
+  if (giorno.length > 60 || conLink(giorno)) return errore('Scrivi solo il giorno che preferisci.', f.giorno);
+  if (note.length > 1000 || conLink(note)) return errore('Nelle note niente link, e bastano due righe.', f.note);
+  msg.textContent = '';
+  // un robot vede lo stesso esito, ma non succede niente; qui comunque nessun invio: il sito è dimostrativo
+  robot(f);
+  [...f.elements].forEach(el => { el.disabled = true; }); $('#invia').hidden = true; $('#ok').hidden = false;
+});
+</script>
+</body>
+</html>

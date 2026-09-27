@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1a80c1">
+<title>Pizzeria Peppè · antica pizzeria napoletana</title>
+<meta name="description" content="Pizzeria Peppè, antica pizzeria napoletana: 48 ore di lievitazione, forno a legna. Sito dimostrativo fatto con Scrollify.">
+<link rel="preload" href="font/fraunces-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="font/inter-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="font/font.css">
+<link rel="icon" href="img/icona.png" type="image/png">
+<!-- Template "pizzeria" di Scrollify. Tutto è servito dal sito stesso (caratteri, librerie, immagini).
+     Le fasi dell'impasto sono sei foto con la stessa inquadratura (img/1-…6-): lo scroll passa dall'una all'altra
+     con maschere e pezzi che cadono. Per un cliente vero: cambiare testi, foto, menu e colori (variabili in :root). -->
+<style>
+:root{
+  --bg:#1a80c1; --bg-2:#1673ae; --txt:#fff; --mut:rgba(255,255,255,.8); --faint:rgba(255,255,255,.24);
+  --verde:#009246; --rosso:#ce2b37; --forno:#f4a24c;   /* azzurro Napoli e i colori della bandiera */
+  --serif:"Fraunces",Georgia,serif; --sans:"Inter",system-ui,sans-serif;
+  --gut:clamp(20px,5vw,72px); --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+::selection{background:var(--rosso);color:#fff}
+:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.k{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.02em;font-variation-settings:"opsz" 144}
+h2{font-size:clamp(2.4rem,6vw,4.6rem);line-height:1}
+h2 em,h1 em{font-style:italic;color:#fff}
+/* le ultime due lettere del nome come una bandiera distesa: un terzo verde, un terzo bianco, un terzo rosso (tagli netti anche a metà lettera) */
+.tri{display:inline-block;background:linear-gradient(90deg,#1fb35a 0 33.4%,#fff 33.4% 66.6%,#ef3340 66.6%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding:.15em .04em .32em 0;margin:-.15em 0 -.32em}   /* lo spazio in più sopra e sotto fa colorare anche l'accento e la gamba della p */
+/* il tricolore piccolo, davanti ai passaggi */
+.tricolore{display:inline-block;height:.2em;width:1.2em;border-radius:2px;background:linear-gradient(90deg,var(--verde) 0 33.4%,#fff 33.4% 66.6%,var(--rosso) 66.6%)}
+
+/* ─── testata ─── */
+.top{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px var(--gut);background:linear-gradient(rgba(26,128,193,.94),rgba(26,128,193,0))}
+/* fuori dalle due sezioni ferme (impasto e menu), quando la pagina scorre e il testo passa sotto, la testata si copre: una fascia
+   del colore della pagina che sfuma in basso, così il testo non finisce sotto al logo e al pulsante (.coperta la mette lo script;
+   come nella gioielleria) */
+.top::before{content:"";position:absolute;inset:0 0 -32px;z-index:-1;pointer-events:none;background:linear-gradient(var(--bg) 58%,rgba(26,128,193,0));opacity:0;transition:opacity .35s}
+.top.coperta::before{opacity:1}
+.logo{font-family:var(--serif);font-style:italic;font-size:26px;letter-spacing:-.02em}
+.top nav{display:flex;align-items:center;gap:28px;font-size:14px;color:rgba(255,255,255,.92)}
+.top nav a:hover{color:var(--txt)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:999px;background:var(--rosso);color:#fff;font-weight:600;font-size:14px;transition:transform .3s var(--ease),background .3s}
+.btn:hover{transform:translateY(-2px);background:#b3202b}
+.lnk{font-size:14px;color:rgba(255,255,255,.92);border-bottom:1px solid var(--faint);padding-bottom:2px}
+.lnk:hover{color:var(--txt);border-color:#fff}
+
+/* ─── l'impasto: la sezione lunga, con il piatto fermo al centro ─── */
+.impasto{position:relative;height:720vh}
+.impasto .pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:clamp(24px,5vw,80px);padding:80px var(--gut) 40px}
+.piatto{position:relative;width:min(78vmin,720px);aspect-ratio:1;justify-self:end}
+.piatto>*{position:absolute;inset:0;width:100%;height:100%}
+.piatto img.l{object-fit:cover;opacity:0;will-change:opacity,transform}
+/* le foto sfumano nel fondo della pagina: niente bordo quadrato */
+.piatto .base{filter:drop-shadow(0 26px 34px rgba(4,40,70,.45))}   /* il tagliere ritagliato, appoggiato sull'azzurro */
+.piatto .ombra{border-radius:50%;background:radial-gradient(closest-side,rgba(40,20,5,.45) 88%,rgba(40,20,5,0) 100%);transform:translateY(1.2%) scale(1.035);opacity:0}
+.piatto .forno{border-radius:50%;background:radial-gradient(closest-side,rgba(255,170,70,.7),rgba(235,95,25,.45) 70%,rgba(235,95,25,.3) 93%,transparent 100%);mix-blend-mode:screen;opacity:0;pointer-events:none}
+.piatto .cadono{pointer-events:none}
+/* il calore resta dentro la pizza: tagliere e fondo non si scaldano */
+.piatto .fuoco{overflow:hidden;pointer-events:none;border-radius:50%;-webkit-mask-image:radial-gradient(closest-side,#000 94%,transparent 100%);mask-image:radial-gradient(closest-side,#000 94%,transparent 100%)}
+/* il bagliore caldo che sale sulla pizza e poi scende (fuso in "schiarisci") */
+.piatto .fuoco i{position:absolute;left:-10%;right:-10%;height:200%;top:0;transform:translateY(50%);mix-blend-mode:screen;
+  background:linear-gradient(to top,rgba(255,90,20,0),rgba(255,110,25,.55) 30%,rgba(255,170,70,.6) 50%,rgba(255,110,25,.55) 70%,rgba(255,90,20,0))}
+.piatto .fuoco{mix-blend-mode:screen}
+.piatto .cadono img{position:absolute;left:0;top:0;opacity:0;will-change:transform,opacity;filter:brightness(1.08) drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.apertura{position:absolute;left:var(--gut);right:var(--gut);bottom:clamp(40px,8vh,90px);z-index:3;pointer-events:none}
+.apertura .k{margin-bottom:10px;color:rgba(255,255,255,.92)}
+.apertura h1{font-size:clamp(4rem,14vw,11rem);line-height:.86;letter-spacing:-.04em;padding-bottom:.2em}   /* spazio per le gambe delle "p" */
+.apertura p{margin-top:18px;font-size:clamp(16px,1.6vw,19px);color:rgba(255,255,255,.92);max-width:30em}
+.apertura small{display:block;margin-top:26px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.didascalie{position:relative;min-height:12em;max-width:30em}
+.dida{position:absolute;inset:0 0 auto;opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.dida.on{opacity:1;transform:none}
+.dida .k{color:#fff}
+.dida .k::before{content:"";display:inline-block;width:18px;height:5px;margin-right:10px;vertical-align:2px;border-radius:1px;background:linear-gradient(90deg,var(--verde) 0 33.4%,#fff 33.4% 66.6%,var(--rosso) 66.6%)}
+.dida h3{margin-top:12px;font-size:clamp(1.9rem,3.6vw,3.1rem);line-height:1.04}
+.dida p{margin-top:14px;color:rgba(255,255,255,.92);max-width:26em}
+.passi{position:absolute;right:var(--gut);bottom:28px;font-size:12px;letter-spacing:.16em;color:var(--mut)}
+.passi b{font-weight:500;color:var(--txt)}
+
+/* ─── adesso girala: la pizza in 3D ─── */
+.gira{position:relative;padding:clamp(80px,12vw,160px) var(--gut);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:center;gap:clamp(24px,5vw,80px)}
+.gira p{margin-top:18px;color:rgba(255,255,255,.92);max-width:26em}
+.g3d{position:relative;aspect-ratio:1;max-height:78vh;width:100%;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.g3d:active{cursor:grabbing}
+.g3d canvas{position:absolute;inset:0;width:100%;height:100%}
+.g3d .attesa{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font-size:13px;color:var(--mut);transition:opacity .6s}
+.g3d .attesa b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:26px;color:#fff;margin-bottom:6px}
+.g3d.pronta .attesa{opacity:0}
+.gira .dito{margin-top:28px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+
+/* ─── il menu: le pizze arrivano addosso una alla volta ─── */
+.menu{position:relative;height:440vh;border-top:1px solid var(--faint)}
+.menu .pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;perspective:1200px}
+.menu-t{position:absolute;left:var(--gut);top:clamp(96px,14vh,140px);z-index:2}
+.menu-t h2{font-size:clamp(2.2rem,4.4vw,3.6rem)}
+.menu-n{position:absolute;right:var(--gut);bottom:28px;font-size:12px;letter-spacing:.16em;color:var(--mut)}
+.menu-n b{font-weight:500;color:var(--txt)}
+.pz{position:absolute;left:60%;top:54%;width:min(64vw,780px);display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:clamp(20px,4vw,64px);opacity:0;will-change:transform,opacity}
+.pz-img{width:min(44vh,400px);aspect-ratio:1}
+.pz-img img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 24px 40px rgba(4,40,70,.45))}
+.pz h3{font-size:clamp(2.2rem,5vw,4.2rem);line-height:1}
+.pz p{margin-top:12px;color:rgba(255,255,255,.92);max-width:24em}
+.pz b{display:block;margin-top:18px;font-family:var(--serif);font-weight:400;font-size:28px;color:#fff}
+
+/* ─── ordina da casa: il telefono con l'app degli ordini, da provare ─── */
+.ordina{padding:clamp(80px,12vw,160px) var(--gut);border-top:1px solid var(--faint);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:clamp(40px,7vw,120px)}
+.ordina>div>p{margin-top:18px;color:rgba(255,255,255,.92);max-width:28em}
+.ord-l{list-style:none;margin-top:34px;display:grid;gap:18px;max-width:30em}
+.ord-l li{padding-bottom:16px;border-bottom:1px solid var(--faint);color:rgba(255,255,255,.88)}
+.ord-l b{display:block;font-weight:600;color:#fff}
+.qr{margin-top:36px;display:flex;align-items:center;gap:20px}
+.qr img{width:112px;height:112px;border-radius:12px;box-shadow:0 14px 30px rgba(4,40,70,.3)}
+.qr p{font-size:14px;color:rgba(255,255,255,.88);max-width:14em}
+.app{width:min(330px,86vw);height:640px;border-radius:46px;background:#fbf7f0;color:#1d2a33;border:10px solid #0c2b44;box-shadow:0 40px 90px rgba(4,40,70,.45);display:flex;flex-direction:column;overflow:hidden;font-size:14px}
+.app-top{display:flex;justify-content:space-between;align-items:baseline;padding:22px 20px 10px;font-family:var(--serif);font-style:italic;font-size:24px}
+.app-top small{font-family:var(--sans);font-style:normal;font-size:12px;color:#6d7a83;letter-spacing:.08em;text-transform:uppercase}
+.app .tri{background-image:linear-gradient(90deg,#009246 0 33.4%,#cfd6db 33.4% 66.6%,#ce2b37 66.6%)}
+.app-modo{display:grid;grid-template-columns:1fr 1fr;margin:6px 20px 8px;background:#efe8dc;border-radius:12px;padding:4px}
+.app-modo button{border:0;background:none;padding:9px;border-radius:9px;font:inherit;font-weight:500;color:#6d7a83;cursor:pointer}
+.app-modo button.on{background:#fff;color:#1d2a33;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.app-lista{list-style:none;flex:1;overflow:auto;padding:0 20px}
+.app-lista li{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #eee4d6}
+.app-lista img{width:52px;height:52px}
+.app-lista b{display:block;font-weight:600}
+.app-lista span{color:#6d7a83;font-size:13px}
+.qta{display:flex;align-items:center;gap:8px}
+.qta button{width:30px;height:30px;border-radius:50%;border:1px solid #d9cfbf;background:#fff;font:600 16px var(--sans);color:#1d2a33;cursor:pointer;display:grid;place-items:center;line-height:1}
+.qta button:disabled{opacity:.35;cursor:default}
+.qta output{min-width:14px;text-align:center;font-weight:600}
+.app-ora{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid #eee4d6;color:#6d7a83}
+.app-ora button{border:0;background:none;font:600 14px var(--sans);color:#1d2a33;cursor:pointer}
+.app-ok{margin:4px 16px 18px;border:0;border-radius:16px;padding:15px;background:var(--rosso);color:#fff;font:600 15px var(--sans);cursor:pointer;transition:opacity .2s}
+.app-ok:disabled{opacity:.4;cursor:default}
+
+/* ─── la fascia di Scrollify: i colori del marchio invertiti (fondo verde segnale, testo quasi nero), così stacca dal fondo di
+       qualsiasi sito e l'occhio ci cade; l'unico pulsante pieno è nero con il testo verde. Questo blocco è IDENTICO nelle tre demo,
+       con le misure scritte qui (non ereditate dalla pagina): se si cambia, cambiarlo in tutte e tre ─── */
+.pacchetto{padding:clamp(56px,8vw,96px) var(--gut);background:#a8ff60;color:#050605;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:28px;font-family:var(--sans);font-size:16px;line-height:1.6}
+.pacchetto ::selection{background:#050605;color:#a8ff60}
+.pacchetto .k{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(5,6,5,.6)}
+.pacchetto h3{margin-top:12px;font-family:var(--sans);font-stretch:100%;font-weight:500;font-size:clamp(1.7rem,3.4vw,2.6rem);letter-spacing:-.03em;line-height:1.08;text-transform:none;color:#050605}
+.pacchetto p{margin-top:12px;font-size:16px;color:rgba(5,6,5,.75);max-width:36em}
+.pacchetto a{display:inline-block;padding:14px 22px;border-radius:12px;background:#050605;color:#a8ff60;font-family:var(--sans);font-size:16px;font-weight:600;line-height:1.6;white-space:nowrap;transition:background .3s,transform .3s var(--ease)}
+.pacchetto a:hover{background:#1d2419;transform:translateY(-2px)}
+.pacchetto a:focus-visible{outline:2px solid #050605;outline-offset:4px}
+
+/* ─── dove siamo ─── */
+.info{padding:clamp(80px,12vw,160px) var(--gut);border-top:1px solid var(--faint);display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(32px,6vw,96px)}
+.info .dati{margin-top:28px;display:grid;gap:22px}
+.info .dati div{display:grid;grid-template-columns:9em minmax(0,1fr);gap:16px;padding-bottom:18px;border-bottom:1px solid var(--faint)}
+.info .dati span{color:var(--mut);font-size:14px}
+.info .azioni{margin-top:36px;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.info blockquote{font-family:var(--serif);font-style:italic;font-size:clamp(1.5rem,3vw,2.3rem);line-height:1.2;color:rgba(255,255,255,.92);align-self:end}
+.info blockquote cite{display:block;margin-top:14px;font-family:var(--sans);font-style:normal;font-size:13px;color:var(--mut)}
+
+/* ─── la riga di Scrollify ─── */
+.demo{padding:28px var(--gut);border-top:1px solid var(--faint);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut)}
+.demo a{color:rgba(255,255,255,.92);border-bottom:1px solid var(--faint)}
+.demo a:hover{color:var(--txt);border-color:#fff}
+.avviso{position:fixed;left:50%;bottom:28px;z-index:60;transform:translate(-50%,16px);opacity:0;pointer-events:none;background:#0e3f63;color:var(--txt);padding:14px 20px;border-radius:14px;font-size:14px;box-shadow:0 20px 60px rgba(0,0,0,.5);transition:all .4s var(--ease);max-width:calc(100vw - 40px)}
+.avviso.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:820px){
+  .top nav a.lnk{display:none}
+  .impasto{height:600vh}
+  .impasto .pin{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-content:center;justify-items:center;gap:18px;padding-top:84px}
+  .piatto{width:min(88vw,52svh);justify-self:center;grid-row:1}
+  .didascalie{grid-row:2;min-height:9.5em;width:100%}
+  .dida h3{font-size:1.7rem}
+  .dida p{font-size:15px}
+  .apertura{bottom:32px}
+  .gira{grid-template-columns:minmax(0,1fr)}
+  .menu{height:380vh}
+  .pz{left:50%;width:min(86vw,520px);grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center;top:58%}
+  .pz-img{width:min(64vw,40svh)}
+  .pz p{margin-inline:auto}
+  .info{grid-template-columns:minmax(0,1fr)}
+  .ordina{grid-template-columns:minmax(0,1fr);justify-items:center}
+  .ordina>div{justify-self:stretch}
+  .app{height:600px}
+  .pacchetto{grid-template-columns:minmax(0,1fr);align-items:start}
+  .info .dati div{grid-template-columns:minmax(0,1fr);gap:4px}
+}
+@media (prefers-reduced-motion:reduce){.dida{transition:none}}
+
+/* barra di Scrollify: le demo si aprono nella stessa scheda, da qui si torna ai template */
+.scrollify-barra{position:fixed;inset:0 0 auto;z-index:1000;height:var(--sb);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,48px);background:#050605;font:600 17px/1 "Inter",system-ui,-apple-system,sans-serif}
+.scrollify-barra a{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#a8ff60;text-decoration:none;letter-spacing:0;text-transform:none}
+.scrollify-barra a:hover{color:#fff}
+.scrollify-barra a:focus-visible{outline:2px solid #a8ff60;outline-offset:2px;border-radius:4px}
+.scrollify-barra .sb-marchio{font:500 14px/1 ui-monospace,"Geist Mono",Menlo,monospace;color:#eef2ec;letter-spacing:.02em}
+.scrollify-barra .sb-marchio b{font-weight:500;color:#a8ff60}
+:root{--sb:50px}
+@media (max-width:640px){:root{--sb:46px}.scrollify-barra{font-size:16px}.scrollify-barra .sb-marchio{font-size:12px}}
+.top{top:var(--sb)}
+</style>
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js", "three/addons/": "./lib/addons/", "@sparkjsdev/spark": "./lib/spark.module.js" } }</script>
+</head>
+<body>
+<nav class="scrollify-barra" aria-label="Scrollify"><a href="https://scrollify.online/#esempi" id="sbTorna"><span aria-hidden="true" style="font-size:1.25em">←</span> Torna a Scrollify</a><span class="sb-marchio" aria-hidden="true">scroll<b>ify</b></span></nav>
+<script>/* se arrivi dalla home di Scrollify torni indietro nella storia: stessa scheda, stesso punto della pagina */
+document.getElementById('sbTorna').addEventListener('click',function(e){try{if(document.referrer&&new URL(document.referrer).origin===location.origin&&history.length>1){e.preventDefault();history.back()}}catch(_){}});</script>
+
+<header class="top">
+  <a class="logo" href="#" aria-label="Pizzeria Peppè, torna all'inizio">Pep<span class="tri">pè</span></a>
+  <nav><a class="lnk" href="#menu">il menu</a><a class="lnk" href="#ordina">ordina</a><a class="lnk" href="#dove">dove siamo</a><a class="btn" href="#dove" data-prenota>Prenota un tavolo</a></nav>
+</header>
+
+<main>
+  <!-- ═══ L'IMPASTO: sei fasi, dalla pallina alla pizza cotta ═══ -->
+  <section class="impasto" id="impasto" aria-label="Come nasce la nostra pizza">
+    <div class="pin">
+      <div class="apertura" id="apertura">
+        <p class="k">antica pizzeria napoletana</p>
+        <h1>Pep<span class="tri">pè</span></h1>
+        <p>Pizza napoletana. Quarantotto ore di lievitazione, novanta secondi di forno a legna.</p>
+        <small>scorri e guardala nascere ↓</small>
+      </div>
+      <div class="didascalie" id="didascalie" aria-live="polite">
+        <div class="dida" data-f="0"><p class="k">01 · l'impasto</p><h3>Farina, acqua, sale. E quarantotto ore di pazienza.</h3><p>Lievito madre e una lunga maturazione: per questo la nostra pizza è leggera.</p></div>
+        <div class="dida" data-f="1"><p class="k">02 · la stesura</p><h3>Stesa a mano. Mai col mattarello.</h3><p>L'aria resta nel cornicione, che in forno si gonfia e si macchia di leopardo.</p></div>
+        <div class="dida" data-f="2"><p class="k">03 · il pomodoro</p><h3>San Marzano, dal centro verso il bordo.</h3><p>Schiacciato a mano, con un pizzico di sale. Nient'altro.</p></div>
+        <div class="dida" data-f="3"><p class="k">04 · la mozzarella</p><h3>Fior di latte, strappato a mano.</h3><p>Arriva ogni mattina e si asciuga un'ora prima di finire sulla pizza.</p></div>
+        <div class="dida" data-f="4"><p class="k">05 · il basilico</p><h3>Basilico, appena colto.</h3><p>E un filo d'olio extravergine, a crudo.</p></div>
+        <div class="dida" data-f="5"><p class="k">06 · il forno</p><h3>Quattrocentottanta gradi. Novanta secondi.</h3><p>Il nostro forno a legna fa il resto.</p></div>
+        <div class="dida" data-f="6"><p class="k">ecco</p><h3>Adesso è vera.</h3><p>La Margherita, come la facciamo ogni sera.</p></div>
+      </div>
+      <div class="piatto" id="piatto">
+        <!-- il tagliere con la pallina resta fermo; sopra cambia solo la pizza (ritagli rotondi, posizioni in img/posizioni2.json).
+             Il tagliere è la prima cosa che si vede: fetchpriority="high" (online, in HTTP/2, il server lo manda prima delle fasi della pizza) -->
+        <img class="base" id="f1" src="img/tagliere.webp" alt="" decoding="async" fetchpriority="high">
+        <div class="ombra" id="ombra" data-strato="p-disco"></div>
+        <img class="l" id="f2" src="img/p-disco.webp" alt="" decoding="async" data-strato="p-disco">
+        <canvas id="salsa" aria-hidden="true" data-strato="p-salsa"></canvas>
+        <div class="cadono" id="cadono"></div>
+        <img class="l" id="f6" src="img/p-cotta.webp" alt="La pizza Margherita, cotta" decoding="async" data-strato="p-cotta">
+        <div class="forno" id="forno" data-strato="p-salsa"></div>
+        <!-- il fuoco del forno: sale dal basso, copre la pizza, e quando scende la pizza è cotta -->
+        <div class="fuoco" id="fuoco" aria-hidden="true" data-strato="p-salsa"><i></i></div>
+      </div>
+      <p class="passi" id="passi" aria-hidden="true"><b>01</b> / 06</p>
+    </div>
+  </section>
+
+  <!-- ═══ ADESSO GIRALA: la Margherita in 3D ═══ -->
+  <section class="gira" id="gira">
+    <div>
+      <p class="k">prima di ordinarla</p>
+      <h2>Adesso <em>girala</em>.</h2>
+      <p>È la nostra Margherita, in 3D. Trascinala col dito o col mouse e guardala da ogni lato, cornicione compreso.</p>
+      <p class="dito">↔ trascina per girare</p>
+    </div>
+    <div class="g3d" id="g3d"><div class="attesa"><b>un attimo…</b>la pizza sta uscendo dal forno</div></div>
+  </section>
+
+  <!-- ═══ IL MENU: le pizze arrivano una alla volta ═══ -->
+  <section class="menu" id="menu" aria-label="Il menu">
+    <div class="pin">
+      <div class="menu-t"><p class="k">il menu</p><h2>Quattro pizze.<br><em>Nessuna fretta.</em></h2></div>
+      <div id="volo"></div>
+      <p class="menu-n" id="menuN" aria-hidden="true"><b>01</b> / 04</p>
+    </div>
+  </section>
+
+  <!-- ═══ ORDINA DA CASA: l'app degli ordini e il menu col QR ═══ -->
+  <section class="ordina" id="ordina">
+    <div>
+      <p class="k">ordina da casa</p>
+      <h2>La pizza,<br><em>a casa tua</em>.</h2>
+      <p>Scegli le pizze, decidi l'orario e passa a ritirarla calda. Oppure fattela portare. Provalo qui accanto.</p>
+      <ul class="ord-l">
+        <li><b>Ordini online</b>ritiro o consegna, senza telefonate e senza attese</li>
+        <li><b>Menu al tavolo</b>inquadri il QR e il menu si apre sul telefono</li>
+        <li><b>Sempre aggiornato</b>pizza del giorno e prezzi si cambiano in un attimo</li>
+      </ul>
+      <div class="qr"><img src="img/qr-menu.svg" alt="Codice QR del menu" width="112" height="112"><p>Il QR che trovi sul tavolo: inquadralo e sfoglia il menu.</p></div>
+    </div>
+    <div class="app" id="app" aria-label="Prova l'app degli ordini">
+      <div class="app-top"><span>Pep<span class="tri">pè</span></span><small>ordina</small></div>
+      <div class="app-modo"><button class="on" type="button" data-modo="ritiro">Ritiro</button><button type="button" data-modo="consegna">Consegna</button></div>
+      <ul class="app-lista" id="appLista"></ul>
+      <div class="app-ora"><span id="appOraT">ritiro alle</span><button type="button" id="appOra">20:30 ▾</button></div>
+      <button class="app-ok" type="button" id="appOk" disabled>Aggiungi una pizza</button>
+    </div>
+  </section>
+
+  <!-- ═══ DOVE SIAMO ═══ -->
+  <section class="info" id="dove">
+    <div>
+      <p class="k">dove siamo</p>
+      <h2>Vieni a <em>trovarci</em>.</h2>
+      <div class="dati">
+        <div><span>indirizzo</span><p>Via Esempio 48 · La tua città</p></div>
+        <div><span>aperti</span><p>Da martedì a domenica, 19:00 – 23:30<br>Sabato e domenica anche a pranzo</p></div>
+        <div><span>chiuso</span><p>Lunedì</p></div>
+      </div>
+      <div class="azioni"><a class="btn" href="#" data-prenota>Prenota su WhatsApp</a><a class="lnk" href="#" data-prenota>Chiamaci</a></div>
+    </div>
+    <blockquote>«La pizza buona non ha fretta: la nostra riposa due giorni prima di arrivare al tuo tavolo.»<cite>— Peppè, pizzaiolo</cite></blockquote>
+  </section>
+</main>
+
+<aside class="pacchetto">
+  <div><p class="k">fatto con Scrollify</p><h3>Il pacchetto pizzeria</h3><p>Un sito come questo, più gli ordini online e il menu digitale col QR. Ogni sito è su misura e personalizzabile al 100%: questo è solo un esempio.</p></div>
+  <a href="https://scrollify.online/#contatti" rel="noopener">Lo voglio per la mia pizzeria →</a>
+</aside>
+<footer class="demo">
+  <span>Pizzeria Peppè è una pizzeria immaginaria: questo è un sito dimostrativo, con immagini generate con l'intelligenza artificiale.</span>
+  <span>Lo vuoi per la tua pizzeria? <a href="https://scrollify.online/#contatti" rel="noopener">fatto con Scrollify →</a></span>
+</footer>
+<div class="avviso" id="avviso" role="status"></div>
+
+<script src="lib/lenis.min.js"></script>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const tra=(p,a,b)=>cl((p-a)/(b-a));                               // da 0 a 1 dentro il tratto [a,b]
+const morb=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;              // lento, veloce, lento
+const esce=t=>1-Math.pow(1-t,3);                                  // arriva e frena
+const ridotto=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* scroll morbido (spento con "movimento ridotto") */
+let lenis=null;
+if(!ridotto&&window.Lenis){lenis=new Lenis({lerp:.1,smoothWheel:true});(function raf(t){lenis.raf(t);requestAnimationFrame(raf)})(performance.now())}
+$$('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href');if(a.hasAttribute('data-prenota')&&id==='#')return;const t=id==='#'?document.body:$(id);if(!t)return;e.preventDefault();lenis?lenis.scrollTo(t,{offset:0,duration:1.4}):t.scrollIntoView()}));
+
+/* sito dimostrativo: i pulsanti di prenotazione spiegano cosa farebbero */
+const avviso=$('#avviso');let avT;
+$$('[data-prenota]').forEach(a=>{if(a.getAttribute('href')!=='#')return;a.addEventListener('click',e=>{e.preventDefault();avviso.textContent='Sito dimostrativo: nel sito vero qui si apre WhatsApp o parte la chiamata.';avviso.classList.add('on');clearTimeout(avT);avT=setTimeout(()=>avviso.classList.remove('on'),3200)})});
+
+/* quanto è avanti una sezione lunga: 0 quando entra in cima, 1 quando sta per uscire */
+const avanti=el=>{const b=el.getBoundingClientRect(),span=b.height-innerHeight;return cl(-b.top/span)};
+
+/* ═══ L'IMPASTO ═══
+   tratti dello scroll: apertura · stesura · pomodoro · mozzarella · basilico · forno · fine */
+const T={stendi:[.07,.2],salsa:[.22,.38],mozz:[.4,.56],bas:[.58,.7],forno:[.72,.88]};
+const imp=$('#impasto'), f1=$('#f1'), f2=$('#f2'), ombra=$('#ombra'), fuoco=$('#fuoco i'), f6=$('#f6'), forno=$('#forno'), cadono=$('#cadono'), apertura=$('#apertura');
+const dide=$$('.dida'), didascalie=$('#didascalie'), passi=$('#passi'), piatto=$('#piatto');
+const salsaCv=$('#salsa'), sx=salsaCv.getContext('2d'), salsaImg=new Image(); salsaImg.src='img/p-salsa.webp'; salsaImg.onload=()=>disegna();
+let pezzi=[], foglie=[], D=0;
+
+// i pezzi che cadono: mozzarella e basilico atterrano dove sono nella foto con il basilico (img/posizioni2.json:
+// x, y, rotazione, larghezza in frazione del piatto, quale ritaglio). Poi la foto vera li sostituisce.
+fetch('img/posizioni2.json').then(r=>r.json()).then(pos=>{
+  // ogni strato della pizza al suo posto sul tagliere (centro e diametro in frazione del piatto)
+  $$('[data-strato]').forEach(el=>{const q=pos.strati[el.dataset.strato];if(!q)return;
+    Object.assign(el.style,{left:(q.cx-q.d/2)*100+'%',top:(q.cy-q.d/2)*100+'%',width:q.d*100+'%',height:q.d*100+'%'})});
+  misura();
+  const crea=(lista,pref)=>lista.map(([x,y,r,w,j],i)=>{const im=new Image();im.src=`img/${pref}-${j}.webp`;im.alt='';im.decoding='async';im.style.width=(w*100)+'%';cadono.appendChild(im);
+    return {im,x,y,r,r0:r+(i%2?-1:1)*(120+(i*47)%140),d:(i*.618)%1}});
+  pezzi=crea(pos.mozz,'mozz'); foglie=crea(pos.bas,'bas'); disegna();
+}).catch(()=>{});
+
+function misura(){ D=piatto.clientWidth; const q=Math.min(2,devicePixelRatio||1); salsaCv.width=salsaCv.height=Math.round((salsaCv.clientWidth||D)*q); disegna(); }
+
+// il pomodoro si stende a spirale dal centro: la foto "con salsa" si scopre lungo una spirale che si allarga
+function spirale(t){
+  const W=salsaCv.width; sx.clearRect(0,0,W,W); if(t<=0||!salsaImg.complete)return;
+  if(t>=1){sx.drawImage(salsaImg,0,0,W,W);return}
+  const c=W/2, R=W*.46, giri=4.2, passo=R/giri;
+  sx.save(); sx.beginPath(); sx.moveTo(c,c);
+  const n=Math.max(2,Math.round(600*t));
+  for(let i=1;i<=n;i++){const u=t*i/n, th=u*giri*Math.PI*2, r=u*R; sx.lineTo(c+Math.cos(th)*r,c+Math.sin(th)*r)}
+  sx.lineWidth=passo*1.35; sx.lineCap='round'; sx.lineJoin='round'; sx.strokeStyle='#000'; sx.filter='blur('+(W*.006)+'px)'; sx.stroke();
+  sx.filter='none'; sx.globalCompositeOperation='source-in'; sx.drawImage(salsaImg,0,0,W,W); sx.restore();
+}
+
+// un pezzo che cade: parte sopra lo schermo, atterra al suo posto girando; quando la foto della fase arriva, sparisce
+function cade(p,t,finale){
+  const k=tra(t,p.d*.55,p.d*.55+.42), e=esce(k), w=p.im.offsetWidth||D*.08, h=p.im.offsetHeight||w;
+  const x=p.x*D-w/2, y0=-D*1.3, y=y0+(p.y*D-h/2-y0)*e, rot=p.r0+(p.r-p.r0)*e, sc=1.25-.25*e;
+  p.im.style.transform=`translate(${x}px,${y}px) rotate(${rot}deg) scale(${sc})`;
+  p.im.style.opacity=k>0?(1-finale):0;
+}
+
+let faseOra=-1;
+function disegna(forzato){
+  const p=forzato??avanti(imp);
+  // apertura: il titolo se ne va appena si comincia
+  // titolo e didascalie non stanno mai insieme: prima se ne va il titolo, poi arrivano le didascalie (legate allo scroll, anche tornando su)
+  const a=tra(p,0,.04); apertura.style.opacity=1-a; apertura.style.transform=`translateY(${-a*40}px)`;
+  didascalie.style.opacity=tra(p,.045,.08);
+  // la pallina diventa disco
+  // la pallina si allarga: il disco si scopre dal centro verso il bordo, con un filo di rotazione
+  const s=morb(tra(p,...T.stendi)), rg=30+72*s;
+  f1.style.opacity=1;
+  f2.style.opacity=s>0?1:0; f2.style.transform=`rotate(${(1-s)*-25}deg)`; ombra.style.opacity=s;
+  const mk=s>=1?'':`radial-gradient(closest-side,#000 ${rg}%,transparent ${rg+12}%)`; f2.style.webkitMaskImage=f2.style.maskImage=mk;
+  // il pomodoro
+  spirale(morb(tra(p,...T.salsa)));
+  // la mozzarella cade e resta; poi cade il basilico. Restano lì fino al forno, dove sotto le fiamme la pizza cruda diventa cotta
+  const m=tra(p,...T.mozz), b=tra(p,...T.bas), fo=tra(p,...T.forno), cotta=morb(tra(fo,.32,.68));
+  pezzi.forEach(x=>cade(x,m,cotta)); foglie.forEach(x=>cade(x,b,cotta));
+  // il forno: la pizza si scalda, il fuoco sale e la copre tutta; sotto il fuoco diventa cotta; il fuoco scende
+  forno.style.opacity=Math.min(1,Math.sin(Math.PI*fo)*1.1);
+  fuoco.style.transform=`translateY(${50-100*Math.sin(Math.PI*morb(fo))*.9}%)`;
+  f6.style.opacity=cotta; f2.style.opacity=s>0?1-cotta:0; salsaCv.style.opacity=1-cotta;   // la cruda sparisce sotto la cotta (che è un filo più piccola)
+  // didascalia e contatore
+  const fase=p<T.stendi[0]+.04?0:p<T.salsa[0]+.03?1:p<T.mozz[0]+.03?2:p<T.bas[0]+.03?3:p<T.forno[0]+.03?4:p<.9?5:6;
+  if(fase!==faseOra){faseOra=fase;dide.forEach((d,i)=>d.classList.toggle('on',i===fase));passi.innerHTML=`<b>0${Math.min(6,fase+1)}</b> / 06`}
+}
+window.__impasto=p=>disegna(p);   // solo per le verifiche
+
+/* ═══ IL MENU: ogni pizza arriva da lontano, si ferma davanti a te, poi ti passa accanto ═══ */
+const PIZZE=[
+  ['Margherita','pomodoro San Marzano, fior di latte, basilico, olio extravergine','8 €','img/p-cotta.webp'],
+  ['Marinara','pomodoro, aglio, origano, olio extravergine','7 €','img/p-marinara.webp'],
+  ['Diavola','pomodoro, fior di latte, salame piccante','9,50 €','img/p-diavola.webp'],
+  ['Capricciosa','pomodoro, fior di latte, prosciutto cotto, funghi, carciofi, olive','11 €','img/p-capricciosa.webp'],
+];
+const volo=$('#volo'), menu=$('#menu'), menuN=$('#menuN');
+const carte=PIZZE.map(([n,ing,pr,img])=>{const a=document.createElement('article');a.className='pz';
+  a.innerHTML=`<div class="pz-img"><img src="${img}" alt="Pizza ${n}" loading="lazy" decoding="async"></div><div><h3>${n}</h3><p>${ing}</p><b>${pr}</b></div>`;
+  volo.appendChild(a);return a});
+let menuOra=-1;
+function voloMenu(){
+  const p=avanti(menu), N=carte.length, x=p*(N-.2)-.6;     // all'inizio la prima sta arrivando, alla fine l'ultima resta ferma
+  carte.forEach((c,i)=>{
+    const q=x-i;                                 // -1: lontana · 0: davanti a te · +1: passata
+    const arrivo=morb(tra(q,-.9,-.2)), via=morb(tra(q,.35,.85));
+    const sc=.25+.75*arrivo+.15*via, op=Math.min(tra(q,-1,-.6),1-tra(q,.4,.7));
+    c.style.opacity=op; c.style.transform=`translate(-50%,calc(-50% - ${via*38}vh)) scale(${sc})`; c.style.filter=arrivo<1?`blur(${(1-arrivo)*6}px)`:'none';
+    c.style.visibility=op<=0?'hidden':'visible'; c.style.zIndex=q<-.2?10:20;   // quella in arrivo resta dietro finché l'altra non se ne va
+    c.lastElementChild.style.opacity=tra(q,-.45,-.3)*(1-tra(q,.3,.45));   // il testo arriva quando la pizza è quasi davanti e se ne va per primo
+  });
+  const ora=Math.min(N-1,Math.max(0,Math.round(x))); if(ora!==menuOra){menuOra=ora;menuN.innerHTML=`<b>0${ora+1}</b> / 0${N}`}
+}
+
+// la testata si copre quando nessuna delle due sezioni ferme (impasto, menu) è in cima: il testo le passa sotto
+const laTestata=$('.top'), pinFermi=$$('.impasto .pin,.menu .pin'); let testataCoperta=null;
+function copriTestata(){const c=!pinFermi.some(el=>Math.abs(el.getBoundingClientRect().top)<.5);if(c!==testataCoperta){testataCoperta=c;laTestata.classList.toggle('coperta',c)}}
+function aggiorna(){disegna();voloMenu();copriTestata()}
+lenis?lenis.on('scroll',aggiorna):addEventListener('scroll',aggiorna,{passive:true});
+addEventListener('resize',()=>{misura();voloMenu()});
+new ResizeObserver(misura).observe(piatto);
+misura(); aggiorna();
+
+/* ═══ ORDINA DA CASA: l'app funziona davvero (senza inviare niente) ═══ */
+const appLista=$('#appLista'), appOk=$('#appOk'), appOra=$('#appOra'), appOraT=$('#appOraT');
+const prezzo=t=>parseFloat(t.replace(',','.')), euro=n=>n.toFixed(2).replace('.',',')+' €';
+const qta=PIZZE.map(()=>0); let modo='ritiro';
+const ORE=['19:30','20:00','20:30','21:00','21:30']; let ora=2;
+PIZZE.forEach(([n,,pr,img],i)=>{const li=document.createElement('li');
+  li.innerHTML=`<img src="${img}" alt="" loading="lazy"><div><b>${n}</b><span>${pr}</span></div><div class="qta"><button type="button" aria-label="Togli una ${n}" disabled>−</button><output>0</output><button type="button" aria-label="Aggiungi una ${n}">+</button></div>`;
+  const [meno,,piu]=li.querySelector('.qta').children, out=li.querySelector('output');
+  const cambia=d=>{qta[i]=Math.max(0,qta[i]+d);out.textContent=qta[i];meno.disabled=!qta[i];totale()};
+  meno.onclick=()=>cambia(-1); piu.onclick=()=>cambia(1); appLista.appendChild(li)});
+function totale(){
+  const n=qta.reduce((a,b)=>a+b,0); let t=qta.reduce((a,q,i)=>a+q*prezzo(PIZZE[i][2]),0);
+  if(modo==='consegna'&&n)t+=2.5;
+  appOk.disabled=!n; appOk.textContent=n?`Ordina ${n} ${n>1?'pizze':'pizza'} · ${euro(t)}`:'Aggiungi una pizza';
+}
+$$('.app-modo button').forEach(b=>b.onclick=()=>{modo=b.dataset.modo;$$('.app-modo button').forEach(x=>x.classList.toggle('on',x===b));appOraT.textContent=(modo==='ritiro'?'ritiro':'consegna')+' alle';totale()});
+appOra.onclick=()=>{ora=(ora+1)%ORE.length;appOra.textContent=ORE[ora]+' ▾'};
+appOk.onclick=()=>{avviso.textContent=`Sito dimostrativo: nel sito vero l'ordine arriva subito in pizzeria (${modo} alle ${ORE[ora]}).`;avviso.classList.add('on');clearTimeout(avT);avT=setTimeout(()=>avviso.classList.remove('on'),3600)};
+
+/* ═══ ADESSO GIRALA: il 3D si carica solo quando la sezione si avvicina ═══ */
+const g3d=$('#g3d');
+new IntersectionObserver((es,o)=>{if(es[0].isIntersecting){o.disconnect();import('./gira3d.js').then(m=>m.monta(g3d)).catch(()=>{})}},{rootMargin:'120% 0px'}).observe(g3d);
+</script>
+</body>
+</html>
