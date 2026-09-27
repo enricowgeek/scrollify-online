@@ -100,8 +100,11 @@ function monta(host) {
   cartello.innerHTML = '<b>slow down!</b><span>rete lenta? vai piano,<br>che carica tutto con calma · <i>0%</i></span>';
   host.appendChild(cartello);
   const nato = performance.now();
-  // il file arriva dalla memoria (vedi scarica): se la sezione si spegne mentre il 3D si sta preparando, viene lasciato cadere senza errori
-  scarica(O.file).then(buf => {
+  // il file arriva dalla memoria (vedi scarica): se la sezione si spegne mentre il 3D si sta preparando, viene lasciato cadere senza errori.
+  // Questo esempio è sullo schermo: il suo file passa davanti agli altri
+  davanti = O.file;
+  const file = scarica(O.file); precedenza();
+  file.then(buf => {
     if (spenta) return;
     mesh = new SplatMesh({ fileBytes: buf, fileName: O.file });
     if (!O.amb) mesh.quaternion.set(1, 0, 0, 0);   // i file nati da una foto escono con la y verso il basso
@@ -146,7 +149,8 @@ function monta(host) {
   // dopo: finite le tre fasi la pagina tiene l'esempio sul vero per un tratto (window.__pH_<nome> da 0 a 1): intanto continua a muoversi piano
   let cur = 0, vis = 0, dopo = 0;
   function disegna() {
-    const aspetta = !pronta && performance.now() - nato > 400;
+    // solo se il file sta ancora arrivando: quando è già qui e il 3D si sta solo preparando non è colpa della rete
+    const aspetta = !pronta && (arrivato.get(O.file) || 0) < 1 && performance.now() - nato > 800;
     cartello.classList.toggle('su', aspetta);
     if (aspetta) { const pct = Math.round((arrivato.get(O.file) || 0) * 100) + '%', i = cartello.querySelector('i'); if (i.textContent !== pct) i.textContent = pct; }
     const target = window['__pV_' + nome] || 0;
@@ -175,6 +179,7 @@ function monta(host) {
     renderer.render(scene, camera);
   }
   function smonta() {
+    if (davanti === O.file) { davanti = null; precedenza(); }
     spenta = true; ro.disconnect(); ac.abort(); mesh?.dispose?.(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove(); cartello.remove();
   }
   return { disegna, smonta };
@@ -189,22 +194,85 @@ const palco = hosts[0]?.parentElement;
 // online ogni file 3D pesa 2–3 MB: se si scaricasse solo quando il suo esempio si accende, chi scorre veloce
 // troverebbe tutti gli esempi vuoti. Appena questo script parte (al primo scroll) si scaricano in fila, nell'ordine del menu,
 // e restano in memoria: accendere o riaccendere un esempio non riscarica niente.
+// Rete lenta o ballerina (il telefono in treno): se per un po' non arriva niente il download si interrompe e riprende
+// da dove era arrivato (il server accetta i "Range"), con attese sempre più lunghe; riparte subito quando torna la rete
+// o quando si torna sulla pagina. Si scarica un file alla volta e l'esempio sullo schermo passa davanti (vedi precedenza).
 const byte = new Map(), arrivato = new Map();   // arrivato: quanto del file è già qui, da 0 a 1 (per la scritta di caricamento)
-async function leggi(f) {
-  const r = await fetch(f); if (!r.ok) throw new Error(f);
-  const tot = +r.headers.get('content-length') || 0;
-  if (!r.body || !tot) { const b = await r.arrayBuffer(); arrivato.set(f, 1); return b; }
-  const buf = new Uint8Array(tot), rd = r.body.getReader(); let n = 0;
-  for (;;) { const { done, value } = await rd.read(); if (done) break; buf.set(value, n); n += value.length; arrivato.set(f, n / tot); }
-  arrivato.set(f, 1); return buf.buffer;
+const lavori = new Map();                       // file → download in corso (pezzi arrivati, pausa, tentativo attuale)
+let davanti = null;                             // il file dell'esempio sullo schermo
+const svegliami = new Set();
+const sveglia = () => { for (const r of svegliami) r(); svegliami.clear(); };
+addEventListener('online', sveglia);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) sveglia(); });
+const riposa = ms => new Promise(r => { const t = setTimeout(fine, ms); function fine() { clearTimeout(t); svegliami.delete(fine); r(); } svegliami.add(fine); });
+
+// un tentativo: chiede il resto del file; se per `muto` ms non arriva niente (neanche la risposta) lo interrompe
+async function tentativo(L, muto) {
+  const ac = L.ac = new AbortController();
+  let cane = setTimeout(() => ac.abort(), muto);
+  try {
+    // If-Range: se nel frattempo il file è cambiato sul server, arriva intero da capo invece di un pezzo del file nuovo
+    const r = await fetch(L.f, { signal: ac.signal, headers: L.n ? { Range: `bytes=${L.n}-`, ...(L.etag && { 'If-Range': L.etag }) } : {} });
+    if (r.status === 416) { L.pezzi = []; L.n = 0; throw new Error('range'); }
+    if (r.status >= 400 && r.status < 500 && r.status !== 408 && r.status !== 429) { const e = new Error(L.f); e.fine = true; throw e; }
+    if (!r.ok) throw new Error(r.status);
+    if (r.status === 206) {
+      const m = /bytes (\d+)-\d+\/(\d+)/.exec(r.headers.get('content-range') || '');
+      if (!m || +m[1] !== L.n) { L.pezzi = []; L.n = 0; throw new Error('range'); }   // pezzo sbagliato: si ricomincia pulito
+      L.tot = +m[2];
+    } else { L.pezzi = []; L.n = 0; L.tot = +r.headers.get('content-length') || 0; L.etag = r.headers.get('etag'); }  // il server manda tutto da capo
+    if (!r.body) { clearTimeout(cane); const b = new Uint8Array(await r.arrayBuffer()); L.pezzi.push(b); L.n += b.length; return true; }
+    const rd = r.body.getReader();
+    for (;;) {
+      const { done, value } = await rd.read(); if (done) break;
+      clearTimeout(cane); cane = setTimeout(() => ac.abort(), muto);
+      L.pezzi.push(value); L.n += value.length; L.muto = 0;
+      if (L.tot) arrivato.set(L.f, Math.min(.99, L.n / L.tot));
+    }
+    return !L.tot || L.n >= L.tot;   // finito davvero, o la connessione si è chiusa a metà
+  } finally { clearTimeout(cane); L.ac = null; }
+}
+
+async function leggi(L) {
+  let attesa = 1000;
+  for (;;) {
+    if (L.pausa) await new Promise(r => { L.via = r; });
+    const prima = L.n;
+    try { if (await tentativo(L, 8000 + 4000 * Math.min(L.muto++, 5))) break; }   // chi non risponde ha sempre più tempo: 8 → 28 s
+    catch (e) { if (e.fine) throw e; }
+    if (L.pausa) continue;                         // interrotto apposta per far passare l'esempio sullo schermo: niente attesa
+    if (L.n > prima) attesa = 1000;                // qualcosa era arrivato: la rete c'è, si riprova presto
+    await riposa(attesa); attesa = Math.min(attesa * 2, 30000);
+  }
+  const buf = new Uint8Array(L.n); let i = 0;
+  for (const p of L.pezzi) { buf.set(p, i); i += p.length; }
+  L.pezzi = null; arrivato.set(L.f, 1);
+  return buf.buffer;
+}
+
+// un file alla volta, con tutta la rete: quello dell'esempio sullo schermo, se non è ancora arrivato, altrimenti il primo in fila
+// (nell'ordine del menu). Gli altri restano fermi e tengono i byte già presi
+function precedenza() {
+  const attivo = lavori.has(davanti) ? davanti : lavori.keys().next().value;
+  for (const L of lavori.values()) {
+    const ferma = L.f !== attivo;
+    if (ferma && !L.pausa) { L.pausa = true; L.ac?.abort(); }
+    if (!ferma && L.pausa) { L.pausa = false; L.via?.(); L.via = null; }
+  }
 }
 function scarica(f) {
-  if (!byte.has(f)) byte.set(f, leggi(f).catch(e => { byte.delete(f); arrivato.delete(f); throw e; }));
+  if (!byte.has(f)) {
+    const L = { f, pezzi: [], n: 0, tot: 0, muto: 0, pausa: false, ac: null, via: null };
+    lavori.set(f, L); precedenza();
+    byte.set(f, leggi(L).finally(() => { lavori.delete(f); precedenza(); }).catch(e => { byte.delete(f); arrivato.delete(f); throw e; }));
+  }
   return byte.get(f);
 }
 let inFila = false;
 async function scaricaTutti() {
   if (inFila) return; inFila = true;
+  // con "risparmio dati" acceso non si scarica niente in anticipo: solo l'esempio che si guarda
+  if (navigator.connection?.saveData) return;
   for (const h of hosts) {
     const O = VETRINE[h.dataset.vero];
     if (O.img) { new Image().src = O.img; new Image().src = O.prof; }
@@ -233,3 +301,4 @@ if (palco) {
 })();
 // solo per le verifiche: accende subito un esempio e lo disegna anche fuori schermo
 window.__veroMonta = nome => { const h = hosts.find(x => x.dataset.vero === nome); forzate.add(h); };
+window.__veroRete = () => ({ davanti, arrivato: Object.fromEntries(arrivato), lavori: [...lavori.values()].map(L => ({ f: L.f, n: L.n, tot: L.tot, pausa: L.pausa })) });

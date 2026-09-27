@@ -909,7 +909,7 @@ function veroStep(){
   if(k!==veK){veK=k;veVoci.forEach((e,i)=>e.classList.toggle('on',i===k));veCv.forEach((e,i)=>e.classList.toggle('on',i===k))}
   const f=t<.34?0:t<.68?1:2; if(f!==veF){veF=f;parole.forEach((e,i)=>e.classList.toggle('on',i===f))}
   // il 3D (librerie e file, qualche MB) parte al primo scroll: chi scende trova gli esempi già pronti
-  if(!veCaricato&&(scrollY>0||b.top<innerHeight*1.6)){veCaricato=true;import('./vero3d.js?v=2').catch(()=>{})}
+  if(!veCaricato&&(scrollY>0||b.top<innerHeight*1.6)){veCaricato=true;import('./vero3d.js?v=3').catch(()=>{})}
 }
 addEventListener('scroll',veroStep,{passive:true});
 veVoci.forEach((e,i)=>e.addEventListener('click',()=>{const span=ve.offsetHeight-innerHeight;salta(ve.offsetTop+span*(i+.1)/VN)}));
