@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#060606">
+<title>Doppio Strato · burger e birra</title>
+<meta name="description" content="Doppio Strato: i burger in 3D che si aprono strato per strato scorrendo, uno dopo l'altro. Sito dimostrativo fatto con Scrollify.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23060606'/%3E%3Ccircle cx='16' cy='16' r='10.5' fill='none' stroke='%23b8965c' stroke-width='1.2'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23d9892f'/%3E%3C/svg%3E">
+<link rel="preload" href="font/fraunces-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="font/font.css">
+<!-- Doppio Strato · template dimostrativo di Scrollify (burger pub): nome, piatti e testi inventati.
+     Fase 1 (seconda passata): i quattro burger uno dopo l'altro, ognuno si apre a strati e si richiude. Dati in DATI, qui sotto. -->
+<script>
+/* ————— DATI: nome, frase, i burger (id = il 3D in img/<id>.*), le etichette degli strati (chiave = strato di src/tagli.py) ————— */
+window.DATI = {
+  nome: 'Doppio Strato',
+  frase: 'Burger alla griglia e birra alla spina.',
+  burger: [
+    { id: 'classico', nome: 'Il Classico', riga: 'Manzo, cheddar, bacon, cetrioli, cipolla rossa, pomodoro e insalata.',
+      strati: { 'pane-sopra': 'Pane al sesamo', salse: 'Maionese e ketchup', cetrioli: 'Cetrioli', cipolla: 'Cipolla rossa', bacon: 'Bacon croccante',
+        manzo: 'Cheddar, manzo 200 g', pomodoro: 'Pomodoro', insalata: 'Insalata riccia', 'pane-sotto': 'Pane tostato' } },
+    { id: 'bbq', nome: 'Affumicato', riga: 'Doppio manzo, doppio cheddar, bacon, anelli di cipolla e salsa BBQ.',
+      strati: { 'pane-sopra': 'Pane brioche', salse: 'Salsa BBQ e maionese', anelli: 'Anelli di cipolla', bacon: 'Bacon alla BBQ', manzo: 'Cheddar, manzo 150 g',
+        manzo2: 'Ancora cheddar e manzo', cetrioli: 'Cetrioli', cipolla: 'Cipolla rossa', pomodoro: 'Pomodoro', insalata: 'Insalata riccia', 'pane-sotto': 'Maionese, pane tostato' } },
+    { id: 'piccante', nome: 'Diavolo', riga: 'Doppio manzo, formaggio al peperoncino, jalapeño, bacon e salsa piccante.',
+      strati: { 'pane-sopra': 'Pane brioche', salse: 'Salsa piccante', insalata: 'Insalata riccia', cipolla: 'Cipolla rossa', pomodoro: 'Pomodoro', jalapeno: 'Jalapeño e cetrioli',
+        bacon: 'Bacon croccante', manzo: 'Manzo, formaggio piccante', manzo2: 'Ancora manzo e formaggio', 'pane-sotto': 'Salsa, pane tostato' } },
+    { id: 'funghi', nome: 'Sottobosco', riga: 'Funghi trifolati, cipolla caramellata, bacon, formaggio fuso e maionese al pepe.',
+      strati: { 'pane-sopra': 'Pane brioche', salse: 'Maionese al pepe', insalata: 'Insalata riccia', cipolla: 'Cipolla rossa', pomodoro: 'Pomodoro', cetrioli: 'Cetrioli',
+        jalapeno: 'Jalapeño', bacon: 'Bacon e cipolla caramellata', funghi: 'Funghi trifolati', manzo: 'Formaggio, manzo 200 g', 'salsa-sotto': 'Maionese al pepe', 'pane-sotto': 'Pane tostato' } },
+  ],
+  // "Componi il tuo": gli ingredienti sono strati veri dei quattro burger (da = il burger, strato = la chiave di src/tagli.py)
+  componi: {
+    max: 8, maxUguali: 2, paneIniziale: 'brioche', iniziale: ['manzo-cheddar'],
+    pane: [{ id: 'sesamo', nome: 'Pane al sesamo', da: 'classico' }, { id: 'brioche', nome: 'Pane brioche', da: 'funghi' }],
+    ingredienti: [
+      { id: 'manzo-cheddar', nome: 'Manzo e cheddar', da: 'classico', strato: 'manzo' },
+      { id: 'manzo-fuso', nome: 'Manzo e formaggio fuso', da: 'funghi', strato: 'manzo' },
+      { id: 'manzo-piccante', nome: 'Manzo e formaggio piccante', da: 'piccante', strato: 'manzo' },
+      { id: 'bacon', nome: 'Bacon croccante', da: 'classico', strato: 'bacon' },
+      { id: 'caramellata', nome: 'Cipolla caramellata e bacon', da: 'funghi', strato: 'bacon' },
+      { id: 'anelli', nome: 'Anelli di cipolla', da: 'bbq', strato: 'anelli' },
+      { id: 'funghi', nome: 'Funghi trifolati', da: 'funghi', strato: 'funghi' },
+      { id: 'insalata', nome: 'Insalata riccia', da: 'classico', strato: 'insalata' },
+      { id: 'pomodoro', nome: 'Pomodoro', da: 'classico', strato: 'pomodoro' },
+      { id: 'cipolla', nome: 'Cipolla rossa', da: 'classico', strato: 'cipolla' },
+      { id: 'cetrioli', nome: 'Cetrioli', da: 'classico', strato: 'cetrioli' },
+      { id: 'jalapeno', nome: 'Jalapeño', da: 'funghi', strato: 'jalapeno' },
+      { id: 'maio-ketchup', nome: 'Maionese e ketchup', da: 'classico', strato: 'salse' },
+      { id: 'salsa-bbq', nome: 'Salsa BBQ', da: 'bbq', strato: 'salse' },
+      { id: 'salsa-piccante', nome: 'Salsa piccante', da: 'piccante', strato: 'salse' },
+    ],
+    // quando: "appena pronto" o un orario (nessun campo da scrivere); come: ritiro o al tavolo
+    orari: ['19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'],
+  },
+  indirizzo: { via: 'Via Esempio 21', citta: 'La tua città' },
+  orari: [['Lunedì', 'Chiuso'], ['Martedì – giovedì', '18:30 – 24:00'], ['Venerdì e sabato', '18:30 – 1:00'], ['Domenica', '12:00 – 15:00 · 18:30 – 24:00']],
+  whatsapp: null,   // sito dimostrativo: niente numero vero. Gli ordini mostrano il messaggio che nel sito vero parte su WhatsApp
+  demo: true,   // barra "Torna a Scrollify", fascia "Il pacchetto burger" e nota nel piè
+};
+</script>
+<style>
+  :root {
+    --fondo: #060606; --testo: #f2ede6; --testo2: rgba(242, 237, 230, .6); --filo: rgba(242, 237, 230, .14); --ottone: #b8965c;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif; --sans: "Inter", system-ui, sans-serif;
+    --gut: clamp(16px, 5vw, 72px); --ease: cubic-bezier(.16, 1, .3, 1); --sb: 0px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--fondo); }
+  body { background: var(--fondo); color: var(--testo); font-family: var(--sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  ::selection { background: var(--ottone); color: var(--fondo); }
+  .demo-on { --sb: 50px; }
+  @media (max-width: 640px) { .demo-on { --sb: 46px; } }
+  .serif { font-family: var(--serif); font-weight: 300; letter-spacing: -.02em; line-height: 1.02; text-wrap: balance; }
+
+  /* ————— il palco: sezione alta con la scena fissa (svh: la barra del browser non la fa saltare). L'altezza la mette lo script
+     (100svh + la linea del tempo di js/linea.js); questa è quella per quattro burger ————— */
+  #palco { position: relative; height: calc(100svh + 1058svh); }
+  @media (min-width: 761px) { #palco { height: calc(100svh + 899svh); } }
+  #palco .fisso { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--fondo); }
+  #palco .fisso::before { content: ""; position: absolute; left: 50%; top: 58%; width: min(140vw, 1000px); height: 70%; transform: translate(-50%, -50%); pointer-events: none;
+    background: radial-gradient(closest-side, rgba(255, 214, 170, .07), rgba(255, 214, 170, 0)); }
+  #palco .tela { position: absolute; inset: 0; opacity: 0; transition: opacity .9s var(--ease); }
+  #palco .tela.pronta { opacity: 1; }
+  #palco .tela canvas { cursor: grab; }
+  #palco .tela canvas:active { cursor: grabbing; }
+
+  .apertura, .nome, .riga { position: absolute; left: var(--gut); right: var(--gut); z-index: 2; pointer-events: none; }
+  .apertura { top: calc(var(--sb) + clamp(26px, 6vh, 64px)); text-align: center; }
+  .apertura h1 { font-size: clamp(3.4rem, 9vw, 7.4rem); }
+  .apertura hr { width: 40px; margin: clamp(16px, 2.4vh, 24px) auto 0; border: 0; border-top: 1px solid var(--ottone); }
+  .apertura p { margin: 14px auto 0; max-width: 26em; font-size: clamp(14px, 1.2vw, 16px); letter-spacing: .02em; color: var(--testo2); text-wrap: balance; }
+  .scorri { position: absolute; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 2; text-align: center; font-size: 12.5px; letter-spacing: .04em; color: var(--testo2); pointer-events: none; }
+  .scorri span { display: inline-block; margin-left: 6px; animation: giu 1.8s var(--ease) infinite; }
+  @keyframes giu { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+
+  /* il nome del burger davanti (in alto) e la sua riga (in basso: quando è chiuso e quando la giostra gira) */
+  .nome { top: calc(var(--sb) + clamp(18px, 4.5vh, 44px)); }
+  .nome h2 { font-size: clamp(2.1rem, 4.6vw, 3.6rem); font-weight: 350; transition: opacity .3s; }
+  .nome.cambia h2 { opacity: 0; transition: opacity .16s; }
+  .riga { bottom: calc(26px + env(safe-area-inset-bottom)); max-width: 460px; opacity: 0; transform: translateY(8px); transition: opacity .5s, transform .7s var(--ease); }
+  .riga.si { opacity: 1; transform: none; }
+  .riga p { font-size: 15px; color: var(--testo2); text-wrap: pretty; }
+  .riga .aiuto { margin-top: 10px; font-size: 12.5px; letter-spacing: .02em; opacity: .75; }
+  .riga a { display: none; align-items: center; min-height: 44px; margin-top: 2px; font-size: 15px; color: var(--testo); text-decoration: none; pointer-events: auto; }
+  .riga a span { border-bottom: 1px solid var(--ottone); padding-bottom: 2px; }
+  .riga.fine a { display: inline-flex; }
+  .riga.fine .aiuto { display: none; }
+
+  /* le etichette degli strati: testo breve + un filo sottile fino al bordo dello strato, un punto d'ottone */
+  .etichette { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+  .et { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 10px; font-size: 12.5px; letter-spacing: .01em; line-height: 1.25; color: rgba(242, 237, 230, .9); white-space: nowrap; opacity: 0; will-change: transform, opacity; }
+  .et i { display: block; height: 1px; background: rgba(242, 237, 230, .22); transform-origin: 0 50%; }
+  .et u { position: absolute; top: 50%; width: 4px; height: 4px; margin-top: -2px; border-radius: 50%; background: var(--ottone); }
+
+  /* ————— Componi il tuo: a sinistra (in alto sul telefono, fisso) il tuo burger sul piatto; a destra le miniature e l'ordine ————— */
+  .componi { padding: clamp(84px, 14vh, 150px) var(--gut) clamp(70px, 12vh, 120px); max-width: 1320px; margin: 0 auto; }
+  .comp-testa h2, .dove h2 { font-size: clamp(2.6rem, 6vw, 4.6rem); }
+  .comp-testa p { margin-top: 14px; max-width: 30em; color: var(--testo2); }
+  .comp { margin-top: clamp(28px, 5vh, 56px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: clamp(32px, 5vw, 88px); align-items: start; }
+  .comp-vista { position: sticky; top: calc(var(--sb) + 20px); height: min(calc(100svh - var(--sb) - 40px), 820px); display: flex; flex-direction: column; }
+  .comp-vista canvas { flex: 1; min-height: 0; width: 100%; display: block; touch-action: pan-y; cursor: grab; }
+  .comp-vista canvas:active { cursor: grabbing; }
+  .comp-sotto { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 44px; font-size: 13px; color: var(--testo2); }
+  .link { appearance: none; background: none; border: 0; color: var(--testo2); font: inherit; font-size: 13px; min-height: 44px; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--filo); text-underline-offset: 4px; }
+  .link:hover { color: var(--testo); }
+  .gruppo + .gruppo, .avviso + .gruppo { margin-top: clamp(22px, 3.5vh, 34px); }
+  .gruppo h3 { font: 500 13px/1.3 var(--sans); letter-spacing: .02em; color: var(--testo2); margin-bottom: 8px; }
+  .ing-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 4px 14px; }
+  .ing-griglia.due { grid-template-columns: repeat(2, minmax(0, 150px)); }
+  .ing { position: relative; appearance: none; background: none; border: 0; color: inherit; font: inherit; text-align: left; padding: 0 0 8px; min-height: 44px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ing canvas { display: block; width: 100%; aspect-ratio: 16 / 10; transition: transform .35s var(--ease); }
+  .ing:hover canvas { transform: translateY(-3px); }
+  .ing:active canvas { transform: scale(.96); }
+  .ing .n { display: block; padding-top: 7px; border-top: 1px solid var(--filo); font-size: 13px; line-height: 1.3; color: var(--testo); transition: color .25s, border-color .25s; }
+  .ing .c { position: absolute; right: 0; top: 4px; font-size: 12.5px; color: var(--ottone); }
+  .ing.scelto .n { color: var(--ottone); border-top-color: var(--ottone); }
+  .ing.spento { opacity: .42; }
+  .senza-3d .comp-vista { position: static; height: auto; } .senza-3d .comp-vista canvas { display: none; } .senza-3d .ing .n { padding-top: 12px; }
+  .ing:focus-visible { outline: 2px solid var(--ottone); outline-offset: 3px; }
+  .avviso { min-height: 1.4em; margin-top: 10px; font-size: 14px; color: var(--ottone); }
+  .lista { list-style: none; border-top: 1px solid var(--filo); }
+  .lista li { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 44px; border-bottom: 1px solid var(--filo); font-size: 15px; }
+  .lista li:first-child span, .lista li:last-child span { color: var(--testo2); }
+  .lista button { appearance: none; background: none; border: 0; color: var(--testo2); font: inherit; font-size: 13px; min-height: 44px; min-width: 44px; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--filo); text-underline-offset: 4px; }
+  .lista button:hover { color: var(--testo); }
+  .ordine { margin-top: clamp(26px, 4vh, 40px); }
+  .ordine fieldset { border: 0; display: flex; flex-wrap: wrap; gap: 0 28px; }
+  .ordine legend, .quando > span { width: 100%; font-size: 13px; letter-spacing: .02em; color: var(--testo2); margin-bottom: 2px; }
+  .ordine .come label { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 15px; cursor: pointer; }
+  .ordine input[type=radio] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; margin: 0; border-radius: 50%; border: 1.5px solid rgba(242, 237, 230, .45); display: grid; place-items: center; }
+  .ordine input[type=radio]::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ottone); transform: scale(0); transition: transform .2s var(--ease); }
+  .ordine input[type=radio]:checked { border-color: var(--ottone); }
+  .ordine input[type=radio]:checked::after { transform: scale(1); }
+  .ordine input:focus-visible, .ordine select:focus-visible { outline: 2px solid var(--ottone); outline-offset: 3px; }
+  .quando { display: block; margin-top: 14px; }
+  .quando select { appearance: none; -webkit-appearance: none; display: block; width: 100%; min-height: 46px; padding: 0 28px 0 0; border: 0; border-bottom: 1px solid rgba(242, 237, 230, .3); border-radius: 0; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23b8965c' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 4px center; color: var(--testo); font: 400 16px/1.4 var(--sans); cursor: pointer; }
+  .quando select option { background: #111; color: var(--testo); }
+  .pieno { display: inline-flex; align-items: center; justify-content: center; min-height: 52px; margin-top: 26px; padding: 0 30px; border: 0; border-radius: 0; background: var(--testo); color: #0a0a0a; font: 600 15px/1 var(--sans); letter-spacing: .02em; white-space: nowrap; cursor: pointer; transition: background .25s, transform .25s var(--ease); }
+  .pieno:hover { background: #e3cfa6; transform: translateY(-2px); }
+  .pieno:focus-visible { outline: 2px solid var(--ottone); outline-offset: 4px; }
+  .msg { min-height: 1.4em; margin-top: 14px; font-size: 14px; line-height: 1.5; color: var(--testo2); max-width: 36em; }
+  .msg q { color: var(--testo); quotes: "«" "»"; }
+
+  /* ————— Dove siamo ————— */
+  .dove { padding: clamp(70px, 12vh, 130px) var(--gut) clamp(70px, 12vh, 130px); max-width: 1320px; margin: 0 auto; border-top: 1px solid var(--filo); }
+  .dove-griglia { margin-top: clamp(28px, 5vh, 52px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); gap: 32px clamp(32px, 5vw, 88px); }
+  .dove .ind { font-family: var(--serif); font-weight: 300; font-size: clamp(1.6rem, 3vw, 2.3rem); line-height: 1.15; letter-spacing: -.015em; }
+  .dove .ind span { display: block; margin-top: 4px; font-family: var(--sans); font-size: 15px; letter-spacing: 0; color: var(--testo2); }
+  .dove .tavolo a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 14px; font-size: 15px; color: var(--testo); text-decoration: none; }
+  .dove .tavolo a span { border-bottom: 1px solid var(--ottone); padding-bottom: 2px; }
+  .orari { border-top: 1px solid var(--filo); }
+  .orari div { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--filo); font-size: 15px; }
+  .orari dt { color: var(--testo2); }
+  .orari dd { text-align: right; }
+
+  /* ————— la fascia di Scrollify (solo con DATI.demo) ————— */
+  .pacchetto { padding: clamp(56px, 8vw, 96px) var(--gut); background: #a8ff60; color: #050605; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 28px; font-family: var(--sans); font-size: 16px; line-height: 1.6; }
+  .pacchetto[hidden] { display: none; }
+  .pacchetto .k { font-size: 12px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: rgba(5, 6, 5, .6); }
+  .pacchetto h3 { margin-top: 12px; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.6rem); letter-spacing: -.03em; line-height: 1.08; }
+  .pacchetto p { margin-top: 12px; color: rgba(5, 6, 5, .75); max-width: 36em; }
+  .pacchetto a { display: inline-block; padding: 14px 22px; border-radius: 12px; background: #050605; color: #a8ff60; font-weight: 600; white-space: nowrap; text-decoration: none; }
+  .pacchetto a:focus-visible { outline: 2px solid #050605; outline-offset: 4px; }
+  .piede { padding: 26px var(--gut) calc(30px + env(safe-area-inset-bottom)); border-top: 1px solid var(--filo); display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; font-size: 13px; color: var(--testo2); }
+  .piede a { color: var(--testo); }
+  a:focus-visible { outline: 2px solid var(--ottone); outline-offset: 4px; border-radius: 2px; }
+
+  /* ripiego senza WebGL: le foto (chiuso, poi aperto) */
+  .ripiego { position: absolute; left: 50%; top: 50%; width: min(76vw, 44vh); transform: translate(-50%, -46%); z-index: 1; display: none; }
+  .ripiego img { width: 100%; height: auto; display: block; }
+  .no3d .ripiego { display: block; }
+
+  @media (max-width: 760px) {
+    .apertura h1 { font-size: clamp(3.2rem, 15.5vw, 4.6rem); }
+    .apertura p { font-size: 14px; }
+    .nome h2 { font-size: clamp(2rem, 9vw, 2.6rem); }
+    .riga { bottom: calc(20px + env(safe-area-inset-bottom)); }
+    .riga p { font-size: 14px; }
+    .et { font-size: 12px; gap: 8px; }
+    .et b { white-space: normal; max-width: 9.2em; text-align: right; }
+    .dove-griglia { grid-template-columns: 1fr; }
+    .pacchetto { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  }
+  .et b { font-weight: 400; }
+  @media (max-width: 959px) {
+    .comp { grid-template-columns: 1fr; gap: 0; }
+    /* sul telefono il tuo burger resta in alto mentre scegli (sticky), le miniature scorrono sotto in tre colonne */
+    .comp-vista { top: var(--sb); height: 41svh; z-index: 3; margin: 0 calc(-1 * var(--gut)); padding: 0 var(--gut); background: var(--fondo); }
+    .comp-vista::after { content: ""; position: absolute; left: 0; right: 0; bottom: -18px; height: 18px; background: linear-gradient(var(--fondo), rgba(6, 6, 6, 0)); pointer-events: none; }
+    .comp-sotto { min-height: 40px; }
+    .comp-scelte { padding-top: 16px; }
+    .ing-griglia { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px 12px; }
+    .ing-griglia.due { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .ing .n { font-size: 12.5px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .scorri span { animation: none; } .riga, .nome h2, #palco .tela, .ing canvas, .pieno { transition: none; } .ing:hover canvas, .ing:active canvas { transform: none; } }
+
+/* barra di Scrollify: le demo si aprono nella stessa scheda, da qui si torna ai template */
+.scrollify-barra{position:fixed;inset:0 0 auto;z-index:1000;height:var(--sb);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,48px);background:#050605;font:600 17px/1 "Inter",system-ui,-apple-system,sans-serif}
+.scrollify-barra a{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#a8ff60;text-decoration:none;letter-spacing:0;text-transform:none}
+.scrollify-barra a:hover{color:#fff}
+.scrollify-barra a:focus-visible{outline:2px solid #a8ff60;outline-offset:2px;border-radius:4px}
+.scrollify-barra .sb-marchio{font:500 14px/1 ui-monospace,"Geist Mono",Menlo,monospace;color:#eef2ec;letter-spacing:.02em}
+.scrollify-barra .sb-marchio b{font-weight:500;color:#a8ff60}
+@media (max-width:640px){.scrollify-barra{font-size:16px}.scrollify-barra .sb-marchio{font-size:12px}}
+.scrollify-barra[hidden]{display:none!important}
+</style>
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
+<link rel="modulepreload" href="lib/three.module.min.js">
+<link rel="modulepreload" href="lib/three.core.min.js">
+<link rel="modulepreload" href="js/palco.js">
+<link rel="modulepreload" href="js/burger.js">
+</head>
+<body>
+<nav class="scrollify-barra" id="barra" aria-label="Scrollify" hidden><a href="https://scrollify.online/#esempi" id="sbTorna"><span aria-hidden="true" style="font-size:1.25em">←</span> Torna a Scrollify</a><span class="sb-marchio" aria-hidden="true">scroll<b>ify</b></span></nav>
+<main>
+  <section id="palco" aria-label="I burger">
+    <div class="fisso" id="fisso">
+      <div class="tela" id="tela" aria-hidden="true"></div>
+      <div class="ripiego" aria-hidden="true"><img id="ripiegoImg" alt="" width="560" height="700"></div>
+      <div class="apertura" id="apertura">
+        <h1 class="serif" id="titolo"></h1>
+        <hr>
+        <p id="frase"></p>
+      </div>
+      <div class="scorri" id="scorri">Scorri<span aria-hidden="true">↓</span></div>
+      <div class="nome" id="nome" aria-live="polite"><h2 class="serif" id="nomeBurger"></h2></div>
+      <div class="etichette" id="etichette" aria-hidden="true"></div>
+      <div class="riga" id="riga">
+        <p id="rigaBurger"></p>
+        <p class="aiuto">Trascina per girare la giostra</p>
+        <a href="#componi"><span>Componi il tuo ↓</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Componi il tuo: le miniature 3D (bottoni) e il tuo burger sul piatto (js/componi.js, stesso renderer del palco) -->
+  <section class="componi" id="componi" aria-labelledby="compTitolo">
+    <div class="comp-testa">
+      <h2 class="serif" id="compTitolo">Componi il tuo</h2>
+      <p>Tocca gli ingredienti: il burger si costruisce sul piatto, strato dopo strato.</p>
+    </div>
+    <div class="comp">
+      <div class="comp-vista" data-vista>
+        <canvas aria-hidden="true"></canvas>
+        <div class="comp-sotto"><span data-conto aria-live="polite"></span><button type="button" class="link" data-ricomincia>Ricomincia</button></div>
+      </div>
+      <div class="comp-scelte">
+        <div class="gruppo"><h3>Il pane</h3><div class="ing-griglia due" data-griglia="pane"></div></div>
+        <div class="gruppo"><h3>Dentro</h3><div class="ing-griglia" data-griglia="dentro"></div></div>
+        <p class="avviso" data-msg aria-live="polite"></p>
+        <div class="gruppo il-tuo"><h3>Il tuo burger</h3><ol class="lista" data-lista></ol></div>
+        <form class="ordine" id="ordine" novalidate>
+          <fieldset class="come"><legend>Come</legend>
+            <label><input type="radio" name="come" value="ritiro" checked><span>Da ritirare</span></label>
+            <label><input type="radio" name="come" value="tavolo"><span>Al tavolo</span></label>
+          </fieldset>
+          <label class="quando"><span>Quando</span><select name="quando" id="quando"></select></label>
+          <button class="pieno" type="submit">Ordina su WhatsApp</button>
+          <p class="msg" id="msgOrdine" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="dove" id="dove" aria-labelledby="doveTitolo">
+    <h2 class="serif" id="doveTitolo">Dove siamo</h2>
+    <div class="dove-griglia">
+      <div>
+        <p class="ind" id="indirizzo"></p>
+        <p class="tavolo"><a href="#" id="prenota"><span>Prenota un tavolo</span></a></p>
+        <p class="msg" id="msgTavolo" aria-live="polite"></p>
+      </div>
+      <dl class="orari" id="orari"></dl>
+    </div>
+  </section>
+</main>
+<aside class="pacchetto" id="pacchetto" hidden>
+  <div><p class="k">fatto con Scrollify</p><h3>Il pacchetto burger</h3><p>Un sito come questo, con il burger che ti componi e l'ordine su WhatsApp. Ogni sito è su misura e personalizzabile al 100%: questo è solo un esempio.</p></div>
+  <a href="https://scrollify.online/#contatti" rel="noopener">Lo voglio per il mio locale →</a>
+</aside>
+<footer class="piede"><span id="piedeNome"></span><span id="piedeNota"></span></footer>
+
+<script>
+(function () {
+  var D = window.DATI, $ = function (s) { return document.querySelector(s); };
+  document.title = D.nome + ' · burger e birra';
+  $('#titolo').textContent = D.nome; $('#frase').textContent = D.frase;
+  $('#indirizzo').innerHTML = D.indirizzo.via + '<span>' + D.indirizzo.citta + '</span>';
+  $('#orari').innerHTML = D.orari.map(function (o) { return '<div><dt>' + o[0] + '</dt><dd>' + o[1] + '</dd></div>'; }).join('');
+  $('#quando').innerHTML = '<option value="">Appena è pronto</option>' + D.componi.orari.map(function (o) { return '<option value="' + o + '">Stasera alle ' + o + '</option>'; }).join('');
+  $('#piedeNome').textContent = D.nome + ' · ' + D.indirizzo.via + ', ' + D.indirizzo.citta;
+  if (D.demo) {
+    document.documentElement.classList.add('demo-on'); $('#barra').hidden = false; $('#pacchetto').hidden = false;
+    $('#piedeNota').innerHTML = 'Locale immaginario: sito dimostrativo, burger in 3D fatti dalle foto. <a href="https://scrollify.online/#esempi">Fatto con Scrollify</a>';
+  }
+  document.getElementById('sbTorna').addEventListener('click', function (e) { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (_) {} });
+})();
+</script>
+<script type="module">
+import { linea, FATTORE_COMPUTER } from './js/linea.js';
+const D = window.DATI, $ = s => document.querySelector(s);
+const ridotto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const palcoEl = $('#palco'), fisso = $('#fisso'), telaEl = $('#tela');
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const tra = (x, a, b) => cl((x - a) / (b - a));
+const telefono = () => innerWidth / innerHeight < .8;
+const LN = linea(D.burger.length);
+
+// l'altezza della sezione: 100svh (la scena fissa) + la linea del tempo (un po' più corta sul computer: la rotella scorre di più)
+function altezza() { palcoEl.style.height = `calc(100svh + ${(LN.tot * (innerWidth > 760 ? FATTORE_COMPUTER : 1) * 100).toFixed(1)}svh)`; }
+altezza();
+// avanzamento con l'altezza del palco (svh, fissa) e non con innerHeight (cambia con la barra del browser)
+function avanti() { const r = palcoEl.getBoundingClientRect(); return cl(-r.top / Math.max(1, palcoEl.offsetHeight - fisso.offsetHeight)); }
+
+// zone libere per il 3D (frazioni dello schermo): apertura (sotto il nome del locale), giostra e chiuso (fra il nome del burger e
+// la sua riga), dentro (aperto: accanto alle etichette)
+function zona(W, H, fase) {
+  const sb = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sb')) || 0;
+  const sotto = el => el.getBoundingClientRect().bottom / H, sopra = el => el.getBoundingClientRect().top / H;
+  const nome = $('#nome'), riga = $('#riga'), ap = $('#apertura');
+  if (W / H < .8) {   // telefono
+    if (fase === 'apertura') return { x0: .02, x1: .98, y0: Math.min(.42, sotto(ap) + .03), y1: .92 };
+    if (fase === 'giostra') return { x0: .04, x1: .96, y0: sotto(nome) + .02, y1: Math.max(.6, sopra(riga) - .02) };
+    if (fase === 'chiuso') return { x0: .03, x1: .97, y0: sotto(nome) + .03, y1: Math.max(.6, sopra(riga) - .03) };
+    return { x0: .36, x1: 1.02, y0: sotto(nome) + .01, y1: .95, ancora: .15 };
+  }
+  if (fase === 'apertura') return { x0: .3, x1: .7, y0: Math.min(.45, sotto(ap) + .03), y1: .95 };
+  if (fase === 'giostra') return { x0: .25, x1: .75, y0: (sb + 34) / H, y1: .82 };
+  if (fase === 'chiuso') return { x0: .3, x1: .7, y0: (sb + 44) / H, y1: .9 };
+  return { x0: .27, x1: .69, y0: (sb + 26) / H, y1: .97 };
+}
+
+let palco = null, centro = -1, etEl = [];
+let tCambio = 0;
+function mostraBurger(i, subito) {
+  if (i === centro) return; centro = i;
+  const b = D.burger[i], n = $('#nome');
+  const fai = () => { if (centro !== i) return; $('#nomeBurger').textContent = b.nome; $('#rigaBurger').textContent = b.riga; n.classList.remove('cambia'); preparaEtichette(i); };
+  clearTimeout(tCambio);
+  if (subito || ridotto || !$('#nomeBurger').textContent) fai(); else { n.classList.add('cambia'); tCambio = setTimeout(fai, 160); }
+}
+mostraBurger(0);
+
+// ——— etichette ———
+function preparaEtichette(i) {
+  const b = D.burger[i], box = $('#etichette');
+  if (!palco) { etEl = []; return; }
+  const strati = palco.strati(i);
+  if (!strati) return;
+  box.innerHTML = strati.map(s => `<div class="et" data-k="${s.k}"><u></u><i></i><b>${b.strati[s.nome] ?? s.nome}</b></div>`).join('');
+  etEl = [...box.children];
+}
+const pos = [];
+function posaEtichette(st) {
+  if (!palco || !etEl.length) return;
+  const dentro = tra(st.kE, .6, .95);
+  if (dentro <= 0 || st.aperto < .02) { for (const e of etEl) if (e.style.opacity !== '0') e.style.opacity = '0'; return; }
+  const tel = telefono(), lato = tel ? -1 : 1;
+  const E = palco.etichette(lato), N = E.length, W = innerWidth, g = tel ? 16 : Math.max(24, W * .05);
+  // y: al centro dello strato, poi separate di almeno 'passo' (dall'alto in giù)
+  const passo = tel ? 24 : 28;
+  for (let k = 0; k < N; k++) pos[k] = E[k].y;
+  for (let k = 1; k < N; k++) if (pos[k] < pos[k - 1] + passo) pos[k] = pos[k - 1] + passo;
+  for (let k = N - 2; k >= 0; k--) if (pos[k] > pos[k + 1] - passo) pos[k] = pos[k + 1] - passo;
+  for (let k = 0; k < N; k++) {
+    const e = etEl[k]; if (!e) continue;
+    const s = E[k], ult = k === N - 1, arrivato = ult ? (E[N - 2]?.aperto ?? 0) : s.aperto;
+    const vis = dentro * tra(arrivato, .82, .98);
+    const testo = e.lastChild, wT = testo.offsetWidth;
+    let lung;
+    if (lato < 0) { lung = Math.max(8, s.x - 6 - (g + wT + 10)); e.style.transform = `translate(${g}px, ${pos[k] - 8}px)`; e.style.flexDirection = 'row-reverse'; e.style.width = (s.x - g - 4) + 'px'; e.style.justifyContent = 'flex-end'; }
+    else { const x0 = s.x + 6; lung = Math.max(8, Math.min(W * .12, W - g - wT - x0 - 10)); e.style.transform = `translate(${x0}px, ${pos[k] - 8}px)`; e.style.flexDirection = 'row'; e.style.width = ''; e.style.justifyContent = ''; }
+    const fil = e.children[1], pt = e.children[0];
+    fil.style.width = lung + 'px';
+    // il filo va dritto al punto dello strato (anche se l'etichetta è stata spostata per non sovrapporsi)
+    const dy = s.y - pos[k]; fil.style.transform = `rotate(${Math.atan2(dy, lung) * (lato < 0 ? -1 : 1)}rad)`;
+    pt.style.left = lato < 0 ? (s.x - g - 5.5) + 'px' : '-5px'; pt.style.transform = `translateY(${dy}px)`;
+    e.style.opacity = vis.toFixed(3);
+  }
+}
+
+// ——— testi: il nome del locale in apertura, poi il nome del burger davanti in alto e la sua riga in basso quando è chiuso ———
+function testi(st) {
+  const s = st.s, ap = $('#apertura'), n = $('#nome'), r = $('#riga');
+  const kA = 1 - tra(s, .03, .17);
+  ap.style.opacity = kA.toFixed(3); ap.style.transform = `translateY(${((1 - kA) * -14).toFixed(1)}px)`;
+  $('#scorri').style.opacity = (1 - tra(s, .01, .08)).toFixed(3);
+  n.style.opacity = tra(s, .14, .3).toFixed(3);
+  // la riga: quando il burger davanti è chiuso (prima di aprirsi, dopo il tonfo) o la giostra gira; mai da aperto
+  const chiuso = st.kE < .5 ? true : st.chiuso > .75 && !(st.caduta && st.cola < .1);
+  const si = s > .3 && chiuso;
+  if (r.classList.contains('si') !== si) r.classList.toggle('si', si);
+  const fine = !!st.ultimo && st.caduta;
+  if (r.classList.contains('fine') !== fine) r.classList.toggle('fine', fine);
+}
+
+// senza 3D: lo stato dalla sola linea del tempo
+function statoSenza3d(P) {
+  const s = P * LN.tot;
+  let k = 0; for (const g of LN.seg) if (g.gira && s > (g.gira[0] + g.gira[1]) / 2) k = g.k + 1;
+  const g = LN.seg[k], aperto = s > g.apri[0] + .25 && s < g.chiudi;
+  return { s, kE: s > g.entra[1] ? 1 : 0, chiuso: aperto ? 0 : 1, aperto: aperto ? 1 : 0, caduta: s >= g.chiudi, cola: s >= g.chiudi ? 1 : 0, ultimo: k === D.burger.length - 1, soggetto: k };
+}
+function scorre() {
+  const P = avanti();
+  if (palco) { palco.vai(P); return; }
+  const st = statoSenza3d(P); testi(st);
+  if (senza3d) {
+    mostraBurger(st.soggetto);
+    const src = `img/ripiego-${D.burger[st.soggetto].id}-${st.aperto ? 'aperto' : 'chiuso'}.webp`;
+    const im = $('#ripiegoImg'); if (!im.src.endsWith(src)) im.src = src;
+  }
+}
+let senza3d = false;
+let comp = null, scelta = () => ({ pane: D.componi.paneIniziale, ids: [] });   // Componi il tuo (3D o solo nomi)
+function webgl2() { try { return !!document.createElement('canvas').getContext('webgl2'); } catch (_) { return false; } }
+addEventListener('scroll', scorre, { passive: true });
+let larghezza = innerWidth;
+addEventListener('resize', () => { if (innerWidth !== larghezza) { larghezza = innerWidth; altezza(); } scorre(); });
+scorre();
+
+window.__pronto = false;
+if (!webgl2()) { senza3d = true; document.documentElement.classList.add('no3d'); $('#riga .aiuto').hidden = true; scorre(); componiTesto(); window.__pronto = true; }
+else {
+  const conserva = new URLSearchParams(location.search).has('conserva');   // verifiche: la tela si può leggere
+  import('./js/palco.js').then(m => m.monta(telaEl, { burger: D.burger.map(b => ({ id: b.id, nome: b.nome })), zona, fermo: ridotto, conserva })).then(p => {
+    palco = p;
+    telaEl.classList.add('pronta');
+    p.su('centro', i => mostraBurger(i));
+    p.su('fotogramma', () => { const st = p.stato(); testi(st); posaEtichette(st); });
+    p.su('costruito', i => { if (i === centro) preparaEtichette(i); });
+    preparaEtichette(centro);
+    scorre();
+    new IntersectionObserver(es => { if (es[0].isIntersecting) montaComponi(); }, { rootMargin: '150% 0px' }).observe($('#componi'));
+    // verifiche
+    window.__palco = p;
+    window.__burger = x => { const i = p.fissa(x); mostraBurger(p.soggetto(), true); const st = p.stato(); testi(st); posaEtichette(st); return i; };
+    p.tutti.then(() => { window.__pronto = true; });
+  }).catch(e => { console.warn('Doppio Strato: 3D non disponibile, restano le foto.', e); senza3d = true; document.documentElement.classList.add('no3d'); scorre(); componiTesto(); window.__pronto = true; });
+}
+
+// ——— Componi il tuo: il 3D si monta quando la sezione è vicina (e il palco ha costruito i quattro burger) ———
+function montaComponi() {
+  if (comp || !palco) return;
+  comp = 'in corso';
+  palco.tutti.then(() => import('./js/componi.js')).then(m => {
+    comp = m.monta($('#componi'), { palco, D, ridotto });
+    scelta = () => { const st = comp.stato(); return { pane: st.pane, ids: [...st.ids, ...st.coda] }; };
+    for (const id of D.componi.iniziale) comp.aggiungi(id);   // il primo cade appena la sezione si vede
+    window.__componi = comp;
+  }).catch(e => { console.warn('Doppio Strato: Componi senza 3D.', e); comp = null; componiTesto(); });
+}
+// senza 3D: le stesse scelte, solo i nomi
+function componiTesto() {
+  const C = D.componi, el = $('#componi'), nome = id => [...C.pane, ...C.ingredienti].find(v => v.id === id).nome;
+  let pane = C.paneIniziale, ids = [...C.iniziale];
+  el.classList.add('senza-3d');
+  const bott = (v, pa) => `<button type="button" class="ing" data-id="${v.id}"${pa ? ' aria-pressed="false"' : ''}><span class="n">${v.nome}</span><span class="c" aria-hidden="true"></span></button>`;
+  el.querySelector('[data-griglia=pane]').innerHTML = C.pane.map(v => bott(v, true)).join('');
+  el.querySelector('[data-griglia=dentro]').innerHTML = C.ingredienti.map(v => bott(v)).join('');
+  const disegna = () => {
+    el.querySelector('[data-conto]').textContent = ids.length ? `${ids.length} di ${C.max}` : `fino a ${C.max}`;
+    el.querySelector('[data-lista]').innerHTML = [`<li><span>${nome(pane)}</span></li>`, ...ids.map((id, i) => `<li><span>${nome(id)}</span><button type="button" data-togli="${i}" aria-label="Togli ${nome(id)}">togli</button></li>`).reverse(), `<li><span>${nome(pane)}</span></li>`].join('');
+    el.querySelectorAll('.ing').forEach(b => { const q = ids.filter(x => x === b.dataset.id).length, pa = C.pane.some(v => v.id === b.dataset.id);
+      b.classList.toggle('scelto', pa ? b.dataset.id === pane : q > 0); if (pa) b.setAttribute('aria-pressed', b.dataset.id === pane); b.querySelector('.c').textContent = q > 1 ? `×${q}` : ''; });
+  };
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const m = el.querySelector('[data-msg]'); m.textContent = '';
+    if (b.dataset.togli !== undefined) ids.splice(+b.dataset.togli, 1);
+    else if (b.hasAttribute('data-ricomincia')) ids = [];
+    else if (C.pane.some(v => v.id === b.dataset.id)) pane = b.dataset.id;
+    else if (b.dataset.id) {
+      if (ids.length >= C.max) m.textContent = `Al massimo ${C.max} strati: togline uno.`;
+      else if (ids.filter(x => x === b.dataset.id).length >= C.maxUguali) m.textContent = `${nome(b.dataset.id)}: al massimo ${C.maxUguali} volte.`;
+      else ids.push(b.dataset.id);
+    }
+    disegna();
+  });
+  scelta = () => ({ pane, ids: [...ids] });
+  disegna();
+}
+
+// ——— l'ordine: il messaggio già scritto (sito dimostrativo: niente numero, si mostra il messaggio) ———
+const minuscola = t => t.charAt(0).toLowerCase() + t.slice(1);
+function mostraDemo(el, testo) {
+  el.textContent = 'Sito dimostrativo: nel sito vero si apre WhatsApp con questo messaggio già scritto: ';
+  const q = document.createElement('q'); q.textContent = testo; el.appendChild(q);
+}
+$('#ordine').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, msg = $('#msgOrdine'), { pane, ids } = scelta();
+  const tutte = [...D.componi.pane, ...D.componi.ingredienti], nome = id => minuscola(tutte.find(v => v.id === id).nome);
+  if (!ids.length) { msg.textContent = 'Scegli almeno un ingrediente.'; $('#componi .ing-griglia[data-griglia=dentro] .ing')?.focus(); return; }
+  const come = f.come.value, quando = f.quando.value;
+  const fine = come === 'tavolo' ? (quando ? `Lo mangio al tavolo, stasera alle ${quando}.` : 'Lo mangio al tavolo.') : (quando ? `Lo ritiro stasera alle ${quando}.` : 'Lo ritiro appena è pronto.');
+  const testo = `Ciao! Vorrei un burger con: ${[pane, ...ids].map(nome).join(', ')}. ${fine} Grazie!`;
+  const url = D.whatsapp ? `https://wa.me/${D.whatsapp}?text=${encodeURIComponent(testo)}` : null;
+  window.__ultimoMessaggio = { testo, url };
+  if (!url) { mostraDemo(msg, testo); return; }
+  msg.textContent = '';
+  if (!window.__provaModulo) window.open(url, '_blank', 'noopener');
+});
+$('#prenota').addEventListener('click', e => {
+  e.preventDefault();
+  const testo = 'Ciao! Vorrei prenotare un tavolo per stasera. Grazie!', url = D.whatsapp ? `https://wa.me/${D.whatsapp}?text=${encodeURIComponent(testo)}` : null;
+  window.__ultimoMessaggio = { testo, url };
+  if (!url) mostraDemo($('#msgTavolo'), testo); else if (!window.__provaModulo) window.open(url, '_blank', 'noopener');
+});
+</script>
+</body>
+</html>
