@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#070605">
+<title>Velluto · Sala da bowling</title>
+<meta name="description" content="Velluto, sala da bowling e cocktail bar: lo strike in 3D, le tariffe, il listino del bar e la pista da prenotare su WhatsApp. Sito dimostrativo fatto con Scrollify.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23070605'/%3E%3Cpath d='M16 5c1.6 0 2.4 1.2 2.4 2.8 0 1.4-.6 2.2-.8 3.4-.1.9.4 1.8 1.2 3.2.9 1.6 1.6 3.3 1.6 5.4 0 3.3-1.5 5.9-2.8 7.2h-3.2c-1.3-1.3-2.8-3.9-2.8-7.2 0-2.1.7-3.8 1.6-5.4.8-1.4 1.3-2.3 1.2-3.2-.2-1.2-.8-2-.8-3.4C13.6 6.2 14.4 5 16 5z' fill='%23c9a063'/%3E%3C/svg%3E">
+<link rel="preload" href="font/bodoni-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="font/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="font/font.css">
+<!-- Velluto · template dimostrativo di Scrollify (sala da bowling e cocktail bar): nome, indirizzo, orari, prezzi e testi inventati.
+     Il viaggio in 3D (js/scena.js) porta con sé le informazioni (dove, tariffe, numeri, scarpe, listino del bar) e finisce sulla
+     prenotazione della pista; sotto: feste ed eventi, non solo bowling, dove siamo e orari, domande. Tutti i dati in DATI, qui sotto. -->
+<script>
+/* ————— DATI: tutto inventato (è un esempio). Le sere di apertura servono sia agli orari sia alla prenotazione ————— */
+window.DATI = {
+  nome: 'Velluto',
+  sottotitolo: 'Sala da bowling',          // sotto il nome, nel marchio e nell'insegna d'ottone
+  insegna: 'Velluto',                      // le lettere d'ottone nella sala (maiuscole)
+  riga: 'Bowling e cocktail bar',          // la riga dell'apertura
+  indirizzo: { via: 'Via Esempio 14', citta: 'La tua città', nota: 'Parcheggio gratuito davanti all’ingresso' },
+  // le sere (0 = domenica … 6 = sabato): [apre, chiude]; oltre le 24 è la notte dopo (25 = l'una)
+  sere: [[18, 24], [18, 25], [18, 25], [18, 25], [18, 25], [18, 26], [18, 26]],
+  frasi: {
+    apertura: 'Una partita, poi un cocktail.',
+    mira: 'Prendi la mira.',
+    scarpe: 'Le scarpe, dal 36 al 46.',
+    scarpeRiga: 'Igienizzate a ogni cambio, comprese nel prezzo.',
+    bar: 'Poi, un cocktail al banco.',
+  },
+  // le piste: prezzo della pista all'ora, fino a quanti giocatori, la partita a persona, le scarpe
+  piste: { numero: 8, perPista: 6, oraPista: 12, partita: 6, scarpe: 'comprese', dettagli: 'Sponde per i bambini · punteggio automatico' },
+  numeri: [['8', 'piste'], ['4', 'biliardi'], ['1', 'sala karaoke']],
+  torneo: 'Torneo di bowling e biliardo il primo martedì del mese, dalle 20:30. Iscrizione al banco, 10 € a persona.',
+  torneoBreve: 'Il primo martedì del mese, torneo di bowling e biliardo.',
+  festeBreve: 'Compleanni, aziende e feste private: la sala per voi, da 12 persone.',
+  listino: [
+    { titolo: 'Signature', voci: [['Velluto', 'London dry, vermouth rosso, amarena', 11], ['Strike', 'Rum ambrato, lime, caffè', 10], ['Corsia 7', 'Gin, pompelmo rosa, tonica', 10]] },
+    { titolo: 'Classici', voci: [['Old Fashioned', '', 9], ['Negroni', '', 9], ['Gin tonic', '', 9], ['Moscow Mule', '', 9], ['Spritz', '', 7]] },
+    { titolo: 'Alla spina e senza alcol', voci: [['Birra alla spina', '0,4 l', 6], ['Analcolici della casa', 'tre ricette', 7]] },
+    { titolo: 'Dalla cucina', voci: [['Club sandwich', 'con patatine', 13], ['Tagliere', 'salumi e formaggi', 16]] },
+  ],
+  prenota: { ore: [1, 1.5, 2, 2.5, 3], partite: [1, 2, 3, 4], giocatori: [1, 12], inizio: [18, 23] },
+  eventi: [
+    { id: 'compleanno', nome: 'Compleanni', per: 'bambini e ragazzi', riga: 'Due ore di pista, scarpe, merenda o cena e la torta.', da: 12, prezzo: 18, chiedi: 'un compleanno' },
+    { id: 'aziende', nome: 'Aziende', per: 'team building e cene', riga: 'Sfida a squadre sulle piste, poi aperitivo o cena al banco.', da: 15, prezzo: 28, chiedi: 'un evento aziendale' },
+    { id: 'festa', nome: 'Feste private', per: 'la sala per voi', riga: 'Piste, bar e musica riservati, il buffet lo decidiamo insieme.', da: 25, prezzo: 32, chiedi: 'una festa privata' },
+  ],
+  nonSolo: [
+    ['Biliardi', '4 tavoli, 14 € l’ora a tavolo'],
+    ['Calcio balilla', '2 tavoli, gettoni al banco'],
+    ['Karaoke', 'la sala privata, 40 € l’ora; il venerdì aperto a tutti'],
+    ['Freccette e giochi', '3 bersagli elettronici e due flipper'],
+  ],
+  domande: [
+    ['Serve prenotare?', 'Non sempre, ma il venerdì, il sabato e dopo le 21 conviene: la pista te la teniamo per 15 minuti.'],
+    ['I bambini possono giocare?', 'Sì: sponde, palle leggere e scarpe dal 36 (per i più piccoli chiedi al banco). Fino alle 21, con un adulto.'],
+    ['Si può venire solo per il bar?', 'Certo. Il banco è aperto a tutti, tutte le sere dalle 18.'],
+    ['Quanto dura una partita?', 'Più o meno 15 minuti a giocatore: in quattro, un’ora sono tre o quattro partite.'],
+  ],
+  whatsapp: null,   // sito dimostrativo: niente numero vero. I pulsanti mostrano il messaggio che nel sito vero parte su WhatsApp
+  demo: true,       // barra "Torna a Scrollify", fascia "Il pacchetto bowling" e nota nel piè
+};
+</script>
+<style>
+  :root {
+    --fondo: #070605; --fondo2: #0d0b09; --testo: #f3ece2; --testo2: rgba(243, 236, 226, .64); --testo3: rgba(243, 236, 226, .42); --filo: rgba(243, 236, 226, .14);
+    --ottone: #c9a063; --ottone2: rgba(201, 160, 99, .34);
+    --serif: "Bodoni Moda", Didot, "Times New Roman", serif; --sans: "Jost", system-ui, sans-serif;
+    --gut: clamp(20px, 5.5vw, 88px); --ease: cubic-bezier(.16, 1, .3, 1); --sb: 0px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; background: var(--fondo); }
+  body { background: var(--fondo); color: var(--testo); font-family: var(--sans); font-weight: 350; font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  ::selection { background: var(--ottone); color: var(--fondo); }
+  .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--ottone); outline-offset: 4px; border-radius: 4px; }
+  .demo-on { --sb: 50px; }
+  @media (max-width: 640px) { .demo-on { --sb: 46px; } }
+  .serif { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.01em; line-height: 1.04; text-wrap: balance; }
+  .k { font-size: 12px; font-weight: 450; letter-spacing: .26em; text-transform: uppercase; color: var(--ottone); }
+  .num { font-variant-numeric: tabular-nums lining-nums; }
+
+  /* ————— la sala: sezione alta con il palco fisso ————— */
+  #sala { position: relative; height: 1700vh; }   /* il viaggio più una coda ferma al bar (CODA in js/pagina.js: 14,5% della corsa) per leggere il listino */
+  #sala .palco { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--fondo); --va: 0; --vb: 0; --vs: 0; --vd: 0; }
+  #sala .tela { position: absolute; inset: 0; }
+  #sala .tela canvas { display: block; opacity: 0; transition: opacity .8s ease; }
+  #sala .tela.pronta canvas { opacity: 1; }
+  /* i veli: un filo di buio sempre in alto e in basso, e più forte dove in quel momento c'è del testo */
+  .velo { position: absolute; inset: 0; pointer-events: none; }
+  .velo i { position: absolute; left: 0; right: 0; display: block; }
+  .velo .alto { top: 0; height: 46%; background: linear-gradient(180deg, rgba(7, 6, 5, .92), rgba(7, 6, 5, 0)); opacity: calc(.5 + var(--va) * .5); }
+  .velo .basso { bottom: 0; height: 58%; background: linear-gradient(0deg, rgba(7, 6, 5, .95) 0%, rgba(7, 6, 5, .8) 34%, rgba(7, 6, 5, 0)); opacity: calc(.35 + var(--vb) * .65); }
+  .velo .sx, .velo .dx { top: 0; bottom: 0; width: 46%; }
+  .velo .sx { left: 0; background: linear-gradient(90deg, rgba(7, 6, 5, .9) 0%, rgba(7, 6, 5, .62) 50%, rgba(7, 6, 5, 0)); opacity: var(--vs); }
+  .velo .dx { left: auto; right: 0; width: 52%; background: linear-gradient(270deg, rgba(7, 6, 5, .97) 0%, rgba(7, 6, 5, .93) 58%, rgba(7, 6, 5, 0)); opacity: var(--vd); }
+
+  /* i momenti: testi e righe che entrano ed escono con lo scroll (sul computer in colonna, sul telefono in alto o in basso) */
+  .momento { position: absolute; opacity: 0; visibility: hidden; will-change: opacity, transform; pointer-events: none; }
+  .momento a { pointer-events: auto; }
+  .apertura { position: absolute; inset: 0; pointer-events: none; will-change: opacity, transform; }
+  .apertura .testa { position: absolute; left: var(--gut); bottom: calc(env(safe-area-inset-bottom) + clamp(30px, 7vh, 72px)); max-width: min(34em, 42vw); }
+  .apertura .riga1 { font-size: clamp(1.7rem, 2.8vw, 2.6rem); }
+  .apertura .info { margin-top: 16px; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--testo2); line-height: 1.9; }
+  .apertura .info b { font-weight: 450; color: var(--testo); }
+  .apertura .scorri { position: absolute; right: var(--gut); bottom: calc(env(safe-area-inset-bottom) + clamp(30px, 7vh, 72px)); }
+  .scorri { display: inline-flex; align-items: center; gap: 12px; font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--testo2); white-space: nowrap; }
+  .scorri i { position: relative; display: block; width: 1px; height: 38px; background: var(--filo); overflow: hidden; }
+  .scorri i::after { content: ""; position: absolute; left: 0; top: -40%; width: 1px; height: 40%; background: var(--ottone); animation: scende 2.6s var(--ease) infinite; }
+  @keyframes scende { 0% { top: -40%; } 70%, 100% { top: 100%; } }
+  .frase { left: var(--gut); right: var(--gut); top: calc(var(--sb) + var(--nv) + env(safe-area-inset-top) + clamp(22px, 6vh, 72px)); max-width: 16em; font-size: clamp(2.3rem, 4.8vw, 4.6rem); }
+  .frase small { display: block; margin-top: 14px; font-family: var(--sans); font-style: normal; font-size: 15px; letter-spacing: .02em; color: var(--testo2); }
+  /* colonna a sinistra (computer) */
+  .colonna { left: var(--gut); bottom: clamp(40px, 9vh, 96px); width: min(380px, 30vw); }
+  .colonna.dx { left: auto; right: var(--gut); top: calc(var(--sb) + var(--nv) + clamp(28px, 6vh, 80px)); bottom: auto; width: min(400px, 31vw); }
+  .righe { margin-top: 14px; border-top: 1px solid var(--ottone2); }
+  .righe > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 2px 18px; padding: 10px 0 9px; border-bottom: 1px solid var(--ottone2); }
+  .righe dt { font-size: 16px; color: var(--testo); }
+  .righe dt small { display: block; font-size: 13px; color: var(--testo3); letter-spacing: .01em; }
+  .righe dd { font-size: 16px; color: var(--testo); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+  .righe .solo { grid-template-columns: minmax(0, 1fr); }
+  .righe .solo dt { color: var(--testo2); font-size: 14px; }
+  .vai { display: inline-flex; align-items: center; min-height: 44px; margin-top: 10px; font-size: 15px; color: var(--ottone); text-decoration: none; border-bottom: 1px solid var(--ottone2); }
+  .numeri { margin-top: 12px; font-family: var(--serif); font-style: italic; font-size: clamp(1.6rem, 2.4vw, 2.2rem); line-height: 1.2; }
+  .numeri .num { font-style: normal; font-weight: 500; }
+  .momento .nota { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ottone2); font-size: 15px; color: var(--testo2); max-width: 30em; }
+  .listino h3 { margin-top: 18px; }
+  .listino h3:first-of-type { margin-top: 14px; }
+  .listino .righe { margin-top: 6px; }
+  .listino .righe > div { padding: 5px 0 4px; }
+  .listino .righe dt, .listino .righe dd { font-size: 15px; }
+  .listino .righe dt small { display: inline; margin-left: 8px; font-size: 12.5px; }
+  .colonna.dx.listino { top: calc(var(--sb) + var(--nv) + clamp(16px, 3vh, 36px)); }
+  .pagina { display: none; }
+  .ripiego { display: none; }
+  .senza-3d .ripiego { display: block; position: absolute; inset: 0; background: center 40% / cover no-repeat url(img/ripiego-computer.webp); }
+  .senza-3d .momento, .senza-3d .frase { display: none; }
+
+  /* ————— sezioni sotto il viaggio ————— */
+  .sez { max-width: 1320px; margin: 0 auto; padding: clamp(96px, 16vh, 180px) var(--gut) clamp(40px, 6vh, 64px); }
+  .sez + .sez { border-top: 1px solid var(--filo); padding-top: clamp(80px, 13vh, 150px); }
+  .sez h2 { margin-top: 14px; font-size: clamp(2.8rem, 6vw, 5.6rem); }
+  .sez .sotto { margin-top: 18px; max-width: 30em; font-size: 18px; color: var(--testo2); }
+  .pieno { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 34px; border: 0; border-radius: 999px; background: var(--ottone); color: #140f08; font: 450 16px/1 var(--sans); letter-spacing: .06em; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background .3s var(--ease), transform .3s var(--ease); }
+  .pieno:hover { background: #d8b27a; }
+  .pieno:active { transform: scale(.98); }
+  .msg { min-height: 1.4em; margin-top: 16px; font-size: 15px; line-height: 1.5; color: var(--testo2); max-width: 36em; }
+  .msg q { color: var(--testo); quotes: "«" "»"; }
+
+  /* ————— prenota una pista: le scelte in righe, il conto a fianco ————— */
+  .prenota { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 620px); grid-template-areas: 'titolo scelte' 'conto scelte'; grid-template-rows: auto 1fr; gap: 0 clamp(40px, 7vw, 120px); align-items: start; }
+  .prenota .titolo { grid-area: titolo; }
+  .prenota .scelte-pista { grid-area: scelte; }
+  .prenota .conto { grid-area: conto; position: sticky; top: calc(var(--sb) + var(--nv) + 32px); margin-top: clamp(28px, 5vh, 56px); }
+  .conto .k { color: var(--testo3); }
+  .gruppo { border: 0; padding: 0; margin: 0 0 30px; min-width: 0; }
+  .gruppo legend { display: flex; justify-content: space-between; width: 100%; margin-bottom: 12px; }
+  .gruppo legend small { font-size: 13px; letter-spacing: .02em; text-transform: none; color: var(--testo3); }
+  .scelte { display: grid; gap: 6px; }
+  .giorni { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .ore { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .due { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .opz { position: relative; display: block; cursor: pointer; }
+  .opz input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .opz span { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 58px; padding: 8px 4px; border-bottom: 1px solid var(--filo); color: var(--testo2); text-align: center; line-height: 1.2; transition: color .25s, border-color .25s, background .25s; }
+  .opz span b { font-weight: 400; font-size: 20px; color: var(--testo); font-variant-numeric: tabular-nums lining-nums; }
+  .opz span small { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+  .ore .opz span { min-height: 50px; font-size: 16px; color: var(--testo); font-variant-numeric: tabular-nums; }
+  .due .opz span { align-items: flex-start; text-align: left; min-height: 64px; padding: 10px 2px; }
+  .due .opz span b { font-size: 17px; }
+  .due .opz span small { text-transform: none; letter-spacing: .01em; font-size: 14px; margin-top: 2px; }
+  .opz:hover span { color: var(--testo); }
+  .opz input:checked + span { color: var(--ottone); border-bottom: 2px solid var(--ottone); background: linear-gradient(0deg, rgba(201, 160, 99, .1), rgba(201, 160, 99, 0)); }
+  .opz input:checked + span b { color: var(--ottone); }
+  .opz input:focus-visible + span { outline: 2px solid var(--ottone); outline-offset: 2px; }
+  .opz input:disabled + span { opacity: .28; text-decoration: line-through; text-decoration-color: var(--testo3); }
+  .opz input:disabled { cursor: not-allowed; }
+  .passo { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--filo); padding: 6px 0 10px; }
+  .passo output { font-family: var(--serif); font-style: italic; font-size: 30px; line-height: 1; }
+  .passo output small { font-family: var(--sans); font-style: normal; font-size: 15px; color: var(--testo2); margin-left: 6px; }
+  .passo .tasti { display: flex; gap: 12px; }
+  .passo button { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--ottone2); background: none; color: var(--ottone); font-size: 24px; line-height: 1; cursor: pointer; display: grid; place-items: center; transition: border-color .25s, background .25s; }
+  .passo button:hover { border-color: var(--ottone); background: rgba(201, 160, 99, .08); }
+  .passo button:disabled { opacity: .25; cursor: not-allowed; }
+  .gruppo .nota2 { margin-top: 8px; font-size: 14px; color: var(--testo3); }
+  .conto .totale { margin-top: 8px; font-family: var(--serif); font-style: italic; font-size: clamp(4rem, 8vw, 6.4rem); line-height: 1; }
+  .conto .totale small { font-size: .5em; }
+  .conto .dettaglio { margin-top: 12px; font-size: 16px; color: var(--testo2); font-variant-numeric: tabular-nums; }
+  .conto .riepilogo { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--ottone2); font-size: 17px; line-height: 1.6; }
+  .conto .pieno { margin-top: 26px; }
+  .conto .piccolo { margin-top: 12px; font-size: 14px; color: var(--testo3); }
+
+  /* ————— feste ed eventi ————— */
+  .eventi { margin-top: clamp(40px, 7vh, 72px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 clamp(24px, 3.4vw, 56px); }
+  .evento { position: relative; display: block; cursor: pointer; }
+  .evento input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .evento .dentro { display: block; padding: 22px 0 24px; border-top: 1px solid var(--filo); transition: border-color .25s; }
+  .evento input:checked + .dentro { border-top: 2px solid var(--ottone); padding-top: 21px; }
+  .evento input:focus-visible + .dentro { outline: 2px solid var(--ottone); outline-offset: 4px; }
+  .evento h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(1.9rem, 2.6vw, 2.5rem); line-height: 1.1; }
+  .evento input:checked + .dentro h3 { color: var(--ottone); }
+  .evento .per { display: block; margin-top: 4px; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--testo3); }
+  .evento p { margin-top: 14px; font-size: 16px; color: var(--testo2); max-width: 24em; }
+  .evento dl { margin-top: 16px; font-size: 15px; display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; }
+  .evento dt { color: var(--testo3); }
+  .evento dd { font-variant-numeric: tabular-nums; }
+  .preventivo { margin-top: clamp(28px, 5vh, 48px); display: flex; flex-wrap: wrap; align-items: center; gap: 18px 32px; }
+  .preventivo .passo { min-width: min(100%, 360px); border: 0; padding: 0; }
+
+  /* ————— non solo bowling, tornei ————— */
+  .elenco { margin-top: clamp(36px, 6vh, 64px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(24px, 4vw, 72px); }
+  .elenco > div { display: grid; grid-template-columns: minmax(8em, .8fr) minmax(0, 1.2fr); gap: 4px 20px; align-items: baseline; padding: 18px 0 17px; border-bottom: 1px solid var(--filo); }
+  .elenco dt { font-family: var(--serif); font-style: italic; font-size: 1.5rem; line-height: 1.2; }
+  .elenco dd { color: var(--testo2); font-size: 16px; }
+  .torneo { margin-top: clamp(40px, 7vh, 72px); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px 28px; align-items: baseline; padding-top: 22px; border-top: 1px solid var(--ottone2); }
+  .torneo p:last-child { font-size: 18px; max-width: 40em; }
+
+  /* ————— dove e orari, con la mappina ————— */
+  .dove { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(40px, 6vw, 100px); align-items: start; margin-top: clamp(36px, 6vh, 64px); }
+  .mappina { position: relative; width: 100%; aspect-ratio: 16 / 10; border-top: 1px solid var(--filo); border-bottom: 1px solid var(--filo); }
+  .mappina svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .mappina .qui { position: absolute; left: 58%; top: 46%; transform: translate(-50%, -50%); }
+  .mappina .qui i { position: relative; display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--ottone); box-shadow: 0 0 0 5px var(--fondo), 0 0 0 6px var(--ottone2); }
+  .mappina .qui i::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; border: 1px solid var(--ottone); opacity: 0; animation: onda 3s var(--ease) infinite; }
+  @keyframes onda { 0% { transform: scale(.4); opacity: .8; } 100% { transform: scale(1.6); opacity: 0; } }
+  .mappina .qui span { position: absolute; left: 24px; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 14px; letter-spacing: .06em; color: var(--testo); }
+  .dati p + p { margin-top: 6px; }
+  .dati .ind { font-family: var(--serif); font-style: italic; font-size: clamp(1.8rem, 2.6vw, 2.4rem); line-height: 1.15; }
+  .dati .tenue { color: var(--testo2); }
+  .orari { margin-top: 26px; display: grid; grid-template-columns: auto auto; justify-content: start; gap: 6px 28px; font-size: 16px; }
+  .orari dd { font-variant-numeric: tabular-nums; }
+  .orari dt { color: var(--testo2); }
+
+  /* ————— domande ————— */
+  .domande { margin-top: clamp(32px, 5vh, 56px); max-width: 860px; border-top: 1px solid var(--filo); }
+  .domande details { border-bottom: 1px solid var(--filo); }
+  .domande summary { display: flex; justify-content: space-between; align-items: center; gap: 20px; min-height: 64px; cursor: pointer; list-style: none; font-size: 19px; }
+  .domande summary::-webkit-details-marker { display: none; }
+  .domande summary::after { content: ""; width: 12px; height: 12px; flex: none; border-right: 1.5px solid var(--ottone); border-bottom: 1.5px solid var(--ottone); transform: rotate(45deg) translate(-3px, -3px); transition: transform .3s var(--ease); }
+  .domande details[open] summary::after { transform: rotate(-135deg) translate(-3px, -3px); }
+  .domande p { padding: 0 0 20px; max-width: 40em; color: var(--testo2); }
+
+  /* ————— marchio in fondo e piè ————— */
+  .marchio { display: inline-flex; flex-direction: column; align-items: center; gap: 12px; color: var(--ottone); }
+  .marchio svg { width: 22px; height: auto; }
+  .marchio .m-nome { font-family: var(--serif); font-weight: 500; font-size: clamp(2rem, 3.2vw, 2.6rem); letter-spacing: .16em; line-height: 1; margin-right: -.16em; text-transform: uppercase; }
+  .marchio .m-sotto { font-family: var(--sans); font-weight: 400; font-size: 10.5px; letter-spacing: .42em; margin-right: -.42em; text-transform: uppercase; color: var(--testo2); }
+  .fine { text-align: center; padding-bottom: clamp(80px, 12vh, 130px); }
+  .fine .marchio { margin: 0 auto; }
+  .fine .serif { margin-top: 28px; font-size: clamp(1.8rem, 3vw, 2.6rem); color: var(--testo2); }
+  .piede { max-width: 1320px; margin: 0 auto; padding: 26px var(--gut) calc(34px + env(safe-area-inset-bottom)); border-top: 1px solid var(--filo); display: flex; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; font-size: 13px; color: var(--testo2); }
+  .piede a { color: var(--testo); }
+
+  /* il "Prenota" sempre a portata (telefono, solo fuori dal viaggio e lontano dalla prenotazione) */
+  .sempre { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 900; display: none; align-items: center; min-height: 48px; padding: 0 22px; border: 1px solid var(--ottone); border-radius: 999px; background: rgba(7, 6, 5, .86); color: var(--ottone); font-size: 15px; letter-spacing: .06em; text-decoration: none; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); opacity: 0; transform: translateY(8px); transition: opacity .35s var(--ease), transform .35s var(--ease); }
+  .sempre { pointer-events: none; }   /* nascosto (opacità 0) non deve prendere i tocchi: sulla prenotazione copriva il + dei giocatori */
+  .sempre.su { opacity: 1; transform: none; pointer-events: auto; }
+  /* sfumatura sotto il bottone: il testo che passa dietro sparisce invece di accavallarsi */
+  .sempre::before { content: ""; position: absolute; z-index: -1; pointer-events: none; right: calc(-1 * max(16px, env(safe-area-inset-right))); bottom: calc(-16px - env(safe-area-inset-bottom)); width: 100vw; height: calc(120px + env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--fondo) 42%, rgba(7, 6, 5, 0)); }
+  /* il bordo e il fondo del bottone vanno sopra la sfumatura (i figli con z-index negativo coprono il fondo del bottone) */
+  .sempre { border-color: transparent; background: none; }
+  .sempre::after { content: ""; position: absolute; z-index: -1; inset: -1px; border: 1px solid var(--ottone); border-radius: inherit; background: rgba(7, 6, 5, .86); pointer-events: none; }
+
+  /* ————— la fascia di Scrollify (solo con DATI.demo): identica nelle demo, in Inter (font/font.css) ————— */
+  .pacchetto { padding: clamp(56px, 8vw, 96px) var(--gut); background: #a8ff60; color: #050605; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 28px; font-family: "Inter", system-ui, sans-serif; font-size: 16px; line-height: 1.6; }
+  .pacchetto[hidden] { display: none; }
+  .pacchetto .k2 { font-size: 12px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: rgba(5, 6, 5, .6); }
+  .pacchetto h3 { margin-top: 12px; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.6rem); letter-spacing: -.03em; line-height: 1.08; }
+  .pacchetto p { margin-top: 12px; color: rgba(5, 6, 5, .75); max-width: 36em; }
+  .pacchetto a { display: inline-block; padding: 14px 22px; border-radius: 12px; background: #050605; color: #a8ff60; font-weight: 600; white-space: nowrap; text-decoration: none; }
+  .pacchetto a:focus-visible { outline: 2px solid #050605; outline-offset: 4px; }
+
+  /* ————— telefono ————— */
+  @media (max-width: 820px) {
+    .apertura .testa { top: auto; bottom: calc(env(safe-area-inset-bottom) + 84px); right: var(--gut); max-width: none; }   /* in basso: in alto ora c'è la navigazione e sotto l'insegna */
+    .apertura .riga1 { font-size: clamp(1.5rem, 6.6vw, 2rem); }
+    .apertura .info { margin-top: 10px; font-size: 11.5px; letter-spacing: .18em; line-height: 1.8; }
+    .apertura .scorri { right: auto; left: var(--gut); bottom: calc(env(safe-area-inset-bottom) + 26px); }
+    .scorri i { height: 30px; }
+    .frase { font-size: clamp(2.1rem, 9.6vw, 3.1rem); }
+    .frase small { font-size: 14px; margin-top: 10px; }
+    /* le colonne diventano fasce in basso, sopra un velo */
+    .colonna, .colonna.dx { left: var(--gut); right: var(--gut); top: auto; bottom: calc(env(safe-area-inset-bottom) + 22px); width: auto; }
+    .righe > div { padding: 8px 0 7px; }
+    .righe dt, .righe dd { font-size: 15px; }
+    .numeri { font-size: clamp(1.5rem, 6.8vw, 1.9rem); }
+    .solo-computer { display: none; }
+    .pagina { display: block; }
+    .listino .righe dt small { display: none; }
+    /* le tariffe, compatte: il sottotitolo sulla stessa riga */
+    .tariffe .righe dt small { display: inline; margin-left: 6px; font-size: 12.5px; }
+    .tariffe .righe > div { padding: 6px 0 5px; }
+    .tariffe .righe .solo dt { font-size: 13px; }
+    .tariffe .vai { margin-top: 4px; }
+    .prenota { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'titolo' 'scelte' 'conto'; }
+    .prenota .titolo { margin-bottom: 36px; }
+    .prenota .conto { position: static; margin-top: 6px; padding-top: 22px; border-top: 1px solid var(--ottone2); }
+    .ore { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .giorni .opz span b { font-size: 18px; }
+    .giorni .opz span small { font-size: 10.5px; letter-spacing: .06em; }
+    .eventi { grid-template-columns: minmax(0, 1fr); }
+    .elenco { grid-template-columns: minmax(0, 1fr); }
+    .elenco > div { grid-template-columns: minmax(0, 1fr); }
+    .torneo { grid-template-columns: minmax(0, 1fr); }
+    .dove { grid-template-columns: minmax(0, 1fr); }
+    .pacchetto { grid-template-columns: minmax(0, 1fr); align-items: start; }
+    .senza-3d .ripiego { background-image: url(img/ripiego-telefono.webp); background-position: center 40%; }
+    .sempre { display: inline-flex; }
+  }
+  @media (max-width: 380px) {
+    .opz span { min-height: 54px; }
+    .giorni { gap: 3px; }
+    .passo button { width: 48px; height: 48px; }
+  }
+  /* ————— la navigazione in alto (Enrico, 1 ottobre: "una piccola navigazione nel caso fossi di fretta… che sia visibile") ————— */
+  :root { --nv: 52px; }
+  .navi { position: fixed; left: 0; right: 0; top: var(--sb); z-index: 950; height: var(--nv); display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--gut); background: rgba(7, 6, 5, .74); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--filo); }
+  .navi a { display: inline-flex; align-items: center; min-height: 44px; color: var(--testo2); text-decoration: none; font-size: 15px; font-weight: 450; letter-spacing: .02em; white-space: nowrap; transition: color .25s; }
+  .navi a:hover, .navi a[aria-current="true"] { color: var(--testo); }
+  .navi-voci a[aria-current="true"] { text-decoration: underline; text-decoration-color: var(--ottone); text-decoration-thickness: 1px; text-underline-offset: 7px; }
+  .navi-voci { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 36px); }
+  .navi .navi-segno { gap: 12px; color: var(--ottone); }
+  .navi-segno svg { width: 9px; height: 27px; display: block; }
+  .navi-nome { font-family: var(--serif); font-weight: 500; font-size: 16px; letter-spacing: .22em; text-transform: uppercase; color: var(--testo); }
+  .navi .navi-prenota { min-height: 40px; padding: 0 18px; border: 1px solid var(--ottone2); border-radius: 999px; color: var(--ottone); }
+  .navi .navi-prenota:hover, .navi .navi-prenota[aria-current="true"] { color: var(--ottone); border-color: var(--ottone); text-decoration: none; }
+  .navi .corto { display: none; }
+  .palco::after { content: ""; position: absolute; inset: 0; z-index: 5; background: var(--fondo); opacity: 0; pointer-events: none; transition: opacity .26s ease; }
+  .palco.buio::after { opacity: 1; }
+  .sez { scroll-margin-top: calc(var(--sb) + var(--nv)); }
+  @media (max-width: 820px) {
+    :root { --nv: 50px; }
+    .navi .lungo, .navi-nome { display: none; }
+    .navi .corto { display: inline; }
+    .navi a { font-size: 14.5px; }
+    .navi-voci { gap: 16px; }
+    .navi .navi-prenota { padding: 0 13px; }
+  }
+  @media (max-width: 380px) { .navi-voci { gap: 11px; } .navi a { font-size: 14px; } .navi .navi-prenota { padding: 0 11px; } }
+  @media (prefers-reduced-motion: reduce) { .palco::after { transition: none; } }
+
+  /* ————— leggibilità (Enrico, 1 ottobre: "le scritte sono molto fini, molto piccole"): un pelo più grandi e più piene ovunque,
+     sul telefono soprattutto. Nessun testo da leggere sotto i 12px, il testo secondario più chiaro ————— */
+  :root { --testo2: rgba(243, 236, 226, .78); --testo3: rgba(243, 236, 226, .6); }
+  body { font-weight: 400; }
+  .serif { font-weight: 500; }
+  .sez h2 { font-weight: 450; }
+  .k { font-size: 13px; font-weight: 500; letter-spacing: .22em; }
+  .scorri { font-size: 13px; }
+  .apertura .riga1 { font-size: clamp(1.9rem, 3vw, 2.8rem); }
+  .apertura .info { font-size: 14px; font-weight: 400; }
+  .apertura .info b { font-weight: 500; }
+  .frase small { font-size: 17px; }
+  .righe dt, .righe dd { font-size: 17px; }
+  .righe dt small { font-size: 14px; color: var(--testo2); }
+  .righe .solo dt { font-size: 15.5px; }
+  .vai { font-size: 16.5px; font-weight: 450; }
+  .momento .nota { font-size: 17px; }
+  .numeri { font-size: clamp(1.8rem, 2.6vw, 2.4rem); }
+  .listino .righe dt, .listino .righe dd { font-size: 16.5px; }
+  .listino .righe dt small { font-size: 13.5px; }
+  .sez .sotto { font-size: 19px; }
+  .msg { font-size: 16px; }
+  .gruppo legend small { font-size: 14.5px; }
+  .opz span small { font-size: 12.5px; }
+  .due .opz span small { font-size: 15px; }
+  .passo output small { font-size: 16px; }
+  .gruppo .nota2, .conto .piccolo { font-size: 15px; }
+  .evento .per { font-size: 13.5px; }
+  .evento p { font-size: 17px; }
+  .evento dl { font-size: 16px; }
+  .elenco dd { font-size: 17px; }
+  .mappina .qui span { font-size: 15px; }
+  .orari { font-size: 17px; }
+  .marchio .m-sotto { font-size: 12px; }
+  .piede { font-size: 14px; }
+  @media (max-width: 820px) {
+    .apertura .riga1 { font-size: clamp(1.75rem, 7.6vw, 2.3rem); }
+    .apertura .info { font-size: 13px; letter-spacing: .14em; line-height: 1.75; }
+    .frase small { font-size: 16px; }
+    .righe dt, .righe dd { font-size: 16.5px; }
+    .tariffe .righe dt small { font-size: 14px; }
+    .tariffe .righe .solo dt { font-size: 14.5px; }
+    .numeri { font-size: clamp(1.75rem, 7.8vw, 2.2rem); }
+    .momento .nota { font-size: 16px; }
+    .giorni .opz span small { font-size: 12px; letter-spacing: .04em; }
+  }
+  @media (prefers-reduced-motion: reduce) { .scorri i::after, .mappina .qui i::after { animation: none; } #sala .tela canvas { transition: none; } .pieno, .sempre, .opz span, .domande summary::after { transition: none; } }
+
+/* barra di Scrollify: le demo si aprono nella stessa scheda, da qui si torna ai template */
+.scrollify-barra{position:fixed;inset:0 0 auto;z-index:1000;height:var(--sb);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 clamp(16px,4vw,48px);background:#050605;font:600 17px/1 "Inter",system-ui,-apple-system,sans-serif}
+.scrollify-barra a{display:inline-flex;align-items:center;gap:10px;min-height:44px;color:#a8ff60;text-decoration:none;letter-spacing:0;text-transform:none}
+.scrollify-barra a:hover{color:#fff}
+.scrollify-barra a:focus-visible{outline:2px solid #a8ff60;outline-offset:2px;border-radius:4px}
+.scrollify-barra .sb-marchio{font:500 14px/1 ui-monospace,"Geist Mono",Menlo,monospace;color:#eef2ec;letter-spacing:.02em}
+.scrollify-barra .sb-marchio b{font-weight:500;color:#a8ff60}
+@media (max-width:640px){.scrollify-barra{font-size:16px}.scrollify-barra .sb-marchio{font-size:12px}}
+.scrollify-barra[hidden]{display:none!important}
+</style>
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
+<script>
+  // Three.js si scarica subito (in parallelo alla pagina) solo se il browser ha WebGL2: senza, resta il ripiego leggero
+  if (window.WebGL2RenderingContext) ['lib/three.module.min.js', 'lib/three.core.min.js', 'js/scena.js'].forEach(function (h) { var l = document.createElement('link'); l.rel = 'modulepreload'; l.href = h; document.head.appendChild(l); });
+</script>
+</head>
+<body>
+<nav class="scrollify-barra" id="barra" aria-label="Scrollify" hidden><a href="https://scrollify.online/#esempi" id="sbTorna"><span aria-hidden="true" style="font-size:1.25em">←</span> Torna a Scrollify</a><span class="sb-marchio" aria-hidden="true">scroll<b>ify</b></span></nav>
+<!-- la navigazione: sempre in alto, per chi ha fretta. Dentro la sala salta al momento giusto (con una dissolvenza), fuori va alle sezioni -->
+<nav class="navi" id="navi" aria-label="Sezioni del sito">
+  <a class="navi-segno" href="#sala" data-p="0" aria-label="Torna all'inizio"><svg viewBox="0 0 40 120" aria-hidden="true"><path fill="currentColor"/></svg><span class="navi-nome"></span></a>
+  <div class="navi-voci">
+    <a href="#sala" data-p="0.2" data-voce="piste"><span class="lungo">Le piste</span><span class="corto">Piste</span></a>
+    <a href="#sala" data-p="0.9" data-voce="bar"><span class="lungo">Il bar</span><span class="corto">Bar</span></a>
+    <a href="#feste" data-voce="feste"><span class="lungo">Feste ed eventi</span><span class="corto">Feste</span></a>
+    <a href="#dove" data-voce="dove"><span class="lungo">Dove siamo</span><span class="corto">Dove</span></a>
+    <a class="navi-prenota" href="#prenota" data-voce="prenota"><span class="lungo">Prenota una pista</span><span class="corto">Prenota</span></a>
+  </div>
+</nav>
+<main>
+  <section id="sala" aria-label="La sala, da guardare scorrendo: le piste, lo strike, la scarpiera, il bar">
+    <div class="palco" id="palco">
+      <div class="tela" id="tela" aria-hidden="true"></div>
+      <div class="ripiego" aria-hidden="true"></div>
+      <div class="velo" aria-hidden="true"><i class="alto"></i><i class="basso"></i><i class="sx"></i><i class="dx"></i></div>
+
+      <header class="apertura" id="apertura">
+        <div class="testa">
+          <h1 class="vh" id="titolo"></h1>
+          <p class="riga1 serif" data-d="apertura"></p>
+          <p class="info"><b data-d="riga"></b><br><span id="apDove"></span><br><span id="apOrari"></span></p>
+        </div>
+        <p class="scorri" aria-hidden="true"><span>Scorri</span><i></i></p>
+      </header>
+
+      <p class="momento frase serif" data-p="0.122 0.176" data-velo="alto" data-d="mira"></p>
+
+      <div class="momento colonna tariffe" data-p="0.19 0.272" data-velo="sx basso" id="mTariffe">
+        <p class="k">Le piste</p>
+        <dl class="righe" id="righeTariffe"></dl>
+        <a class="vai" href="#prenota">Prenota una pista ↓</a>
+      </div>
+
+      <!-- un attimo prima dello strike: i numeri del locale; alla fine dello strike: tornei e feste -->
+      <div class="momento colonna" data-p="0.284 0.4" data-velo="sx basso" id="mNumeri">
+        <p class="k">La sala</p>
+        <p class="numeri" id="numeri"></p>
+      </div>
+
+      <div class="momento colonna" data-p="0.5 0.6" data-velo="sx basso" id="mFeste">
+        <p class="k">Tornei e feste</p>
+        <p class="nota" id="torneoBreve"></p>
+        <p class="nota" id="festeBreve"></p>
+        <a class="vai" href="#feste">Feste ed eventi ↓</a>
+      </div>
+
+      <div class="momento frase serif" data-p="0.672 0.765" data-velo="alto"><span data-d="scarpe"></span><small data-d="scarpeRiga"></small></div>
+
+      <!-- il listino del bar: sul computer tutto in una colonna a destra, sul telefono a pagine in basso -->
+      <div class="momento colonna dx listino solo-computer" data-p="0.862 1.3" data-velo="dx" id="listinoIntero"></div>
+      <div class="momento colonna listino pagina" data-p="0.862 0.95" data-velo="basso" data-pagina="0"></div>
+      <div class="momento colonna listino pagina" data-p="0.95 1.04" data-velo="basso" data-pagina="1"></div>
+      <div class="momento colonna listino pagina" data-p="1.04 1.3" data-velo="basso" data-pagina="2"></div>
+    </div>
+  </section>
+
+  <!-- la prenotazione: subito dopo il viaggio -->
+  <section class="sez prenota" id="prenota" aria-labelledby="prenota-t">
+    <div class="titolo">
+      <p class="k">Prenota</p>
+      <h2 class="serif" id="prenota-t">La tua pista, stasera.</h2>
+      <p class="sotto">Scegli la sera, l’ora e quanti siete: il totale si aggiorna da solo.</p>
+    </div>
+    <div class="conto">
+      <p class="k">Il totale</p>
+      <p class="totale num" aria-live="polite"><span id="totale"></span></p>
+      <p class="dettaglio" id="dettaglio"></p>
+      <p class="riepilogo" id="riepilogo"></p>
+      <button class="pieno" type="button" id="prenotaWa">Prenota su WhatsApp</button>
+      <p class="piccolo" id="notaConto"></p>
+      <p class="msg" id="msgPrenota" aria-live="polite"></p>
+    </div>
+    <form class="scelte-pista" id="modulo" novalidate>
+      <fieldset class="gruppo"><legend class="k">La sera</legend><div class="scelte giorni" id="giorni"></div></fieldset>
+      <fieldset class="gruppo"><legend class="k">L’ora <small id="notaOre"></small></legend><div class="scelte ore" id="ore"></div></fieldset>
+      <fieldset class="gruppo"><legend class="k">Quanti siete</legend>
+        <div class="passo"><output id="outGiocatori" for="menoG piuG"></output><div class="tasti"><button type="button" id="menoG" aria-label="Un giocatore in meno">−</button><button type="button" id="piuG" aria-label="Un giocatore in più">+</button></div></div>
+        <p class="nota2" id="notaGiocatori"></p>
+      </fieldset>
+      <fieldset class="gruppo"><legend class="k">Come giocate</legend><div class="scelte due" id="modi"></div></fieldset>
+      <fieldset class="gruppo"><legend class="k" id="legQuanto">Quanto</legend>
+        <div class="passo"><output id="outQuanto" for="menoQ piuQ"></output><div class="tasti"><button type="button" id="menoQ" aria-label="Meno">−</button><button type="button" id="piuQ" aria-label="Di più">+</button></div></div>
+      </fieldset>
+    </form>
+  </section>
+
+  <section class="sez" id="feste" aria-labelledby="feste-t">
+    <p class="k">Feste ed eventi</p>
+    <h2 class="serif" id="feste-t">Una sera tutta vostra.</h2>
+    <p class="sotto">Compleanni, aziende, feste private: pensiamo noi a piste, bar e cucina.</p>
+    <div class="eventi" id="eventi" role="radiogroup" aria-label="Che cosa festeggiate"></div>
+    <div class="preventivo">
+      <div class="passo"><output id="outOspiti" for="menoO piuO"></output><div class="tasti"><button type="button" id="menoO" aria-label="Meno persone">−</button><button type="button" id="piuO" aria-label="Più persone">+</button></div></div>
+      <button class="pieno" type="button" id="preventivo">Chiedi un preventivo</button>
+    </div>
+    <p class="msg" id="msgFeste" aria-live="polite"></p>
+  </section>
+
+  <section class="sez" id="altro" aria-labelledby="altro-t">
+    <p class="k">Non solo bowling</p>
+    <h2 class="serif" id="altro-t">Tra una partita e l’altra.</h2>
+    <dl class="elenco" id="elenco"></dl>
+    <div class="torneo"><p class="k">Tornei</p><p id="torneo"></p></div>
+  </section>
+
+  <section class="sez" id="dove" aria-labelledby="dove-t">
+    <p class="k">Dove siamo</p>
+    <h2 class="serif" id="dove-t">Ti aspettiamo.</h2>
+    <div class="dove">
+      <div class="mappina" aria-hidden="true">
+        <svg viewBox="0 0 400 250" preserveAspectRatio="none" fill="none" stroke="currentColor">
+          <g stroke="rgba(243,236,226,.16)" stroke-width="1"><path d="M0 60 H400"/><path d="M0 170 C120 160 210 190 400 150"/><path d="M90 0 V250"/><path d="M300 0 C290 90 320 160 300 250"/><path d="M160 0 L250 250"/></g>
+          <g stroke="rgba(243,236,226,.08)" stroke-width="1"><path d="M0 110 H400"/><path d="M0 215 H400"/><path d="M40 0 V250"/><path d="M360 0 V250"/></g>
+          <path d="M0 125 C80 120 160 132 232 115" stroke="#c9a063" stroke-width="1.2" stroke-dasharray="3 5"/>
+        </svg>
+        <p class="qui"><i></i><span data-d="nome"></span></p>
+      </div>
+      <div class="dati">
+        <p class="ind" id="via"></p>
+        <p class="tenue" id="citta"></p>
+        <p class="tenue" id="nota"></p>
+        <dl class="orari" id="orari"></dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="sez" id="domande" aria-labelledby="domande-t">
+    <p class="k">Domande veloci</p>
+    <h2 class="serif" id="domande-t">Prima di venire.</h2>
+    <div class="domande" id="listaDomande"></div>
+  </section>
+
+  <section class="sez fine" aria-label="Il marchio">
+    <div class="marchio" aria-hidden="true">
+      <svg viewBox="0 0 40 120" id="segno"><path fill="currentColor"/></svg>
+      <span class="m-nome" data-d="nome"></span>
+      <span class="m-sotto" data-d="sottotitolo"></span>
+    </div>
+    <p class="serif">La pista è pronta.</p>
+  </section>
+</main>
+<aside class="pacchetto" id="pacchetto" hidden>
+  <div><p class="k2">fatto con Scrollify</p><h3>Il pacchetto bowling</h3><p>Un sito come questo: la sala in 3D che si attraversa scorrendo con tariffe e listino, la pista da prenotare su WhatsApp, feste ed eventi. Ogni sito è su misura e personalizzabile al 100%: questo è solo un esempio.</p></div>
+  <a href="https://scrollify.online/#contatti" rel="noopener">Lo voglio per il mio locale →</a>
+</aside>
+<footer class="piede"><span id="piedeNome"></span><span id="piedeNota"></span></footer>
+<a class="sempre" id="sempre" href="#prenota" aria-hidden="true" tabindex="-1">Prenota una pista</a>
+
+<script>
+/* riempie la parte di sopra dai DATI prima del primo disegno (apertura e frasi); il resto lo fa js/pagina.js */
+(function () {
+  var D = window.DATI, $ = function (s) { return document.querySelector(s); };
+  document.title = D.nome + ' · ' + D.sottotitolo;
+  $('#titolo').textContent = D.nome + ' · ' + D.sottotitolo;
+  document.querySelectorAll('[data-d]').forEach(function (el) { var k = el.dataset.d; el.textContent = D.frasi[k] || D[k] || ''; });
+  var apre = Math.min.apply(null, D.sere.map(function (s) { return s[0]; })), tutte = D.sere.every(function (s) { return s[0] === apre; });
+  $('#apDove').textContent = D.indirizzo.via + ' · ' + D.indirizzo.citta;
+  $('#apOrari').textContent = tutte ? 'Aperto tutte le sere dalle ' + apre : 'Aperto la sera';
+  if (D.demo) { document.documentElement.classList.add('demo-on'); $('#barra').hidden = false; $('#pacchetto').hidden = false; }
+  document.getElementById('sbTorna').addEventListener('click', function (e) { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); } } catch (_) {} });
+})();
+</script>
+<script type="module" src="js/pagina.js"></script>
+</body>
+</html>
