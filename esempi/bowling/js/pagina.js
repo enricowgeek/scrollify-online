@@ -83,6 +83,10 @@ let scena = null;
 // col link a "Prenota") recupera subito. Con il movimento ridotto segue lo scroll e basta.
 // velocità massima in unità della scena al secondo: piano dove c'è una scritta da leggere, più svelto fra un momento e l'altro
 const V_LEGGI = .05, V_VIAGGIO = .12;
+// ...ma la scena non resta mai più di RITARDO indietro rispetto alla pagina (Enrico, 1 ottobre, dal telefono: con una strisciata forte
+// la pagina usciva dalla sala verso il calendario mentre lo strike girava ancora). RITARDO < CODA: quando la sala comincia a uscire
+// la scena è già arrivata al bar.
+const RITARDO = telefono ? .05 : .08;
 let pMeta = 0, pMostra = 0, rafP = 0, tPrima = 0;
 function mostra(p) { scena?.avanza(Math.min(p, 1)); testi(p); segnaVoce(); }
 function segui(t) {
@@ -91,6 +95,7 @@ function segui(t) {
   const vmax = dentro ? V_VIAGGIO + (V_LEGGI - V_VIAGGIO) * leggendo : 4;
   const passo = Math.max(-vmax * dt, Math.min(vmax * dt, diff * (1 - Math.exp(-dt / .16))));
   pMostra = Math.abs(diff) < .0004 ? pMeta : pMostra + passo;
+  pMostra = Math.min(pMeta + RITARDO, Math.max(pMeta - RITARDO, pMostra));   // mai troppo indietro (o avanti) rispetto alla pagina
   mostra(pMostra);
   if (pMostra === pMeta) { rafP = 0; tPrima = 0; } else rafP = requestAnimationFrame(segui);
 }
@@ -120,6 +125,7 @@ function segnaVoce() {
 function aggiorna() {
   segnaVoce();
   pMeta = avanzamento();
+  if (Math.abs(pMeta - pMostra) > RITARDO) { pMostra = Math.min(pMeta + RITARDO, Math.max(pMeta - RITARDO, pMostra)); mostra(pMostra); }
   if (ridotto) { pMostra = pMeta; mostra(pMostra); return; }
   if (!rafP) rafP = requestAnimationFrame(segui);
 }
