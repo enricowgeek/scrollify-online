@@ -318,7 +318,7 @@ window.DATI = {
     .giorni { gap: 3px; }
     .passo button { width: 48px; height: 48px; }
   }
-  /* ————— la navigazione in alto (Enrico, 1 ottobre: "una piccola navigazione nel caso fossi di fretta… che sia visibile") ————— */
+  /* ————— la navigazione in alto (richiesta del 1 ottobre: "una piccola navigazione nel caso fossi di fretta… che sia visibile") ————— */
   :root { --nv: 52px; }
   .navi { position: fixed; left: 0; right: 0; top: var(--sb); z-index: 950; height: var(--nv); display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--gut); background: rgba(7, 6, 5, .74); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--filo); }
   .navi a { display: inline-flex; align-items: center; min-height: 44px; color: var(--testo2); text-decoration: none; font-size: 15px; font-weight: 450; letter-spacing: .02em; white-space: nowrap; transition: color .25s; }
@@ -345,7 +345,7 @@ window.DATI = {
   @media (max-width: 380px) { .navi-voci { gap: 11px; } .navi a { font-size: 14px; } .navi .navi-prenota { padding: 0 11px; } }
   @media (prefers-reduced-motion: reduce) { .palco::after { transition: none; } }
 
-  /* ————— leggibilità (Enrico, 1 ottobre: "le scritte sono molto fini, molto piccole"): un pelo più grandi e più piene ovunque,
+  /* ————— leggibilità (richiesta del 1 ottobre: "le scritte sono molto fini, molto piccole"): un pelo più grandi e più piene ovunque,
      sul telefono soprattutto. Nessun testo da leggere sotto i 12px, il testo secondario più chiaro ————— */
   :root { --testo2: rgba(243, 236, 226, .78); --testo3: rgba(243, 236, 226, .6); }
   body { font-weight: 400; }

@@ -1,5 +1,5 @@
 // Lumen 3D · modello "Meridiano Verde" (acciaio, quadrante verde soleil, bracciale a tre file, chiusura déployante).
-// Base: il modulo p2 approvato da Enrico (cassa ottagonale con le anse integrate, lunetta a 16 lati, bracciale a tre file,
+// Base: il modulo p2 approvato (cassa ottagonale con le anse integrate, lunetta a 16 lati, bracciale a tre file,
 // misure prese dalle foto, mm), traslocato nella libreria pixel per pixel. Innesti dalla versione "finale", scelti dai giudici:
 // quadrante con indici e lancette in 3D (foto ripulita sotto), corona zigrinata, chiusura déployante a placca, viti col taglio.
 // Il fianco a "X" e il resto della cassa della finale NON sono innestati (forme molli): la cassa resta quella di p2.

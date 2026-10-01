@@ -24,7 +24,7 @@ User-agent: Perplexity-User
 Allow: /
 
 # bot di solo addestramento (GPTBot, ClaudeBot, CCBot, Google-Extended, Applebot-Extended):
-# per ora ammessi come tutti gli altri; non cambiano l'essere citati. Se Enrico decide di escluderli:
+# per ora ammessi come tutti gli altri; non cambiano l'essere citati. Se si decide di escluderli:
 # User-agent: GPTBot
 # Disallow: /
 

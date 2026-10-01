@@ -83,7 +83,7 @@ let scena = null;
 // col link a "Prenota") recupera subito. Con il movimento ridotto segue lo scroll e basta.
 // velocità massima in unità della scena al secondo: piano dove c'è una scritta da leggere, più svelto fra un momento e l'altro
 const V_LEGGI = .05, V_VIAGGIO = .12;
-// ...ma la scena non resta mai più di RITARDO indietro rispetto alla pagina (Enrico, 1 ottobre, dal telefono: con una strisciata forte
+// ...ma la scena non resta mai più di RITARDO indietro rispetto alla pagina (richiesta del 1 ottobre, dal telefono: con una strisciata forte
 // la pagina usciva dalla sala verso il calendario mentre lo strike girava ancora). RITARDO < CODA: quando la sala comincia a uscire
 // la scena è già arrivata al bar.
 const RITARDO = telefono ? .05 : .08;
