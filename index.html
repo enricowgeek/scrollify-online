@@ -68,7 +68,7 @@ fieldset{border:0}
 .sign p{font-family:var(--mono);font-size:13px;color:var(--mut);padding:26px 0 34px}
 @keyframes blink{50%{opacity:0}}
 .top nav{display:flex;gap:32px;font-family:var(--mono);font-size:13px;color:#cfd6cc}
-.top nav a:hover{color:var(--sig)}
+@media (hover:hover){.top nav a:hover{color:var(--sig)}}   /* sul telefono il tocco non lascia la voce accesa */
 .top nav .ns{display:none}
 #rain{position:fixed;inset:0;z-index:0;opacity:.45;pointer-events:none}
 
@@ -226,8 +226,9 @@ h2.big em{font-style:normal;color:var(--sig)}
   box-shadow:0 50px 120px rgba(0,0,0,.65),0 0 90px rgba(168,255,96,.07);transform:rotateY(var(--ry,-10deg)) rotateX(var(--rx,4deg));transition:transform .7s var(--ease)}
 .tel::before{content:"";position:absolute;top:12px;left:50%;width:84px;height:24px;margin-left:-42px;border-radius:14px;background:#000;z-index:3}
 .schermo{position:absolute;inset:0;padding:54px 18px 22px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#dfe6dc;
-  opacity:0;transform:translateY(26px);transition:opacity .5s var(--ease),transform .6s var(--ease);pointer-events:none}
-.schermo.on{opacity:1;transform:none}
+  opacity:0;transform:translateY(26px);transition:opacity .16s linear,transform .3s var(--ease);pointer-events:none}
+/* chi esce sparisce in fretta, chi entra arriva un attimo dopo: anche scorrendo veloce non si vedono due o tre schermi uno sopra l'altro */
+.schermo.on{opacity:1;transform:none;transition:opacity .45s var(--ease) .1s,transform .6s var(--ease) .1s}
 .schermo.prima{transform:translateY(-26px)}
 .a-top b{display:block;font-size:17px;font-weight:600;letter-spacing:-.02em;color:#fff}
 .a-top small{font-family:var(--mono);font-size:11px;color:#7d877b}
@@ -252,8 +253,9 @@ h2.big em{font-style:normal;color:var(--sig)}
 .a-bolla.lui{align-self:flex-end;background:rgba(255,255,255,.08);border-bottom-right-radius:4px}
 .a-bolla.noi{align-self:flex-start;background:rgba(168,255,96,.12);color:#e9f7df;border-bottom-left-radius:4px}
 .a-scrivi{margin-top:auto;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:10px 14px;color:#5f695d}
-.a-numeri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.a-numeri b{display:block;font-size:22px;font-weight:600;letter-spacing:-.03em;color:#fff}
+.a-numeri{display:grid;grid-template-columns:repeat(3,auto);justify-content:space-between;gap:8px}
+.a-numeri b{display:block;font-size:22px;font-weight:600;letter-spacing:-.03em;color:#fff;white-space:nowrap}   /* "1.240 €" su una riga sola anche nel telefono stretto */
+.a-numeri b span{font-size:.68em;font-weight:500;margin-left:2px}
 .a-numeri small{font-size:10.5px;color:#7d877b}
 .a-barre{display:flex;align-items:flex-end;gap:7px;height:70px;padding-top:6px}
 .a-barre i{flex:1;border-radius:5px 5px 0 0;background:rgba(168,255,96,.25)}
@@ -361,7 +363,8 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
 .es-scorri::-webkit-scrollbar{display:none}
 .es-lista{list-style:none;display:flex;gap:var(--es-gap,14px);flex:none}
 /* telefono: la scheda è larga lo schermo meno un bordo, così si vede arrivare la prossima; e ci sta tutta in altezza */
-.es-lista li{scroll-snap-align:start;flex:0 0 min(calc(100vw - 2 * var(--gut) - 34px),calc((100vh - 200px) * .5911));flex-basis:min(calc(100vw - 2 * var(--gut) - 34px),calc((100svh - 200px) * .5911))}
+/* larghezze con width e non con flex-basis: Safari misura la fila sommando il contenuto delle schede e non la loro base, e l'invito finale ci finiva sopra */
+.es-lista li{scroll-snap-align:start;flex:none;width:min(calc(100vw - 2 * var(--gut) - 34px),calc((100vh - 200px) * .5911));width:min(calc(100vw - 2 * var(--gut) - 34px),calc((100svh - 200px) * .5911))}
 .es-voce{display:block;scroll-margin-block:84px 24px}   /* col Tab la scheda non finisce sotto la barra in alto */
 .es-vista{position:relative;aspect-ratio:600/1015;border-radius:12px;overflow:hidden;background:#0a0c0a}
 .es-vista img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
@@ -375,7 +378,7 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
 .es-voce:hover .es-apri{color:var(--sig);border-color:var(--sig)}
 .es-voce:hover .es-vista img{transform:scale(1.025)}
 /* in fondo alla fila: chi ha trovato uno stile torna al modulo in alto */
-.es-fine{flex:0 0 min(72vw,420px);align-self:center;scroll-snap-align:end;padding-right:4px}
+.es-fine{flex:none;width:min(72vw,420px);align-self:center;scroll-snap-align:end;padding-right:4px}
 .es-fine p{font-weight:500;font-size:clamp(1.9rem,3.2vw,3rem);line-height:1.05;letter-spacing:-.04em;text-wrap:balance}
 .es-torna{display:inline-flex;align-items:center;gap:10px;min-height:44px;margin-top:10px;font-size:clamp(1.05rem,1.4vw,1.25rem);color:var(--sig);
   text-decoration:underline;text-decoration-color:rgba(168,255,96,.4);text-decoration-thickness:1px;text-underline-offset:6px;transition:text-decoration-color .3s}
@@ -394,7 +397,7 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
 @media (hover:hover) and (pointer:fine){.es-frecce{display:flex}}
 @media (min-width:641px){
   .es{--es-gap:clamp(24px,3vw,40px)}
-  .es-lista li{flex:0 0 min(calc(100vw - 2 * var(--gut) - 90px),760px,calc((100vh - 260px) * 1.6));flex-basis:min(calc(100vw - 2 * var(--gut) - 90px),760px,calc((100svh - 260px) * 1.6))}
+  .es-lista li{width:min(calc(100vw - 2 * var(--gut) - 90px),760px,calc((100vh - 260px) * 1.6));width:min(calc(100vw - 2 * var(--gut) - 90px),760px,calc((100svh - 260px) * 1.6))}
   .es-vista{aspect-ratio:16/10;border-radius:14px}
   .es-testo{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:28px;align-items:end;margin-top:20px}
   .es-stile{grid-column:1}
@@ -407,11 +410,11 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
   .es{padding:0;height:calc(100vh + var(--tratti,10) * 70vh + 30vh);--es-gap:clamp(40px,4.5vw,72px)}
   .es-fisso{position:sticky;top:0;height:100vh;overflow:hidden;overflow:clip;display:flex;flex-direction:column;justify-content:center;padding:64px 0 40px}
   .es-binario{display:flex;align-items:center;gap:calc(var(--es-gap) * 1.4);padding:0 var(--gut);will-change:transform}
-  .es-testa{flex:0 0 min(31vw,460px);padding:0}
+  .es-testa{flex:none;width:min(31vw,460px);padding:0}
   .es-testa .big{font-size:clamp(2.6rem,4.3vw,4.2rem)}
   .es-scorri{flex:none;margin:0;padding:0;overflow:visible;scroll-snap-type:none}
-  .es-lista li{flex:0 0 min(56vw,calc((100vh - 300px) * 1.6),820px)}
-  .es-fine{flex-basis:min(30vw,440px)}
+  .es-lista li{width:min(56vw,calc((100vh - 300px) * 1.6),820px)}
+  .es-fine{width:min(30vw,440px)}
   .es-avanza{position:absolute;left:0;right:0;bottom:30px;margin:0}
   .es-frecce{display:none}
 }
@@ -722,7 +725,7 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
         </div>
         <div class="schermo">
           <div class="a-top"><b>Oggi</b><small>giovedì 26 settembre</small></div>
-          <div class="a-numeri"><div><b>38</b><small>prenotazioni</small></div><div><b>1.240 €</b><small>incasso</small></div><div><b>3</b><small>in turno</small></div></div>
+          <div class="a-numeri"><div><b>38</b><small>prenotazioni</small></div><div><b>1.240<span>€</span></b><small>incasso</small></div><div><b>3</b><small>in turno</small></div></div>
           <div class="a-barre"><i style="height:40%"></i><i style="height:55%"></i><i style="height:48%"></i><i style="height:70%"></i><i class="oggi" style="height:86%"></i><i style="height:30%"></i><i style="height:24%"></i></div>
           <div class="a-riga"><div>Giulia<small>sala</small></div><span>17–23</span></div>
           <div class="a-riga"><div>Marco<small>cucina</small></div><span>18–24</span></div>
