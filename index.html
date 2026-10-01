@@ -53,7 +53,7 @@ fieldset{border:0}
 @media (hover:hover) and (pointer:fine){body.has-cur,body.has-cur a,body.has-cur button,body.has-cur label{cursor:none}.cur,.cur-dot,.cur-xy{opacity:1}
   body.has-cur input,body.has-cur textarea{cursor:text}}
 
-.top{position:fixed;inset:0 0 auto;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:20px var(--gut);background:linear-gradient(rgba(5,6,5,.85),transparent)}
+.top{position:fixed;inset:0 0 auto;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:20px var(--gut);background:rgba(5,6,5,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}   /* fondo pieno e sfocato: i titoli che passano sotto non si accavallano col marchio */
 .brand{font-family:var(--mono);font-weight:500;font-size:clamp(20px,2vw,26px);letter-spacing:-.02em;display:flex;align-items:center;gap:10px;color:#fff}
 .brand .br{color:var(--sig)}
 .brand i{width:.5em;height:.95em;background:var(--sig);border-radius:1px;animation:blink 1.1s steps(1) infinite;box-shadow:0 0 16px rgba(168,255,96,.6)}
@@ -260,6 +260,7 @@ h2.big em{font-style:normal;color:var(--sig)}
 /* dal disegno al vero: a sinistra la frase e il menu degli esempi, a destra il 3D scelto */
 .vero{height:calc(5 * 115vh + 100vh);position:relative}
 .vero .stick{position:sticky;top:0;height:100vh;height:100svh;display:grid;grid-template-columns:.9fr 1.1fr;align-items:center;gap:clamp(28px,5vw,80px);padding:0 var(--gut);max-width:1320px;margin:0 auto}
+.ve-k{font-family:var(--mono);font-size:13px;color:var(--sig);margin-bottom:20px}   /* "come lavoriamo": dopo i template, il come */
 .vfrase{font-weight:500;font-size:clamp(1.9rem,3.6vw,3.3rem);line-height:1.06;letter-spacing:-.035em;color:#8e988b;max-width:15ch}
 .vfrase em{font-style:normal;color:#4a5348;transition:color .5s var(--ease)}
 .vfrase em.on{color:var(--sig)}
@@ -345,26 +346,76 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
 .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,12px);z-index:90;background:var(--sig);color:#061003;padding:12px 18px;border-radius:10px;font-weight:600;font-size:.95rem;opacity:0;transition:all .35s var(--ease);pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
-.rv{opacity:0;transform:translateY(28px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.rv{opacity:0;transform:translateY(28px);transition:opacity 1s var(--ease),transform 1s var(--ease);overflow-anchor:none}   /* chi sale con l'animazione non fa da riferimento al browser quando rimette la pagina al punto di prima */
 .rv.shown{opacity:1;transform:none}
 
-/* ─── esempi: tre siti interi di attività inventate. Niente cornici: l'anteprima è il link.
-   Mentre la scheda passa a metà schermo, l'anteprima va dall'apertura del sito al suo momento migliore ─── */
-.es-lista{list-style:none;margin-top:clamp(64px,8vw,120px);display:grid;gap:clamp(80px,9vw,140px)}
-.es-voce{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:clamp(32px,5vw,80px);align-items:end}
-.es-vista{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#0a0c0a}
+/* ─── template: i siti interi delle attività inventate, subito dopo l'hero. Niente cornici: l'anteprima è il link.
+   Sul computer la sezione si ferma e la fila scorre di lato mentre scendi (galleria fissata, regole in fondo: "galleria fissata").
+   Sul telefono, sul tablet e con "riduci movimento" è una striscia da scorrere col dito o con le frecce: niente scroll rubato.
+   Quando una scheda passa il centro, l'anteprima va dall'apertura del sito al suo momento migliore ─── */
+.es{position:relative;background:var(--bg);padding:clamp(100px,12vw,160px) 0 clamp(90px,10vw,140px)}
+.es-testa{padding:0 var(--gut)}
+.es-scorri{display:flex;gap:var(--es-gap,14px);margin-top:clamp(44px,6vw,80px);padding:6px var(--gut) 10px;overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;scroll-padding-inline:var(--gut);scrollbar-width:none}
+.es-scorri::-webkit-scrollbar{display:none}
+.es-lista{list-style:none;display:flex;gap:var(--es-gap,14px);flex:none}
+/* telefono: la scheda è larga lo schermo meno un bordo, così si vede arrivare la prossima; e ci sta tutta in altezza */
+.es-lista li{scroll-snap-align:start;flex:0 0 min(calc(100vw - 2 * var(--gut) - 34px),calc((100vh - 200px) * .5911));flex-basis:min(calc(100vw - 2 * var(--gut) - 34px),calc((100svh - 200px) * .5911))}
+.es-voce{display:block;scroll-margin-block:84px 24px}   /* col Tab la scheda non finisce sotto la barra in alto */
+.es-vista{position:relative;aspect-ratio:600/1015;border-radius:12px;overflow:hidden;background:#0a0c0a}
 .es-vista img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
 .es-vista img.es-b{opacity:0;transition:opacity .8s var(--ease),transform 1.2s var(--ease)}
 .es-vista img.es-b.on{opacity:1}
 .es-vista::after{content:"";position:absolute;inset:0;border-radius:inherit;border:1px solid var(--faint);pointer-events:none}   /* un filo appena: le demo scure non si perdono nel fondo */
-.es-voce h3{font-weight:500;font-size:clamp(2rem,3.4vw,3rem);line-height:1.02;letter-spacing:-.04em;margin-top:14px}
-.es-stile{color:#aeb7ab;font-size:1.1rem;margin-top:12px;max-width:30ch}
-.es-apri{display:inline-block;margin-top:22px;padding-bottom:6px;font-family:var(--mono);font-size:13px;color:var(--txt);border-bottom:1px solid var(--line);transition:color .3s,border-color .3s}
+.es-testo{margin-top:16px}
+.es-voce h3{font-weight:500;font-size:clamp(1.4rem,2vw,2rem);line-height:1.08;letter-spacing:-.035em}
+.es-stile{color:#aeb7ab;font-size:1rem;line-height:1.45;margin-top:6px}
+.es-apri{display:inline-block;margin-top:12px;padding-bottom:5px;font-family:var(--mono);font-size:13px;color:var(--txt);border-bottom:1px solid var(--line);white-space:nowrap;transition:color .3s,border-color .3s}
 .es-voce:hover .es-apri{color:var(--sig);border-color:var(--sig)}
 .es-voce:hover .es-vista img{transform:scale(1.025)}
+/* in fondo alla fila: chi ha trovato uno stile torna al modulo in alto */
+.es-fine{flex:0 0 min(72vw,420px);align-self:center;scroll-snap-align:end;padding-right:4px}
+.es-fine p{font-weight:500;font-size:clamp(1.9rem,3.2vw,3rem);line-height:1.05;letter-spacing:-.04em;text-wrap:balance}
+.es-torna{display:inline-flex;align-items:center;gap:10px;min-height:44px;margin-top:10px;font-size:clamp(1.05rem,1.4vw,1.25rem);color:var(--sig);
+  text-decoration:underline;text-decoration-color:rgba(168,255,96,.4);text-decoration-thickness:1px;text-underline-offset:6px;transition:text-decoration-color .3s}
+.es-torna:hover{text-decoration-color:var(--sig)}
+/* sotto la fila: a che template sei (03 / 09) e una barra sottile che si riempie; le frecce solo col mouse */
+.es-avanza{display:flex;align-items:center;gap:18px;margin-top:20px;padding:0 var(--gut);font-family:var(--mono);font-size:12px;color:var(--mut)}
+.es-conta{white-space:nowrap;font-variant-numeric:tabular-nums}
+.es-conta b{font-weight:400;color:var(--txt)}
+.es-barra{position:relative;flex:1;height:1px;background:var(--faint);overflow:hidden}
+.es-barra i{position:absolute;inset:0;background:var(--sig);transform-origin:left;transform:scaleX(0)}
+.es-frecce{display:none;gap:2px;margin-right:-12px}
+.es-frecce button{display:grid;place-items:center;width:44px;height:44px;border:0;background:none;color:var(--txt);transition:color .3s,opacity .3s}
+.es-frecce button:hover{color:var(--sig)}
+.es-frecce button:disabled{opacity:.25;pointer-events:none}
+.es-frecce svg{width:18px;height:18px}
+@media (hover:hover) and (pointer:fine){.es-frecce{display:flex}}
+@media (min-width:641px){
+  .es{--es-gap:clamp(24px,3vw,40px)}
+  .es-lista li{flex:0 0 min(calc(100vw - 2 * var(--gut) - 90px),760px,calc((100vh - 260px) * 1.6));flex-basis:min(calc(100vw - 2 * var(--gut) - 90px),760px,calc((100svh - 260px) * 1.6))}
+  .es-vista{aspect-ratio:16/10;border-radius:14px}
+  .es-testo{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:28px;align-items:end;margin-top:20px}
+  .es-stile{grid-column:1}
+  .es-apri{grid-column:2;grid-row:1 / span 2;margin:0}
+}
+/* galleria fissata (computer col mouse, finestra non troppo bassa, movimento non ridotto): dentro, un riquadro fermo alto uno schermo;
+   la sezione è alta 70vh per ogni tratto fra una sosta e l'altra (--tratti = template + 1, scritto nell'HTML) più un attimo di sosta in fondo.
+   L'altezza la sa già il CSS, prima dello script: così tornando dalla demo il browser rimette la pagina al punto giusto */
+@media (min-width:900px) and (min-height:600px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .es{padding:0;height:calc(100vh + var(--tratti,10) * 70vh + 30vh);--es-gap:clamp(40px,4.5vw,72px)}
+  .es-fisso{position:sticky;top:0;height:100vh;overflow:hidden;overflow:clip;display:flex;flex-direction:column;justify-content:center;padding:64px 0 40px}
+  .es-binario{display:flex;align-items:center;gap:calc(var(--es-gap) * 1.4);padding:0 var(--gut);will-change:transform}
+  .es-testa{flex:0 0 min(31vw,460px);padding:0}
+  .es-testa .big{font-size:clamp(2.6rem,4.3vw,4.2rem)}
+  .es-scorri{flex:none;margin:0;padding:0;overflow:visible;scroll-snap-type:none}
+  .es-lista li{flex:0 0 min(56vw,calc((100vh - 300px) * 1.6),820px)}
+  .es-fine{flex-basis:min(30vw,440px)}
+  .es-avanza{position:absolute;left:0;right:0;bottom:30px;margin:0}
+  .es-frecce{display:none}
+}
 
 @media (max-width:1020px){
-  .es-voce{grid-template-columns:minmax(0,1fr);gap:26px}
   .hero{grid-template-columns:1fr;padding-top:100px}
   .then,.amb,.pair,.contatti{grid-template-columns:1fr}
   .servizi .stick{grid-template-columns:minmax(0,1fr);align-content:center;gap:18px}
@@ -379,7 +430,7 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
   .top nav{gap:16px;font-size:12px}
   .top nav .nl{display:none}
   .top nav .ns{display:inline}
-  /* esempi e servizi più corti da scorrere */
+  /* vetrine 3D e servizi più corti da scorrere */
   .vero{height:calc(5 * 80vh + 100vh)}
   .servizi{height:270vh}
   .two{grid-template-columns:1fr}
@@ -389,14 +440,14 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
   .vero .sv-voce{display:none;border:0;padding:0}
   .vero .sv-voce.on{display:block}
   .ve-stage{height:min(52svh,110vw)}
-  .es-vista{aspect-ratio:600/1015;border-radius:12px}
-  .es-lista{margin-top:56px;gap:88px}
 }
-/* telefoni stretti (360–400 px): con la voce in più il menu resta su una riga, staccato dal marchio */
+/* telefoni stretti (360–400 px): il menu resta su una riga, staccato dal marchio (sotto i 380 px la barra stringe un po' i margini) */
 @media (max-width:400px){.top nav{gap:14px;font-size:11px}}
-@media (max-width:370px){.top nav{gap:10px}}
+@media (max-width:380px){.top{padding-left:16px;padding-right:16px}.top nav{gap:11px}}
+@media (max-width:370px){.top nav{gap:8px}}
 @media (prefers-reduced-motion:reduce){
   .rv{opacity:1;transform:none;transition:none}
+  .es-vista img{transition:none}.es-voce:hover .es-vista img{transform:none}
   .brand i,h1 .strike::after{animation:none}
   h1 .strike::after{transform:scaleX(1)}
 }
@@ -414,7 +465,7 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
 
 <header class="top">
   <a class="brand" href="#inizio" aria-label="Scrollify, torna all'inizio"><span id="logoTxt" aria-hidden="true">scroll<span class="br">ify</span></span><i></i></a>
-  <nav><a href="#vero"><span class="nl">cosa facciamo</span><span class="ns">3D</span></a><a href="#servizi">servizi</a><a href="#esempi">template</a><a href="#contatti">contatti</a></nav>
+  <nav><a href="#esempi">template</a><a href="#vero"><span class="nl">come lavoriamo</span><span class="ns">3D</span></a><a href="#servizi">servizi</a><a href="#contatti">contatti</a></nav>
 </header>
 
 <main>
@@ -496,10 +547,100 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
     </form>
   </section>
 
-  <!-- ═══ DAL DISEGNO AL VERO: la frase, il menu degli esempi e un solo spazio 3D (vero3d.js) ═══ -->
-  <section class="vero" id="vero" aria-label="Dal disegno al vero: cinque esempi">
+  <!-- ═══ TEMPLATE (subito dopo l'hero): nove siti interi di attività inventate, da aprire (nella stessa scheda: in alto c'è "Torna a Scrollify") e scorrere.
+       Chi scende li vede subito, prende spunto e torna al modulo. Spunti, non modelli fissi.
+       Ordine deciso da Enrico (1 ottobre), chiari e scuri alternati: pizzeria, burger, gelateria, Lumen, concessionario, bowling, basket, poligono, soldi ═══ -->
+  <section class="es" id="esempi" aria-labelledby="esT" style="--tratti:10"><!-- tratti: numero dei template + 1 (serve alla galleria fissata) --><div class="es-fisso">
+    <div class="es-binario">
+      <div class="es-testa">
+        <h2 class="big rv" id="esT">Prendi ispirazione <em>dai nostri template.</em></h2>
+        <p class="p rv">Se sei a corto di idee, cerca tra i nostri template: personalizzabili al 100% secondo le tue esigenze.</p>
+      </div>
+      <div class="es-scorri" id="esScorri">
+        <ol class="es-lista">
+        <li><a class="es-voce" href="/esempi/pizzeria/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/pizzeria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/pizzeria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Pizzeria Peppè: il panetto sul tagliere, su fondo azzurro" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/pizzeria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/pizzeria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Pizzeria Peppè</h3><p class="es-stile">La pizza che nasce mentre scorri.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/burger/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/burger-tel-a.webp" width="600" height="1015"><img src="/img/esempi/burger-a.webp" width="1200" height="750" alt="Il sito d'esempio di Doppio Strato: un burger su un piatto di porcellana nera sotto la luce" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/burger-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/burger-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Doppio Strato</h3><p class="es-stile">Il burger che si apre strato per strato.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/gelateria/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/gelateria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/gelateria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Gelateria al Freddo: il logo col gelato infreddolito e il cono vuoto" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/gelateria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/gelateria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Gelateria al Freddo</h3><p class="es-stile">Il cono che si riempie, gusto dopo gusto.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/gioielleria/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/gioielleria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/gioielleria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Lumen: cinque orologi in fila sotto il nome" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/gioielleria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/gioielleria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Lumen</h3><p class="es-stile">La giostra degli orologi in 3D.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/concessionario/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/concessionario-tel-a.webp" width="600" height="1015"><img src="/img/esempi/concessionario-a.webp" width="1200" height="750" alt="Il sito d'esempio di Riva Motori: il piazzale visto dall'alto al tramonto" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/concessionario-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/concessionario-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Riva Motori</h3><p class="es-stile">Il volo dal piazzale dentro al salone.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/bowling/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/bowling-tel-a.webp" width="600" height="1015"><img src="/img/esempi/bowling-a.webp" width="1200" height="750" alt="Il sito d'esempio di Velluto, sala da bowling: la palla nera e oro sulla pista, sotto l'insegna d'ottone" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/bowling-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/bowling-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Velluto · Sala da bowling</h3><p class="es-stile">Lo strike al rallentatore, poi un cocktail.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/basket/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/basket-tel-a.webp" width="600" height="1015"><img src="/img/esempi/basket-a.webp" width="1200" height="750" alt="Il sito d'esempio di Dinamo Scroll: la palestra vista dalla linea del tiro libero, con il pallone in mano" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/basket-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/basket-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Dinamo Scroll</h3><p class="es-stile">Il tiro in prima persona, fino a canestro.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/poligono/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/poligono-tel-a.webp" width="600" height="1015"><img src="/img/esempi/poligono-a.webp" width="1200" height="750" alt="Il sito d'esempio di Centro, poligono di tiro: i pezzi di una pistola inventata sospesi nel buio, pronti a montarsi" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/poligono-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/poligono-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Centro</h3><p class="es-stile">Dal primo pezzo al centro del bersaglio.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        <li><a class="es-voce" href="/esempi/soldi/">
+          <div class="es-vista">
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/soldi-tel-a.webp" width="600" height="1015"><img src="/img/esempi/soldi-a.webp" width="1200" height="750" alt="Il sito d'esempio Una montagna di soldi: un montagnone di banconote finte su fondo verde" loading="lazy" decoding="async"></picture>
+            <picture><source media="(max-width:640px)" srcset="/img/esempi/soldi-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/soldi-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
+          </div>
+          <div class="es-testo"><h3>Una montagna di soldi</h3><p class="es-stile">Da tagliare, lanciare, far crollare.</p><span class="es-apri">apri il sito →</span></div>
+        </a></li>
+        </ol>
+        <div class="es-fine">
+          <p>Ti piace uno stile?</p>
+          <a class="es-torna" href="#inizio">Raccontaci la tua attività <span aria-hidden="true">↑</span></a>
+        </div>
+      </div>
+    </div>
+    <div class="es-avanza">
+      <span class="es-conta" aria-hidden="true"><b id="esNum">01</b> / <span id="esTot">09</span></span>
+      <span class="es-barra" aria-hidden="true"><i id="esBarra"></i></span>
+      <span class="es-frecce"><button type="button" id="esPrima" aria-label="Template precedente" aria-controls="esScorri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button><button type="button" id="esDopo" aria-label="Template successivo" aria-controls="esScorri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></span>
+    </div>
+  </div></section>
+
+  <!-- ═══ COME LAVORIAMO · DAL DISEGNO AL VERO: dopo i template, chi scende vede da vicino il nostro lavoro.
+       La frase, il menu degli esempi e un solo spazio 3D (vero3d.js) ═══ -->
+  <section class="vero" id="vero" aria-label="Come lavoriamo: dal disegno al vero, cinque esempi">
     <div class="stick">
       <div>
+        <p class="ve-k">come lavoriamo</p>
         <h2 class="vfrase">Prima lo <em class="on">disegniamo</em>. Poi prende <em>forma</em>. E diventa <em>vero</em>.</h2>
         <ul class="sv-voci">
           <li class="sv-voce on"><b>Stanza d'hotel</b><p>Hotel e b&amp;b: la camera da scorrere prima ancora di prenotare.</p></li>
@@ -579,115 +720,6 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
       </div></div>
     </div>
   </section>
-
-  <!-- ═══ TEMPLATE (in fondo, prima dei contatti): tre siti interi di attività inventate, da aprire (nella stessa scheda: in alto c'è "Torna a Scrollify") e scorrere. Spunti, non modelli fissi ═══ -->
-  <section class="sec es" id="esempi" aria-labelledby="esT"><div class="wrap">
-    <div class="es-testa">
-      <h2 class="big rv" id="esT">Prendi ispirazione <em>dai nostri template.</em></h2>
-      <p class="p rv">Se sei a corto di idee, cerca tra i nostri template: personalizzabili al 100% secondo le tue esigenze.</p>
-    </div>
-    <ol class="es-lista">
-      <li class="rv"><a class="es-voce" href="/esempi/pizzeria/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/pizzeria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/pizzeria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Pizzeria Peppè: il panetto sul tagliere, su fondo azzurro" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/pizzeria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/pizzeria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Pizzeria Peppè</h3>
-          <p class="es-stile">La pizza che nasce mentre scorri.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/burger/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/burger-tel-a.webp" width="600" height="1015"><img src="/img/esempi/burger-a.webp" width="1200" height="750" alt="Il sito d'esempio di Doppio Strato: un burger su un piatto di porcellana nera sotto la luce" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/burger-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/burger-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Doppio Strato</h3>
-          <p class="es-stile">Il burger che si apre strato per strato.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/gelateria/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/gelateria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/gelateria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Gelateria al Freddo: il logo col gelato infreddolito e il cono vuoto" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/gelateria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/gelateria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Gelateria al Freddo</h3>
-          <p class="es-stile">Il cono che si riempie, gusto dopo gusto.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/gioielleria/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/gioielleria-tel-a.webp" width="600" height="1015"><img src="/img/esempi/gioielleria-a.webp" width="1200" height="750" alt="Il sito d'esempio di Lumen: cinque orologi in fila sotto il nome" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/gioielleria-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/gioielleria-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Lumen</h3>
-          <p class="es-stile">La giostra degli orologi in 3D.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/concessionario/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/concessionario-tel-a.webp" width="600" height="1015"><img src="/img/esempi/concessionario-a.webp" width="1200" height="750" alt="Il sito d'esempio di Riva Motori: il piazzale visto dall'alto al tramonto" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/concessionario-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/concessionario-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Riva Motori</h3>
-          <p class="es-stile">Il volo dal piazzale dentro al salone.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/bowling/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/bowling-tel-a.webp" width="600" height="1015"><img src="/img/esempi/bowling-a.webp" width="1200" height="750" alt="Il sito d'esempio di Velluto, sala da bowling: la palla nera e oro sulla pista, sotto l'insegna d'ottone" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/bowling-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/bowling-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Velluto · Sala da bowling</h3>
-          <p class="es-stile">Lo strike al rallentatore, poi un cocktail.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/basket/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/basket-tel-a.webp" width="600" height="1015"><img src="/img/esempi/basket-a.webp" width="1200" height="750" alt="Il sito d'esempio di Dinamo Scroll: la palestra vista dalla linea del tiro libero, con il pallone in mano" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/basket-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/basket-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Dinamo Scroll</h3>
-          <p class="es-stile">Il tiro in prima persona, fino a canestro.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/poligono/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/poligono-tel-a.webp" width="600" height="1015"><img src="/img/esempi/poligono-a.webp" width="1200" height="750" alt="Il sito d'esempio di Centro, poligono di tiro: i pezzi di una pistola inventata sospesi nel buio, pronti a montarsi" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/poligono-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/poligono-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Centro</h3>
-          <p class="es-stile">Dal primo pezzo al centro del bersaglio.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-      <li class="rv"><a class="es-voce" href="/esempi/soldi/">
-        <div class="es-vista">
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/soldi-tel-a.webp" width="600" height="1015"><img src="/img/esempi/soldi-a.webp" width="1200" height="750" alt="Il sito d'esempio Una montagna di soldi: un montagnone di banconote finte su fondo verde" loading="lazy" decoding="async"></picture>
-          <picture><source media="(max-width:640px)" srcset="/img/esempi/soldi-tel-b.webp" width="600" height="1015"><img class="es-b" src="/img/esempi/soldi-b.webp" width="1200" height="750" alt="" loading="lazy" decoding="async"></picture>
-        </div>
-        <div>
-          <h3>Una montagna di soldi</h3>
-          <p class="es-stile">Da tagliare, lanciare, far crollare.</p>
-          <span class="es-apri">apri il sito →</span>
-        </div>
-      </a></li>
-    </ol>
-  </div></section>
 
   <!-- ═══ CONTATTI: per qualsiasi cosa, due righe e ti rispondiamo ═══ -->
   <section class="sec" id="contatti"><div class="wrap contatti">
@@ -915,10 +947,10 @@ function salta(top){
   document.body.classList.add('salto');
   setTimeout(()=>{scrollTo(0,top);setTimeout(()=>document.body.classList.remove('salto'),40)},160);
 }
-// "esempi" arriva un attimo dentro la sezione, quando il primo disegno è già partito (all'inizio lo spazio sarebbe vuoto)
+// "come lavoriamo" arriva un attimo dentro la sezione, quando il primo disegno è già partito (all'inizio lo spazio sarebbe vuoto);
+// "template" arriva all'inizio della sezione: sul computer è il punto in cui la galleria si ferma, col titolo e il primo template
 $$('.top a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const t=document.querySelector(a.getAttribute('href'));if(!t)return;e.preventDefault();
-  const d=t.id==='esempi'?t.querySelector('.es-testa'):t;
-  salta(d.getBoundingClientRect().top+scrollY+(t.id==='vero'?(t.offsetHeight-innerHeight)*.12/VN:t.id==='esempi'?-110:0))}));
+  salta(t.getBoundingClientRect().top+scrollY+(t.id==='vero'?(t.offsetHeight-innerHeight)*.12/VN:0))}));
 
 /* ─── dal disegno al vero: lo scroll sceglie l'esempio e ne guida le tre fasi; il menu ci salta ─── */
 const ve=$('#vero'), veVoci=$$('#vero .sv-voce'), veCv=$$('#vero .cv'), parole=$$('.vfrase em'), VN=veVoci.length;
@@ -930,21 +962,103 @@ function veroStep(){
   if(!window.__p3dLock) veCv.forEach((c,i)=>{window['__pV_'+c.dataset.vero]=i<k?1:i>k?0:t;window['__pH_'+c.dataset.vero]=i<k?1:i>k?0:h});   // __p3dLock: solo per le verifiche
   if(k!==veK){veK=k;veVoci.forEach((e,i)=>e.classList.toggle('on',i===k));veCv.forEach((e,i)=>e.classList.toggle('on',i===k))}
   const f=t<.34?0:t<.68?1:2; if(f!==veF){veF=f;parole.forEach((e,i)=>e.classList.toggle('on',i===f))}
-  // il 3D (librerie e file, qualche MB) parte al primo scroll: chi scende trova gli esempi già pronti
-  if(!veCaricato&&(scrollY>0||b.top<innerHeight*1.6)){veCaricato=true;import('./vero3d.js?v=3').catch(()=>{})}
+  // il 3D (librerie e file, qualche MB) parte quando la sezione è a due o tre schermate (sul computer la galleria dei template è lunga):
+  // chi scende trova gli esempi già pronti, e intanto la rete resta libera per l'apertura e per le anteprime dei template
+  if(!veCaricato&&b.top<innerHeight*(innerWidth>1020?3:2.2)){veCaricato=true;import('./vero3d.js?v=3').catch(()=>{})}
 }
 addEventListener('scroll',veroStep,{passive:true});
 veVoci.forEach((e,i)=>e.addEventListener('click',()=>{const span=ve.offsetHeight-innerHeight;salta(ve.offsetTop+span*(i+.1)/VN)}));
 
-/* ─── esempi: quando il centro dell'anteprima passa la metà dello schermo, l'apertura sfuma nel momento migliore del sito;
-   tornando su (sopra il 62%) si rivede l'apertura. Scatta a soglia, non segue lo scroll: così non resta mai a metà fra le due ─── */
-const es=$('#esempi'), esB=$$('#esempi .es-b');
-function esStep(){
-  const r=es.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight) return;
-  esB.forEach(b=>{const v=b.closest('.es-vista').getBoundingClientRect(), c=(v.top+v.bottom)/2/innerHeight;
-    if(c<.5) b.classList.add('on'); else if(c>.62) b.classList.remove('on')});
+/* ─── template: sul computer (mouse, movimento non ridotto) la sezione si ferma e la fila scorre di lato mentre scendi;
+   altrove è una striscia da scorrere col dito, che si ferma su ogni scheda (scroll-snap), più le frecce se c'è il mouse.
+   Quando un'anteprima si vede quasi tutta e il suo centro passa la metà dello schermo, l'apertura sfuma nel momento migliore del sito;
+   tornando indietro (oltre il 64%, o se esce dallo schermo) si rivede l'apertura. Scatta a soglia, non segue lo scroll: così non resta mai a metà fra le due.
+   Le anteprime sono pigre: si scaricano poco prima di arrivarci, due schede avanti a quella che guardi ─── */
+const es=$('#esempi'), esFisso=$('#esempi .es-fisso'), esBin=$('#esempi .es-binario'), esScorri=$('#esScorri'), esLi=$$('#esempi .es-lista li'), esFine=$('#esempi .es-fine');
+const esVista0=$('#esempi .es-vista'), esNum=$('#esNum'), esBarra=$('#esBarra'), esPrima=$('#esPrima'), esDopo=$('#esDopo'), esN=esLi.length;
+const esFissa=matchMedia('(min-width:900px) and (min-height:600px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
+let fisso=false, esCorsa=0, esX=0, esPos=[], esCw=0, esGap=0, esPad=0, esK=-1, esP=-1, esPronte=-1, esT=0, esSoste=[], esTratto=0;
+const esTesta=$('#esempi .es-testa');
+$('#esTot').textContent=String(esN).padStart(2,'0');
+// posizioni delle schede dentro la fila (non cambiano con lo scorrimento): si rimisurano solo se cambia la finestra
+function esMisura(){
+  fisso=esFissa.matches; esBin.style.transform=''; esX=0;
+  const rif=(fisso?esBin:esScorri).getBoundingClientRect(), dx=fisso?0:esScorri.scrollLeft;
+  esPos=esLi.map(li=>li.getBoundingClientRect().left-rif.left+dx);
+  esCw=esLi[0].offsetWidth; esGap=esN>1?esPos[1]-esPos[0]-esCw:0;
+  esPad=parseFloat(getComputedStyle(fisso?esBin:esScorri).paddingLeft)||0;
+  const rf=esFine.getBoundingClientRect();
+  // la corsa di lato: da "titolo a sinistra" a "invito in fondo a destra", col suo margine
+  const W=document.documentElement.clientWidth;
+  esCorsa=fisso?Math.max(0,Math.round(rf.right-rif.left+esPad-W)):0;
+  // le soste: il titolo, ogni template al centro dello schermo, l'invito in fondo. Fra una sosta e l'altra 70vh di scroll (come nel CSS):
+  // la fila resta ferma un attimo su ogni template e poi scivola al successivo
+  esSoste=fisso?[0,...esPos.map(x=>Math.min(esCorsa,Math.max(0,x+esCw/2-W/2))),esCorsa]:[];
+  esTratto=innerHeight*.7;
+  es.style.setProperty('--tratti',esN+1);   // se nell'HTML il numero non è aggiornato, lo sistema qui
+  esTesta.style.opacity=''; esTesta._o=null;
+  esK=-1; esP=-1;
 }
-if(!reduced){addEventListener('scroll',esStep,{passive:true});esStep()}
+// precarica le anteprime fino alla scheda k (le pigre diventano "subito")
+function esPrepara(k){
+  for(let i=esPronte+1;i<=Math.min(k,esN-1);i++) esLi[i].querySelectorAll('img').forEach(im=>{im.loading='eager'});
+  esPronte=Math.max(esPronte,Math.min(k,esN-1));
+}
+function esPasso(dt){
+  const r=es.getBoundingClientRect(); if(r.bottom<-innerHeight*.5||r.top>innerHeight*1.5) return;
+  // quanto si vedono le anteprime in altezza (sono tutte alla stessa quota): da 0 a 1
+  const v=esVista0.getBoundingClientRect(), vis=Math.max(0,Math.min(v.bottom,innerHeight)-Math.max(v.top,0))/v.height, W=innerWidth;
+  let sx, p;
+  if(fisso){
+    // dove deve stare la fila: ferma sulla sosta per un tratto, poi scivola alla successiva (smoothstep)
+    const n=esSoste.length-1, q=Math.min(1,Math.max(0,-r.top/(n*esTratto)))*n, i=Math.min(n-1,Math.floor(q)), u=Math.min(1,Math.max(0,(q-i-.18)/.64));
+    const t=esSoste[i]+(esSoste[i+1]-esSoste[i])*u*u*(3-2*u);
+    // la fila la segue con un filo di morbidezza (legata al tempo, non ai fotogrammi); dopo un salto lungo arriva subito
+    esX=Math.abs(t-esX)>W*1.2?t:esX+(t-esX)*(1-Math.exp(-Math.min(dt,64)/90));
+    if(Math.abs(t-esX)<.25) esX=t;
+    sx=esX; p=esCorsa?esX/esCorsa:0;
+  } else { sx=esScorri.scrollLeft; const m=esScorri.scrollWidth-esScorri.clientWidth; p=m>0?sx/m:0 }
+  // il punto in cui una scheda è "quella che guardi": il centro dello schermo, o il posto della scheda nella striscia
+  const fuoco=fisso?W/2:esPad+esCw/2;
+  let k=0, best=1e9;
+  esLi.forEach((li,i)=>{
+    const cx=esPos[i]-sx+esCw/2, d=Math.abs(cx-fuoco);
+    if(d<best){best=d;k=i}
+    // le schede lontane dal centro restano un po' in ombra
+    const o=(1-Math.min(1,d/(esCw+esGap))*.5).toFixed(2); if(li._o!==o){li._o=o;li.style.opacity=o}
+    if(!reduced){const b=li._b||(li._b=li.querySelector('.es-b'));
+      if(cx<W*.54&&vis>.8) b.classList.add('on'); else if(cx>W*.64||vis<.4) b.classList.remove('on')}
+  });
+  if(fisso){esBin.style.transform=`translate3d(${-esX.toFixed(1)}px,0,0)`;
+    // il titolo si fa da parte mentre arriva il primo template
+    const o=(1-Math.min(1,esX/(esSoste[1]||1))*.9).toFixed(2); if(esTesta._o!==o){esTesta._o=o;esTesta.style.opacity=o}}
+  if(k!==esK){esK=k;esNum.textContent=String(k+1).padStart(2,'0')}
+  const pp=Math.round(p*1000)/1000; if(pp!==esP){esP=pp;esBarra.style.transform=`scaleX(${pp})`;
+    if(!fisso){esPrima.disabled=pp<=.001;esDopo.disabled=pp>=.999}}
+  if(r.top<innerHeight*1.2&&(scrollY>0||r.top<innerHeight)) esPrepara(k+2);   // non all'apertura: prima l'hero
+}
+esMisura(); esMisura.w=innerWidth;
+esFissa.addEventListener('change',esMisura);
+document.fonts?.ready.then(esMisura);
+// frecce (striscia col mouse): una scheda alla volta
+function esVai(i){i=Math.max(0,Math.min(esN,i));esScorri.scrollTo({left:i<esN?esPos[i]-esPad:esScorri.scrollWidth,behavior:reduced?'auto':'smooth'})}
+esPrima.addEventListener('click',()=>esVai(esK-1));
+esDopo.addEventListener('click',()=>esVai(esK+1));
+// tastiera: col Tab si passa da una scheda all'altra e la galleria la porta al centro (col mouse no: il clic apre il sito e basta)
+es.addEventListener('focusin',e=>{
+  if(!fisso) return; esFisso.scrollLeft=0; if(!e.target.matches(':focus-visible')) return;
+  const i=esLi.indexOf(e.target.closest('li')), s=i>=0?i+1:e.target.closest('.es-fine')?esSoste.length-1:-1; if(s<0) return;
+  scrollTo(0,Math.round(es.getBoundingClientRect().top+scrollY+s*esTratto));
+});
+// tornando dalla demo con "Torna a Scrollify" la pagina torna dov'era; la striscia del telefono, se il browser l'ha ricaricata, riparte dalla scheda di prima
+const ES_KEY='scrollify_template';
+addEventListener('pagehide',()=>{try{sessionStorage.setItem(ES_KEY,String(Math.round(esScorri.scrollLeft)))}catch{}});
+try{const nav=performance.getEntriesByType('navigation')[0], s=sessionStorage.getItem(ES_KEY);
+  if(s!==null&&nav?.type==='back_forward'&&!fisso) esScorri.scrollLeft=+s}catch{}
+// "Ti piace uno stile?": su al modulo, al passaggio a cui eri arrivato (sul computer è già tutto nel primo schermo)
+$('.es-torna').addEventListener('click',e=>{e.preventDefault();
+  const r=form.getBoundingClientRect(), y=Math.round(r.top+scrollY-Math.max(90,(innerHeight-r.height)/2)); salta(y<innerHeight*.2?0:y);
+  if(fine) setTimeout(()=>steps[st].querySelector('input:not([type=radio]):not([type=file]),textarea')?.focus({preventScroll:true}),reduced?0:400)});
 
 /* ─── oltre al sito: la voce accesa e lo schermo del telefono seguono lo scroll; il telefono si inclina col cursore ─── */
 const sv=$('#servizi'), svVoci=$$('#servizi .sv-voce'), svSchermi=$$('#servizi .schermo'), tel=$('#servizi .tel');
@@ -1025,11 +1139,13 @@ let last=0;
 function loop(t){
   if(!reduced&&t-last>45&&scrollY<innerHeight*1.4){rain();last=t}
   cxp+=(mx-cxp)*.18;cyp+=(my-cyp)*.18;cur.style.transform=`translate(${cxp}px,${cyp}px)`;
-  veroStep();
+  veroStep(); esPasso(t-esT); esT=t;
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);veroStep();
-let lw=innerWidth;addEventListener('resize',()=>{if(innerWidth!==lw){lw=innerWidth;sizeRain()}});
+let lw=innerWidth,lh=innerHeight;addEventListener('resize',()=>{if(innerWidth!==lw){lw=innerWidth;sizeRain()}
+  // la galleria si rimisura se cambia la larghezza, o l'altezza di molto (sul telefono la barra del browser va e viene di continuo)
+  if(innerWidth!==esMisura.w||Math.abs(innerHeight-lh)>=220||fisso){esMisura.w=innerWidth;lh=innerHeight;esMisura()}});
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('shown');io.unobserve(e.target)}}),{rootMargin:'0px 0px -10% 0px'});
 $$('.rv').forEach(el=>io.observe(el));
 })();
