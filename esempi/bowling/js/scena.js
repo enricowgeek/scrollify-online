@@ -322,8 +322,10 @@ export async function monta(host, { telefono = false, ridotto = false, dati } = 
     }
     tempo += dt;
     if (fisso === null) {
-      const k = 1 - Math.exp(-dt * 8);
+      // lisciato breve: il ritmo lo dà già lo scroll accompagnato di pagina.js; e mai più di 0,03 indietro (strisciate forti)
+      const k = 1 - Math.exp(-dt * 16);
       pVisto += (pVoluto - pVisto) * k;
+      pVisto = Math.min(pVoluto + .03, Math.max(pVoluto - .03, pVisto));
       if (Math.abs(pVoluto - pVisto) < 1e-5) pVisto = pVoluto;
     }
     const p = fisso ?? pVisto;
