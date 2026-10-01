@@ -1,4 +1,31 @@
+# scrollify.online · aggiornato il 1° ottobre 2026
+# Tutto il sito è aperto. Le demo in /esempi/ restano fuori da Google col loro "noindex" nella pagina:
+# per questo NON sono bloccate qui (se fossero bloccate, i motori non leggerebbero il noindex).
 User-agent: *
 Allow: /
+
+# bot di ricerca delle intelligenze artificiali: possono leggerci e citarci nelle risposte
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# bot di solo addestramento (GPTBot, ClaudeBot, CCBot, Google-Extended, Applebot-Extended):
+# per ora ammessi come tutti gli altri; non cambiano l'essere citati. Se Enrico decide di escluderli:
+# User-agent: GPTBot
+# Disallow: /
 
 Sitemap: https://scrollify.online/sitemap.xml

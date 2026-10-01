@@ -20,7 +20,8 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Scrollify","url":"https://scrollify.online/","logo":"https://scrollify.online/apple-touch-icon.png","image":"https://scrollify.online/og.jpg","email":"contact@scrollify.online","description":"Siti web in 3D, da scorrere, per attività: hotel, ristoranti, bar, ville, concessionari. Poi menu digitale, prenotazioni, ordini e app.","areaServed":{"@type":"Country","name":"Italia"}}</script>
+<!-- dati strutturati: chi siamo (stesso @id nelle pagine per settore, che lo indicano come fornitore), dove lavoriamo, cosa facciamo -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"ProfessionalService","@id":"https://scrollify.online/#scrollify","name":"Scrollify","url":"https://scrollify.online/","logo":"https://scrollify.online/apple-touch-icon.png","image":"https://scrollify.online/og.jpg","email":"contact@scrollify.online","vatID":"IT04981960273","description":"Siti web in 3D a scroll, fatti su misura per le attività locali: pizzerie, ristoranti, gelaterie, gioiellerie, concessionari, bowling, società sportive e poligoni. Poi menù digitale, prenotazioni, ordini, chat di assistenza e gestionale.","slogan":"Crea il nuovo sito 3D della tua attività in 24h.","address":{"@type":"PostalAddress","addressLocality":"Venezia","addressRegion":"Veneto","addressCountry":"IT"},"areaServed":[{"@type":"City","name":"Venezia"},{"@type":"City","name":"Padova"},{"@type":"City","name":"Treviso"},{"@type":"AdministrativeArea","name":"Veneto"},{"@type":"Country","name":"Italia"}],"sameAs":["https://www.instagram.com/scrollify.online/"],"knowsAbout":["siti web in 3D","siti web a scroll","web design per attività locali","siti per ristoranti e pizzerie","menù digitale con QR","prenotazioni online","ordini online e su WhatsApp","SEO locale","dati strutturati","WebGL e Three.js","privacy e cookie (GDPR)"],"makesOffer":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Sito web in 3D a scroll","description":"Il sito della tua attività, su misura, con il 3D che si muove mentre scorri."}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Menù digitale","description":"Si aggiorna in un attimo, anche dal telefono. I clienti lo aprono dal tavolo."}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Prenotazioni online","description":"Campi da padel, tavoli, camere: l'agenda si riempie da sola."}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Ordini online","description":"Asporto e consegna, direttamente dal tuo sito."}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Chat di assistenza","description":"Risponde ai clienti a qualsiasi ora, e passa a te quando serve."}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Gestionale","description":"Turni, incassi e prenotazioni del giorno, in un posto solo."}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-pizzeria/#servizio","name":"Sito web in 3D per pizzerie","url":"https://scrollify.online/sito-web-pizzeria/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-hamburgeria/#servizio","name":"Sito web in 3D per hamburgerie","url":"https://scrollify.online/sito-web-hamburgeria/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-gelateria/#servizio","name":"Sito web in 3D per gelaterie","url":"https://scrollify.online/sito-web-gelateria/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-gioielleria-orologeria/#servizio","name":"Sito web in 3D per gioiellerie e orologerie","url":"https://scrollify.online/sito-web-gioielleria-orologeria/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-concessionario-auto/#servizio","name":"Sito web in 3D per concessionari auto","url":"https://scrollify.online/sito-web-concessionario-auto/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-bowling-locale/#servizio","name":"Sito web in 3D per bowling e locali","url":"https://scrollify.online/sito-web-bowling-locale/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-palestra-basket/#servizio","name":"Sito web in 3D per palestre e società sportive","url":"https://scrollify.online/sito-web-palestra-basket/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-poligono-tiro/#servizio","name":"Sito web in 3D per poligoni di tiro","url":"https://scrollify.online/sito-web-poligono-tiro/"}},{"@type":"Offer","itemOffered":{"@type":"Service","@id":"https://scrollify.online/sito-web-ristorante/#servizio","name":"Sito web in 3D per ristoranti","url":"https://scrollify.online/sito-web-ristorante/"}}]},{"@type":"WebSite","@id":"https://scrollify.online/#sito","url":"https://scrollify.online/","name":"Scrollify","inLanguage":"it-IT","publisher":{"@id":"https://scrollify.online/#scrollify"}}]}</script>
 <!-- caratteri e librerie sono serviti dal sito stesso: nessun dato dei visitatori va a Google Fonts o a CDN esterni -->
 <link rel="preload" href="/font/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/font/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -415,6 +416,13 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
   .es-frecce{display:none}
 }
 
+/* sotto i template: "Siti per pizzerie · hamburgerie · …", piccola e discreta, verso le pagine per settore */
+.settori{position:relative;z-index:2;background:var(--bg);padding:0 var(--gut) clamp(70px,9vw,120px)}
+.settori p{max-width:96ch;font-family:var(--mono);font-size:13px;line-height:2.1;color:var(--mut);text-wrap:balance}
+.settori a{color:#cfd6cc;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px;transition:color .3s,text-decoration-color .3s}
+.settori a:hover{color:var(--sig);text-decoration-color:var(--sig)}
+@media (min-width:900px) and (min-height:600px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){.settori{padding-top:clamp(40px,5vw,70px)}}
+
 @media (max-width:1020px){
   .hero{grid-template-columns:1fr;padding-top:100px}
   .then,.amb,.pair,.contatti{grid-template-columns:1fr}
@@ -482,7 +490,7 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
     </div>
 
     <form class="console" id="intake" name="richiesta" novalidate autocomplete="on">
-      <input type="hidden" name="form-name" value="richiesta"><input type="hidden" name="richiesta_n"><p hidden><label>non compilare <input name="bot-field"></label></p>
+      <input type="hidden" name="form-name" value="richiesta"><input type="hidden" name="richiesta_n"><input type="hidden" name="settore"><p hidden><label>non compilare <input name="bot-field"></label></p>
       <p hidden><input type="file" name="foto1"><input type="file" name="foto2"><input type="file" name="foto3"><input type="file" name="foto4"><input type="file" name="foto5"><input type="file" name="foto6"></p>
       <div class="c-head"><i></i><i></i><i></i><span>nuovo-sito.scrollify</span><b id="stepN">1 / 4</b></div>
       <div class="steps" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
@@ -635,6 +643,9 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
     </div>
   </div></section>
 
+  <!-- ═══ SITI PER SETTORE: una riga discreta sotto i template, verso le pagine dedicate (servono anche a Google e alle AI) ═══ -->
+  <nav class="settori" aria-label="Siti per settore"><p>Siti per <a href="/sito-web-pizzeria/">pizzerie</a>&nbsp;· <a href="/sito-web-hamburgeria/">hamburgerie</a>&nbsp;· <a href="/sito-web-gelateria/">gelaterie</a>&nbsp;· <a href="/sito-web-gioielleria-orologeria/">gioiellerie e orologerie</a>&nbsp;· <a href="/sito-web-concessionario-auto/">concessionari</a>&nbsp;· <a href="/sito-web-bowling-locale/">bowling e locali</a>&nbsp;· <a href="/sito-web-palestra-basket/">palestre e società sportive</a>&nbsp;· <a href="/sito-web-poligono-tiro/">poligoni di tiro</a>&nbsp;· <a href="/sito-web-ristorante/">ristoranti</a></p></nav>
+
   <!-- ═══ COME LAVORIAMO · DAL DISEGNO AL VERO: dopo i template, chi scende vede da vicino il nostro lavoro.
        La frase, il menu degli esempi e un solo spazio 3D (vero3d.js) ═══ -->
   <section class="vero" id="vero" aria-label="Come lavoriamo: dal disegno al vero, cinque esempi">
@@ -743,7 +754,7 @@ footer{position:relative;z-index:2;background:var(--bg);border-top:1px solid var
 <div class="sign" id="sign" aria-hidden="true">
   <div class="word"><span style="transition-delay:0ms">s</span><span style="transition-delay:55ms">c</span><span style="transition-delay:110ms">r</span><span style="transition-delay:165ms">o</span><span style="transition-delay:220ms">l</span><span style="transition-delay:275ms">l</span><span style="transition-delay:330ms" class="br">i</span><span style="transition-delay:385ms" class="br">f</span><span style="transition-delay:440ms" class="br">y</span><i></i></div>
 </div>
-<footer><span>Scrollify · P.IVA 04981960273</span><span class="leg"><a href="/privacy/">privacy e note legali</a><a href="/ambassador/">regolamento ambassador</a><a href="#lavora-con-noi" id="lavA">lavora con noi →</a></span><span>© 2026</span></footer>
+<footer><span>Scrollify · siti web in 3D · Venezia · P.IVA 04981960273</span><span class="leg"><a href="/privacy/">privacy e note legali</a><a href="/ambassador/">regolamento ambassador</a><a href="#lavora-con-noi" id="lavA">lavora con noi →</a></span><span>© 2026</span></footer>
 <!-- ═══ LAVORA CON NOI: il programma ambassador, in un pannello che si apre dal link in fondo o da #lavora-con-noi ═══ -->
 <div class="lav" id="lavora" role="dialog" aria-modal="true" aria-labelledby="lavT" hidden>
   <button class="lav-x" type="button" id="lavX" aria-label="Chiudi">×</button>
@@ -842,6 +853,15 @@ budR.addEventListener('input',budSet); budR.addEventListener('pointerdown',budSe
 const KEY='scrollify_bozza', FIELDS=['attivita','sito','instagram','link','nome','cognome','email','tel','quando','note','codice'];
 try{const d=JSON.parse(localStorage.getItem(KEY)||'{}');FIELDS.forEach(n=>{if(d[n]&&form.elements[n])form.elements[n].value=d[n]})}catch{}
 {const c=new URLSearchParams(location.search).get('codice');if(c&&/^[A-Za-z0-9]{3,16}$/.test(c))form.elements.codice.value=c.toUpperCase()}   // dal link personale di un ambassador
+/* arrivo da una pagina per settore (/sito-web-pizzeria/ → /?settore=pizzeria#inizio): il settore viaggia con la richiesta (campo nascosto),
+   gli esempi nei campi parlano di quel settore e, dove il modulo sta sotto il titolo (telefono e tablet), ci si arriva subito */
+const SETTORI={pizzeria:['pizzeria','Pizzeria Centrale',"Vorrei gli ordini per l'asporto"],hamburgeria:['hamburgeria','Burger Centrale','Vorrei il burger da comporre e gli ordini su WhatsApp'],
+  gelateria:['gelateria','Gelateria Centrale','Vorrei i gusti della settimana e le vaschette su WhatsApp'],gioielleria:['gioielleria / orologeria','Gioielleria Centrale','Vorrei far vedere da vicino gli orologi'],
+  concessionario:['concessionario auto','Centrale Auto','Vorrei il parco auto e il test drive da prenotare'],bowling:['bowling / locale','Bowling Centrale','Vorrei la prenotazione delle piste e delle feste'],
+  palestra:['palestra / società sportiva','Polisportiva Centrale','Vorrei le iscrizioni online e il calendario delle partite'],poligono:['poligono di tiro','Poligono Centrale','Vorrei i corsi e le prenotazioni delle linee'],
+  ristorante:['ristorante','Ristorante Centrale','Vorrei il menù col QR e le prenotazioni']};
+const SETT=SETTORI[new URLSearchParams(location.search).get('settore')];
+if(SETT){form.elements.settore.value=SETT[0];form.elements.attivita.placeholder=SETT[1];form.elements.note.placeholder=SETT[2]}
 let saveT;
 form.addEventListener('input',()=>{clearTimeout(saveT);saveT=setTimeout(()=>{
   const d={};FIELDS.forEach(n=>d[n]=form.elements[n]?.value||'');try{localStorage.setItem(KEY,JSON.stringify(d))}catch{}},400)});
@@ -936,7 +956,7 @@ async function send(){
   t.innerHTML=`<span class="ok">✓ richiesta ${code} inviata</span>
     <h2>Grazie, ${esc(val('nome'))}.</h2>
     <p>Ti chiamiamo entro 24 ore, di ${esc(val('quando'))}, al ${esc(val('tel'))}. Il riepilogo ti arriva anche a ${esc(val('email'))}.</p>
-    <dl class="recap">${row('attività',esc(val('attivita')))}${row('online',online)}${row('foto',photos.length?photos.length+' allegate':'le mandi più tardi')}
+    <dl class="recap">${row('attività',esc(val('attivita')))}${val('settore')?row('settore',esc(val('settore'))):''}${row('online',online)}${row('foto',photos.length?photos.length+' allegate':'le mandi più tardi')}
       ${row('ti chiamiamo',esc(val('quando'))+' · '+esc(val('tel')))}${val('note')?row('nota',esc(val('note'))):''}${val('codice')?row('ambassador',esc(val('codice').toUpperCase())):''}</dl>`;
   try{localStorage.removeItem(KEY)}catch{}
 }
@@ -1059,6 +1079,13 @@ try{const nav=performance.getEntriesByType('navigation')[0], s=sessionStorage.ge
 $('.es-torna').addEventListener('click',e=>{e.preventDefault();
   const r=form.getBoundingClientRect(), y=Math.round(r.top+scrollY-Math.max(90,(innerHeight-r.height)/2)); salta(y<innerHeight*.2?0:y);
   if(fine) setTimeout(()=>steps[st].querySelector('input:not([type=radio]):not([type=file]),textarea')?.focus({preventScroll:true}),reduced?0:400)});
+// arrivo da una pagina per settore ("Raccontaci la tua attività"): sul telefono e sul tablet si va dritti al modulo, sul computer (già nel primo schermo) il cursore è nel campo.
+// Solo all'arrivo vero, non tornando indietro o ricaricando a metà pagina
+if(SETT) addEventListener('load',()=>{
+  const nav=performance.getEntriesByType('navigation')[0]; if((nav&&nav.type!=='navigate')||scrollY>40) return;
+  if(innerWidth<=1020){const r=form.getBoundingClientRect(), y=Math.round(r.top+scrollY-Math.max(80,(innerHeight-r.height)/2)); if(y>innerHeight*.2) scrollTo(0,y)}
+  else if(fine) steps[st].querySelector('input:not([type=radio]):not([type=file]),textarea')?.focus({preventScroll:true});
+},{once:true});
 
 /* ─── oltre al sito: la voce accesa e lo schermo del telefono seguono lo scroll; il telefono si inclina col cursore ─── */
 const sv=$('#servizi'), svVoci=$$('#servizi .sv-voce'), svSchermi=$$('#servizi .schermo'), tel=$('#servizi .tel');
